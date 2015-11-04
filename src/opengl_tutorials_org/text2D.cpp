@@ -30,7 +30,7 @@ void initText2D(const char * texturePath){
 	glGenBuffers(1, &Text2DUVBufferID);
 
 	// Initialize Shader
-	Text2DShaderID = LoadShaders( "TextVertexShader.vertexshader", "TextFragmentShader.fragmentshader" );
+	Text2DShaderID = LoadShaders( "shaders/TextVertexShader.vertexshader", "shaders/TextFragmentShader.fragmentshader" );
 
 	// Get a handle for our buffers
 	vertexPosition_screenspaceID = glGetAttribLocation(Text2DShaderID, "vertexPosition_screenspace");
