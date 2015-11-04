@@ -1,0 +1,12 @@
+#version 120
+
+// input data
+varying vec2 uv;
+
+// const input per mesh
+uniform sampler2D myTextureSampler;
+
+void main()
+{
+    gl_FragColor = texture2D(myTextureSampler, uv);
+}
