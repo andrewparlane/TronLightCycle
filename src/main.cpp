@@ -164,8 +164,8 @@ int main(void)
         glm::vec3(0, 1, 0));   // which way is up
 
                                // lighting
-    glm::vec3 lightPosition_World = glm::vec3(0, 4, 4);
-    glm::vec3 lightColour = glm::vec3(1, 1, 1);
+    glm::vec3 lightPosition_World = glm::vec3(0, 0, 0);
+    glm::vec3 lightColour = glm::vec3(0.3, 0.3, 1);
 
     // Get main shader parameters
     // vertex params (variable)
@@ -186,25 +186,23 @@ int main(void)
     lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
     lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
 
-    GLuint monkeyIndiceBuffer;
-    GLuint monkeyVertexBuffer;
-    GLuint monkeyUvBuffer;
-    GLuint monkeyNormalBuffer;
-    GLuint monkeyTexture;
-    int monkeyIndices = loadObjAndTexture("models/obj/monkey2.obj", "textures/compressed/uvmap.DDS", monkeyIndiceBuffer, monkeyVertexBuffer, monkeyUvBuffer, monkeyNormalBuffer, monkeyTexture);
-    if (monkeyIndices <= 0)
+    GLuint tyreIndiceBuffer;
+    GLuint tyreVertexBuffer;
+    GLuint tyreUvBuffer;
+    GLuint tyreNormalBuffer;
+    GLuint tyreTexture;
+    int tyreIndices = loadObjAndTexture("models/obj/tyre.obj", "textures/compressed/tyre.DDS", tyreIndiceBuffer, tyreVertexBuffer, tyreUvBuffer, tyreNormalBuffer, tyreTexture);
+    if (tyreIndices <= 0)
     {
-        printf("Failed to load monkey object / texture\n");
+        printf("Failed to load tyre object / texture\n");
         return -1;
     }
     // model matrix = model -> world
-    glm::mat4 monkey_model = glm::translate(glm::vec3(1.0f, 0.5f, 0.0f)) * glm::mat4(1.0f);
-    glm::mat4 monkey_model2 = glm::translate(glm::vec3(-1.5f, 0.0f, -2.0f)) *
-        glm::rotate(30.0f, glm::vec3(0, 0, 1)) *
-        glm::mat4(1.0f);
-    glm::mat4 monkey_model3 = glm::translate(glm::vec3(0.0f, -1.0f, -10.0f)) *
-        glm::rotate(146.0f, glm::vec3(0, 0, 1));
-    glm::mat4(1.0f);
+    glm::mat4 tyre_model = //glm::translate(glm::vec3(1.0f, 0.5f, 0.0f)) *
+                           glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
+                           glm::rotate(glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f)) *
+                           glm::mat4(1.0f);
+
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
@@ -239,33 +237,15 @@ int main(void)
         glEnableVertexAttribArray(vertexNormal_ModelID);
         //glEnableVertexAttribArray(vertexColourID);
 
-        // draw monkey
-        monkey_model *= glm::rotate(0.005f, glm::vec3(0, 1, 0));
-        drawTexturedObj(monkey_model,
-            monkeyIndices,
-            monkeyIndiceBuffer,
-            monkeyVertexBuffer,
-            monkeyUvBuffer,
-            monkeyNormalBuffer,
-            monkeyTexture);
-
-        monkey_model2 *= glm::rotate(-0.008f, glm::vec3(0, 1, 0));
-        drawTexturedObj(monkey_model2,
-            monkeyIndices,
-            monkeyIndiceBuffer,
-            monkeyVertexBuffer,
-            monkeyUvBuffer,
-            monkeyNormalBuffer,
-            monkeyTexture);
-
-        monkey_model3 *= glm::rotate(0.01f, glm::vec3(1, 0, 0));
-        drawTexturedObj(monkey_model3,
-            monkeyIndices,
-            monkeyIndiceBuffer,
-            monkeyVertexBuffer,
-            monkeyUvBuffer,
-            monkeyNormalBuffer,
-            monkeyTexture);
+        // draw tyre
+        tyre_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
+        drawTexturedObj(tyre_model,
+            tyreIndices,
+            tyreIndiceBuffer,
+            tyreVertexBuffer,
+            tyreUvBuffer,
+            tyreNormalBuffer,
+            tyreTexture);
 
         //glDisableVertexAttribArray(vertexColourID);
         glDisableVertexAttribArray(vertexNormal_ModelID);
@@ -285,9 +265,9 @@ int main(void)
 
 
     // Cleanup VBO
-    glDeleteBuffers(1, &monkeyVertexBuffer);
-    glDeleteBuffers(1, &monkeyUvBuffer);
-    glDeleteBuffers(1, &monkeyNormalBuffer);
+    glDeleteBuffers(1, &tyreVertexBuffer);
+    glDeleteBuffers(1, &tyreUvBuffer);
+    glDeleteBuffers(1, &tyreNormalBuffer);
     glDeleteProgram(mainProgramID);
     glDeleteTextures(1, &textureSamplerID);
     cleanupText2D();
