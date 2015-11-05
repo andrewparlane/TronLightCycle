@@ -164,8 +164,8 @@ int main(void)
         glm::vec3(0, 1, 0));   // which way is up
 
                                // lighting
-    glm::vec3 lightPosition_World = glm::vec3(0, 0, 0);
-    glm::vec3 lightColour = glm::vec3(0.3, 0.3, 1);
+    glm::vec3 lightPosition_World = glm::vec3(0, 2, 4);
+    glm::vec3 lightColour = glm::vec3(0.6f, 0.6f, 1.0f);
 
     // Get main shader parameters
     // vertex params (variable)
