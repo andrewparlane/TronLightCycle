@@ -47,9 +47,11 @@ void main()
                             pow(clamp(dot(e, r), 0, 1), 5) /    // change 5 to increase or decrease scattering angle
                             distanceSquared;
                             
+    vec4 materialSpecularColour = vec4(0.3, 0.3, 0.3, 1.0);
     
-    gl_FragColor = materialColour *
+    gl_FragColor = (materialColour *
                         (vec4(0.1,0.1,0.1,0.1) +                // ambient
-                         vec4(diffuseLighting,1.0) +            // diffuse
+                         vec4(diffuseLighting,1.0)))  +         // diffuse
+                   (materialSpecularColour *
                          vec4(specularLighting,1.0));           // specular
 }
