@@ -13,3 +13,11 @@ Credit to:
     https://www.google.com.bo/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0CAMQjxxqFQoTCNGxz--H98gCFUHnJgodgFYC2w&url=http%3A%2F%2Fwww.darksim.com%2Fchallenge%2Fhtml%2Fapril_2003.html&psig=AFQjCNFW6bhuWnxmcfCkoLUb8fl9RQrdsg&ust=1446736342239189
         user: sky
         for tyre texture
+    http://hhh316.deviantart.com/art/Seamless-metal-texture-smooth-164165216
+        handlebar and foot pedal texture
+
+TODO:
+    UV map everything
+    Update loadAssImp to support multiple meshes
+    support multiple lights
+    support strip lights (connected to body of bike)?
