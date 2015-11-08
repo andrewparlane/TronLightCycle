@@ -20,7 +20,6 @@ using namespace glm;
 // vertex shader params
 static GLuint vertexPosition_ModelID;
 static GLuint vertexNormal_ModelID;
-static GLuint vertexColourID;
 static GLuint vertexTextureUVID;
 static GLuint mvpID;
 static GLuint modelMatrixID;
@@ -30,6 +29,7 @@ static GLuint lightPosition_WorldID;
 // fragment shader params
 static GLuint fragmentIsTextureID;
 static GLuint textureSamplerID;
+static GLuint fragmentColourID;
 static GLuint lightColourID;
 static GLuint lightPowerID;
 
@@ -37,77 +37,115 @@ static GLuint lightPowerID;
 glm::mat4 projection;
 glm::mat4 viewMatrix;
 
-int loadObjAndTexture(const char *objPath, const char *texturePath,
-    GLuint &indiceBuffer, GLuint &vertexBuffer, GLuint &uvBuffer,
-    GLuint &normalBuffer, GLuint &texture)
+// colours
+const glm::vec3 blueColour = glm::vec3(0.184f, 1.0f, 1.0f);
+
+struct MeshBuffers
+{
+    std::string name;
+    GLuint vertexBuffer;
+    GLuint uvBuffer;
+    GLuint normalBuffer;
+    GLuint indiceBuffer;
+    unsigned int numIndices;
+    bool hasTexture;
+};
+
+bool loadObj(const char *objPath, std::vector<MeshBuffers> &meshBuffers)
 {
     // An array of 3 vectors which represents 3 vertices
     // Read our .obj file
-    std::vector<unsigned short> indices;
-    std::vector<glm::vec3> indexed_vertices;
-    std::vector<glm::vec2> indexed_uvs;
-    std::vector<glm::vec3> indexed_normals;
-    bool res = loadAssImp(objPath, indices, indexed_vertices, indexed_uvs, indexed_normals);
+    std::vector<Mesh> meshes;
+    bool res = loadAssImp(objPath, meshes);
 
     if (!res)
     {
-        return 0;
+        return false;
     }
 
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(glm::vec3), &indexed_vertices[0], GL_STATIC_DRAW);
+    meshBuffers.reserve(meshes.size());
 
-    glGenBuffers(1, &uvBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, indexed_uvs.size() * sizeof(glm::vec2), &indexed_uvs[0], GL_STATIC_DRAW);;
-
-    glGenBuffers(1, &normalBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-    glBufferData(GL_ARRAY_BUFFER, indexed_normals.size() * sizeof(glm::vec3), &indexed_normals[0], GL_STATIC_DRAW);
-
-    glGenBuffers(1, &indiceBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indiceBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);
-    texture = loadDDS(texturePath);
-    if (texture == 0)
+    for (auto i = std::begin(meshes); i != std::end(meshes); i++)
     {
-        return 0;
+        MeshBuffers mb;
+
+        glGenBuffers(1, &mb.vertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, mb.vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, i->vertices.size() * sizeof(glm::vec3), &i->vertices[0], GL_STATIC_DRAW);
+
+        if (i->hasTexture)
+        {
+            glGenBuffers(1, &mb.uvBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, mb.uvBuffer);
+            glBufferData(GL_ARRAY_BUFFER, i->uvs.size() * sizeof(glm::vec2), &i->uvs[0], GL_STATIC_DRAW);;
+        }
+        mb.hasTexture = i->hasTexture;
+
+        glGenBuffers(1, &mb.normalBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, mb.normalBuffer);
+        glBufferData(GL_ARRAY_BUFFER, i->normals.size() * sizeof(glm::vec3), &i->normals[0], GL_STATIC_DRAW);
+
+        glGenBuffers(1, &mb.indiceBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mb.indiceBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, i->indices.size() * sizeof(unsigned short), &i->indices[0], GL_STATIC_DRAW);
+        /*texture = loadDDS(texturePath);
+        if (texture == 0)
+        {
+            return false;
+        }*/
+
+        mb.numIndices = i->indices.size();
+
+        meshBuffers.push_back(mb);
     }
 
-    return indices.size();
+    return true;;
 }
 
-void drawTexturedObj(glm::mat4 modelMatrix, unsigned int indices,
-    GLuint indiceBuffer, GLuint vertexBuffer, GLuint uvBuffer,
-    GLuint normalBuffer, GLuint texture)
+void drawTexturedObj(glm::mat4 modelMatrix, std::vector<MeshBuffers> buffers)
 {
-    glEnableVertexAttribArray(vertexTextureUVID);
-
     // mvp matrix = model -> homogenous
     glm::mat4 mvp = projection * viewMatrix * modelMatrix;
     glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(textureSamplerID, 0);
+    for (auto i = std::begin(buffers); i != std::end(buffers); i++)
+    {
+        if (i->hasTexture)
+        {
+            glEnableVertexAttribArray(vertexTextureUVID);
+        }
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glVertexAttribPointer(vertexPosition_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        /*glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glUniform1i(textureSamplerID, 0);*/
 
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        glBindBuffer(GL_ARRAY_BUFFER, i->vertexBuffer);
+        glVertexAttribPointer(vertexPosition_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-    glVertexAttribPointer(vertexNormal_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        if (i->hasTexture)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, i->uvBuffer);
+            glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+            glUniform1f(fragmentIsTextureID, 1.0f);
+        }
+        else
+        {
+            glUniform3fv(fragmentColourID,  1, &blueColour[0]);
+            glUniform1f(fragmentIsTextureID, 0.0f);
+        }
 
-    glUniform1f(fragmentIsTextureID, 1.0f);
+        glBindBuffer(GL_ARRAY_BUFFER, i->normalBuffer);
+        glVertexAttribPointer(vertexNormal_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indiceBuffer);
-    glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_SHORT, (void *)0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, i->indiceBuffer);
+        glDrawElements(GL_TRIANGLES, i->numIndices, GL_UNSIGNED_SHORT, (void *)0);
 
-    glDisableVertexAttribArray(vertexTextureUVID);
+        if (i->hasTexture)
+        {
+            glDisableVertexAttribArray(vertexTextureUVID);
+        }
+    }
 }
 
 int main(void)
@@ -171,7 +209,6 @@ int main(void)
     // vertex params (variable)
     vertexPosition_ModelID = glGetAttribLocation(mainProgramID, "vertexPosition_Model");
     vertexNormal_ModelID = glGetAttribLocation(mainProgramID, "vertexNormal_Model");
-    vertexColourID = glGetAttribLocation(mainProgramID, "vertexColour");
     vertexTextureUVID = glGetAttribLocation(mainProgramID, "vertexTextureUV");
 
     // vertex params (static)
@@ -183,24 +220,20 @@ int main(void)
     // fragment params
     fragmentIsTextureID = glGetUniformLocation(mainProgramID, "fragmentIsTexture");
     textureSamplerID = glGetUniformLocation(mainProgramID, "textureSampler");
+    fragmentColourID = glGetUniformLocation(mainProgramID, "fragmentColour");
     lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
     lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
 
-    GLuint tyreIndiceBuffer;
-    GLuint tyreVertexBuffer;
-    GLuint tyreUvBuffer;
-    GLuint tyreNormalBuffer;
-    GLuint tyreTexture;
-    int tyreIndices = loadObjAndTexture("models/obj/tyre.obj", "textures/compressed/tyre.DDS", tyreIndiceBuffer, tyreVertexBuffer, tyreUvBuffer, tyreNormalBuffer, tyreTexture);
-    if (tyreIndices <= 0)
+    std::vector<MeshBuffers> bikeMeshes;
+    if (!loadObj("models/obj/bike.obj", bikeMeshes))
     {
-        printf("Failed to load tyre object / texture\n");
+        printf("Failed to load object / texture\n");
         return -1;
     }
     // model matrix = model -> world
-    glm::mat4 tyre_model = //glm::translate(glm::vec3(1.0f, 0.5f, 0.0f)) *
-                           glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
-                           glm::rotate(glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f)) *
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 0.0f, -5.0f)) *
+                           //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
+                           glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
                            glm::mat4(1.0f);
 
     // Enable depth test
@@ -235,19 +268,11 @@ int main(void)
 
         glEnableVertexAttribArray(vertexPosition_ModelID);
         glEnableVertexAttribArray(vertexNormal_ModelID);
-        //glEnableVertexAttribArray(vertexColourID);
 
-        // draw tyre
-        tyre_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
-        drawTexturedObj(tyre_model,
-            tyreIndices,
-            tyreIndiceBuffer,
-            tyreVertexBuffer,
-            tyreUvBuffer,
-            tyreNormalBuffer,
-            tyreTexture);
+        // draw bike
+        //bike_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
+        drawTexturedObj(bike_model, bikeMeshes);
 
-        //glDisableVertexAttribArray(vertexColourID);
         glDisableVertexAttribArray(vertexNormal_ModelID);
         glDisableVertexAttribArray(vertexPosition_ModelID);
 
@@ -265,9 +290,13 @@ int main(void)
 
 
     // Cleanup VBO
-    glDeleteBuffers(1, &tyreVertexBuffer);
-    glDeleteBuffers(1, &tyreUvBuffer);
-    glDeleteBuffers(1, &tyreNormalBuffer);
+    for (auto i = std::begin(bikeMeshes); i != std::end(bikeMeshes); i++)
+    {
+        glDeleteBuffers(1, &i->indiceBuffer);
+        glDeleteBuffers(1, &i->normalBuffer);
+        glDeleteBuffers(1, &i->vertexBuffer);
+        glDeleteBuffers(1, &i->uvBuffer);
+    }
     glDeleteProgram(mainProgramID);
     glDeleteTextures(1, &textureSamplerID);
     cleanupText2D();
