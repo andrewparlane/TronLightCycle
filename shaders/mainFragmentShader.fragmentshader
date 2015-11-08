@@ -2,7 +2,6 @@
 
 // input data
 varying vec2 fragmentTextureUV;
-varying vec3 fragmentColour;
 varying vec3 position_World;
 varying vec3 normal_Camera;
 varying vec3 lightDirection_Camera;
@@ -11,6 +10,7 @@ varying vec3 eyeDirection_Camera;
 // const input per mesh
 uniform float fragmentIsTexture;
 uniform sampler2D textureSampler;
+uniform vec3 fragmentColour;
 uniform vec3 lightPosition_World;
 uniform vec3 lightColour;
 uniform float lightPower;

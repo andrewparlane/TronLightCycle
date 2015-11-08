@@ -3,7 +3,6 @@
 attribute vec3 vertexPosition_Model;
 attribute vec3 vertexNormal_Model;
 attribute vec2 vertexTextureUV;
-attribute vec3 vertexColour;
 
 // input data that is constant for whole mesh
 uniform mat4 ModelMatrix;           // model -> world transform
@@ -13,7 +12,6 @@ uniform vec3 lightPosition_World;
 
 // output to fragment shader
 varying vec2 fragmentTextureUV;
-varying vec3 fragmentColour;
 varying vec3 position_World;
 varying vec3 normal_Camera;
 varying vec3 lightDirection_Camera;
@@ -46,6 +44,5 @@ void main()
     
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;
-    fragmentColour = vertexColour;
 }
 
