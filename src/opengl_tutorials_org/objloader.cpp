@@ -31,6 +31,8 @@ bool loadAssImp(const char * path, std::vector<Mesh> &meshes)
 
         Mesh newMesh;
 
+        newMesh.name = mesh->mName.C_Str();
+
         // Fill vertices positions
         newMesh.vertices.reserve(mesh->mNumVertices);
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
