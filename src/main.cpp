@@ -12,9 +12,10 @@ GLFWwindow* window;
 #include <glm/gtx/transform.hpp>
 using namespace glm;
 
+#include <objloader.hpp>
+
 #include <opengl_tutorials_org/shader.hpp>
 #include <opengl_tutorials_org/texture.hpp>
-#include <opengl_tutorials_org/objloader.hpp>
 #include <opengl_tutorials_org/text2D.hpp>
 
 // vertex shader params
