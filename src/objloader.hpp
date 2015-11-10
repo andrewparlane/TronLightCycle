@@ -1,16 +1,47 @@
 #ifndef OBJLOADER_H
 #define OBJLOADER_H
 
+#include <vector>
+#include <cstring>
+
+#include <glm/glm.hpp>
+
 struct Mesh
 {
     std::string name;
-    std::vector<unsigned short> indices;
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
     bool hasTexture;
+
+    GLuint vertexBuffer;
+    GLuint uvBuffer;
+    GLuint normalBuffer;
+    GLuint indiceBuffer;
+    unsigned int numIndices;
 };
 
-bool loadAssImp(const char * path, std::vector<Mesh> &meshes);
+struct MeshAxis
+{
+    std::string name;
+    glm::vec3 point;
+    glm::vec3 axis;
+};
+
+class ObjLoader
+{
+public:
+    ObjLoader(const std::string &path);
+    ~ObjLoader();
+
+    bool loadObj();
+
+    const std::vector<Mesh> &getMeshes() { return meshes; }
+    const std::vector<MeshAxis> &getAxis() { return axis; }
+
+protected:
+    std::string path;
+
+    std::vector<Mesh> meshes;
+    std::vector<MeshAxis> axis;
+};
+
 
 #endif

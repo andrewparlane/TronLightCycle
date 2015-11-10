@@ -41,119 +41,7 @@ glm::mat4 viewMatrix;
 // colours
 const glm::vec3 blueColour = glm::vec3(0.184f, 1.0f, 1.0f);
 
-struct MeshDescriptors
-{
-    std::string name;
-    GLuint vertexBuffer;
-    GLuint uvBuffer;
-    GLuint normalBuffer;
-    GLuint indiceBuffer;
-    unsigned int numIndices;
-    bool hasTexture;
-};
-
-struct MeshAxis
-{
-    std::string name;
-    glm::vec3 point;
-    glm::vec3 axis;
-};
-
-// Rotating object are things like tyres and the bike engines
-// This is a list of pairs of unsigned ints
-// the first int is the index of the object that rotate
-// the second int is the index of the axis info
-typedef std::vector<std::pair<unsigned int, unsigned int>> RotatingObjects;
-
-
-bool loadObj(const char *objPath, std::vector<MeshDescriptors> &meshDescriptors, std::vector<MeshAxis> &axis)
-{
-    // An array of 3 vectors which represents 3 vertices
-    // Read our .obj file
-    std::vector<Mesh> meshes;
-    bool res = loadAssImp(objPath, meshes);
-
-    if (!res)
-    {
-        return false;
-    }
-
-    meshDescriptors.empty();
-    axis.empty();
-
-    // don't actually need to reserve this many due to axis meshes which aren't displayed
-    meshDescriptors.reserve(meshes.size());
-
-    for (auto i = std::begin(meshes); i != std::end(meshes); i++)
-    {
-        MeshDescriptors mb;
-
-        if (i->name.find("axis") != std::string::npos)
-        {
-            // this is an axis, so don't render it
-            MeshAxis ma;
-            ma.name = i->name;
-            ma.axis = i->normals[0];
-            ma.point = glm::vec3(0, 0, 0);
-            for (auto it = std::begin(i->vertices); it != std::end(i->vertices); it++)
-            {
-                ma.point += *it;
-            }
-            ma.point /= i->vertices.size();
-
-            axis.push_back(ma);
-        }
-        else
-        {
-            glGenBuffers(1, &mb.vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, mb.vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, i->vertices.size() * sizeof(glm::vec3), &i->vertices[0], GL_STATIC_DRAW);
-
-            if (i->hasTexture)
-            {
-                glGenBuffers(1, &mb.uvBuffer);
-                glBindBuffer(GL_ARRAY_BUFFER, mb.uvBuffer);
-                glBufferData(GL_ARRAY_BUFFER, i->uvs.size() * sizeof(glm::vec2), &i->uvs[0], GL_STATIC_DRAW);;
-            }
-            mb.hasTexture = i->hasTexture;
-
-            glGenBuffers(1, &mb.normalBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, mb.normalBuffer);
-            glBufferData(GL_ARRAY_BUFFER, i->normals.size() * sizeof(glm::vec3), &i->normals[0], GL_STATIC_DRAW);
-
-            glGenBuffers(1, &mb.indiceBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mb.indiceBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, i->indices.size() * sizeof(unsigned short), &i->indices[0], GL_STATIC_DRAW);
-            /*texture = loadDDS(texturePath);
-            if (texture == 0)
-            {
-                return false;
-            }*/
-
-            mb.name = i->name;
-            mb.numIndices = i->indices.size();
-
-            meshDescriptors.push_back(mb);
-        }
-    }
-
-    return true;;
-}
-
-bool loadBike(const char *objPath, std::vector<MeshDescriptors> &meshDescriptors, std::vector<MeshAxis> &axis, RotatingObjects &rotatingObjects)
-{
-    bool res = loadObj(objPath, meshDescriptors, axis);
-    if (!res)
-    {
-        return res;
-    }
-
-    // match up objects to their axis
-    rotatingObjects.empty();
-
-}
-
-void drawTexturedObj(glm::mat4 modelMatrix, std::vector<MeshDescriptors> buffers)
+void drawTexturedObj(glm::mat4 modelMatrix, std::vector<Mesh> buffers)
 {
     // mvp matrix = model -> homogenous
     glm::mat4 mvp = projection * viewMatrix * modelMatrix;
@@ -275,14 +163,16 @@ int main(void)
     lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
     lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
 
-    std::vector<MeshDescriptors> bikeMeshes;
+    std::vector<Mesh> bikeMeshes;
     std::vector<MeshAxis> bikeAxis;
-    RotatingObjects rotatingObjects;
-    if (!loadBike("models/obj/bike.obj", bikeMeshes, bikeAxis, rotatingObjects))
+    ObjLoader bike("models/obj/bike.obj");
+    if (!bike.loadObj())
     {
         printf("Failed to load object / texture\n");
         return -1;
     }
+    bikeMeshes = bike.getMeshes();
+    bikeAxis = bike.getAxis();
     // model matrix = model -> world
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 0.0f, -5.0f)) *
                            //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
@@ -343,13 +233,6 @@ int main(void)
 
 
     // Cleanup VBO
-    for (auto i = std::begin(bikeMeshes); i != std::end(bikeMeshes); i++)
-    {
-        glDeleteBuffers(1, &i->indiceBuffer);
-        glDeleteBuffers(1, &i->normalBuffer);
-        glDeleteBuffers(1, &i->vertexBuffer);
-        glDeleteBuffers(1, &i->uvBuffer);
-    }
     glDeleteProgram(mainProgramID);
     glDeleteTextures(1, &textureSamplerID);
     cleanupText2D();
