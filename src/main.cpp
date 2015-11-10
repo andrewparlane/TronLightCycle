@@ -10,9 +10,9 @@ GLFWwindow* window;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-using namespace glm;
 
 #include <objloader.hpp>
+#include <object.hpp>
 
 #include <opengl_tutorials_org/shader.hpp>
 #include <opengl_tutorials_org/texture.hpp>
@@ -39,53 +39,7 @@ glm::mat4 projection;
 glm::mat4 viewMatrix;
 
 // colours
-const glm::vec3 blueColour = glm::vec3(0.184f, 1.0f, 1.0f);
-
-void drawTexturedObj(glm::mat4 modelMatrix, std::vector<Mesh> buffers)
-{
-    // mvp matrix = model -> homogenous
-    glm::mat4 mvp = projection * viewMatrix * modelMatrix;
-    glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
-
-    for (auto i = std::begin(buffers); i != std::end(buffers); i++)
-    {
-        if (i->hasTexture)
-        {
-            glEnableVertexAttribArray(vertexTextureUVID);
-        }
-
-        /*glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(textureSamplerID, 0);*/
-
-        glBindBuffer(GL_ARRAY_BUFFER, i->vertexBuffer);
-        glVertexAttribPointer(vertexPosition_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-        if (i->hasTexture)
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, i->uvBuffer);
-            glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-            glUniform1f(fragmentIsTextureID, 1.0f);
-        }
-        else
-        {
-            glUniform3fv(fragmentColourID,  1, &blueColour[0]);
-            glUniform1f(fragmentIsTextureID, 0.0f);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, i->normalBuffer);
-        glVertexAttribPointer(vertexNormal_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, i->indiceBuffer);
-        glDrawElements(GL_TRIANGLES, i->numIndices, GL_UNSIGNED_SHORT, (void *)0);
-
-        if (i->hasTexture)
-        {
-            glDisableVertexAttribArray(vertexTextureUVID);
-        }
-    }
-}
+const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
 int main(void)
 {
@@ -163,21 +117,21 @@ int main(void)
     lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
     lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
 
-    std::vector<Mesh> bikeMeshes;
-    std::vector<MeshAxis> bikeAxis;
-    ObjLoader bike("models/obj/bike.obj");
-    if (!bike.loadObj())
+    std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj"));
+    if (!bikeLoader->loadObj())
     {
         printf("Failed to load object / texture\n");
         return -1;
     }
-    bikeMeshes = bike.getMeshes();
-    bikeAxis = bike.getAxis();
+
     // model matrix = model -> world
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 0.0f, -5.0f)) *
-                           //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
-                           glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
-                           glm::mat4(1.0f);
+        //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
+        glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
+        glm::mat4(1.0f);
+
+    Object bike(bikeLoader, bike_model);
+    bike.setDefaultColour(tronBlue);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -214,7 +168,7 @@ int main(void)
 
         // draw bike
         //bike_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
-        drawTexturedObj(bike_model, bikeMeshes);
+        bike.drawAll();
 
         glDisableVertexAttribArray(vertexNormal_ModelID);
         glDisableVertexAttribArray(vertexPosition_ModelID);

@@ -122,6 +122,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\objloader.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\shader.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\text2D.cpp" />
