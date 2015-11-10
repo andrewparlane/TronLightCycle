@@ -6,6 +6,8 @@
 
 #include <glm/glm.hpp>
 
+#include <GL/glew.h>
+
 struct Mesh
 {
     std::string name;
@@ -33,8 +35,8 @@ public:
 
     bool loadObj();
 
-    const std::vector<Mesh> &getMeshes() { return meshes; }
-    const std::vector<MeshAxis> &getAxis() { return axis; }
+    const std::vector<Mesh> &getMeshes() const { return meshes; }
+    const std::vector<MeshAxis> &getAxis() const { return axis; }
 
 protected:
     std::string path;
