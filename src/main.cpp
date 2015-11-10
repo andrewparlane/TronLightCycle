@@ -40,7 +40,7 @@ glm::mat4 viewMatrix;
 // colours
 const glm::vec3 blueColour = glm::vec3(0.184f, 1.0f, 1.0f);
 
-struct MeshBuffers
+struct MeshDescriptors
 {
     std::string name;
     GLuint vertexBuffer;
@@ -51,7 +51,21 @@ struct MeshBuffers
     bool hasTexture;
 };
 
-bool loadObj(const char *objPath, std::vector<MeshBuffers> &meshBuffers)
+struct MeshAxis
+{
+    std::string name;
+    glm::vec3 point;
+    glm::vec3 axis;
+};
+
+// Rotating object are things like tyres and the bike engines
+// This is a list of pairs of unsigned ints
+// the first int is the index of the object that rotate
+// the second int is the index of the axis info
+typedef std::vector<std::pair<unsigned int, unsigned int>> RotatingObjects;
+
+
+bool loadObj(const char *objPath, std::vector<MeshDescriptors> &meshDescriptors, std::vector<MeshAxis> &axis)
 {
     // An array of 3 vectors which represents 3 vertices
     // Read our .obj file
@@ -63,46 +77,82 @@ bool loadObj(const char *objPath, std::vector<MeshBuffers> &meshBuffers)
         return false;
     }
 
-    meshBuffers.reserve(meshes.size());
+    meshDescriptors.empty();
+    axis.empty();
+
+    // don't actually need to reserve this many due to axis meshes which aren't displayed
+    meshDescriptors.reserve(meshes.size());
 
     for (auto i = std::begin(meshes); i != std::end(meshes); i++)
     {
-        MeshBuffers mb;
+        MeshDescriptors mb;
 
-        glGenBuffers(1, &mb.vertexBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, mb.vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, i->vertices.size() * sizeof(glm::vec3), &i->vertices[0], GL_STATIC_DRAW);
-
-        if (i->hasTexture)
+        if (i->name.find("axis") != std::string::npos)
         {
-            glGenBuffers(1, &mb.uvBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, mb.uvBuffer);
-            glBufferData(GL_ARRAY_BUFFER, i->uvs.size() * sizeof(glm::vec2), &i->uvs[0], GL_STATIC_DRAW);;
+            // this is an axis, so don't render it
+            MeshAxis ma;
+            ma.name = i->name;
+            ma.axis = i->normals[0];
+            ma.point = glm::vec3(0, 0, 0);
+            for (auto it = std::begin(i->vertices); it != std::end(i->vertices); it++)
+            {
+                ma.point += *it;
+            }
+            ma.point /= i->vertices.size();
+
+            axis.push_back(ma);
         }
-        mb.hasTexture = i->hasTexture;
-
-        glGenBuffers(1, &mb.normalBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, mb.normalBuffer);
-        glBufferData(GL_ARRAY_BUFFER, i->normals.size() * sizeof(glm::vec3), &i->normals[0], GL_STATIC_DRAW);
-
-        glGenBuffers(1, &mb.indiceBuffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mb.indiceBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, i->indices.size() * sizeof(unsigned short), &i->indices[0], GL_STATIC_DRAW);
-        /*texture = loadDDS(texturePath);
-        if (texture == 0)
+        else
         {
-            return false;
-        }*/
+            glGenBuffers(1, &mb.vertexBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, mb.vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, i->vertices.size() * sizeof(glm::vec3), &i->vertices[0], GL_STATIC_DRAW);
 
-        mb.numIndices = i->indices.size();
+            if (i->hasTexture)
+            {
+                glGenBuffers(1, &mb.uvBuffer);
+                glBindBuffer(GL_ARRAY_BUFFER, mb.uvBuffer);
+                glBufferData(GL_ARRAY_BUFFER, i->uvs.size() * sizeof(glm::vec2), &i->uvs[0], GL_STATIC_DRAW);;
+            }
+            mb.hasTexture = i->hasTexture;
 
-        meshBuffers.push_back(mb);
+            glGenBuffers(1, &mb.normalBuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, mb.normalBuffer);
+            glBufferData(GL_ARRAY_BUFFER, i->normals.size() * sizeof(glm::vec3), &i->normals[0], GL_STATIC_DRAW);
+
+            glGenBuffers(1, &mb.indiceBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mb.indiceBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, i->indices.size() * sizeof(unsigned short), &i->indices[0], GL_STATIC_DRAW);
+            /*texture = loadDDS(texturePath);
+            if (texture == 0)
+            {
+                return false;
+            }*/
+
+            mb.name = i->name;
+            mb.numIndices = i->indices.size();
+
+            meshDescriptors.push_back(mb);
+        }
     }
 
     return true;;
 }
 
-void drawTexturedObj(glm::mat4 modelMatrix, std::vector<MeshBuffers> buffers)
+bool loadBike(const char *objPath, std::vector<MeshDescriptors> &meshDescriptors, std::vector<MeshAxis> &axis, RotatingObjects &rotatingObjects)
+{
+    bool res = loadObj(objPath, meshDescriptors, axis);
+    if (!res)
+    {
+        return res;
+    }
+
+    // match up objects to their axis
+    rotatingObjects.empty();
+
+}
+
+void drawTexturedObj(glm::mat4 modelMatrix, std::vector<MeshDescriptors> buffers)
 {
     // mvp matrix = model -> homogenous
     glm::mat4 mvp = projection * viewMatrix * modelMatrix;
@@ -224,8 +274,10 @@ int main(void)
     lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
     lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
 
-    std::vector<MeshBuffers> bikeMeshes;
-    if (!loadObj("models/obj/bike.obj", bikeMeshes))
+    std::vector<MeshDescriptors> bikeMeshes;
+    std::vector<MeshAxis> bikeAxis;
+    RotatingObjects rotatingObjects;
+    if (!loadBike("models/obj/bike.obj", bikeMeshes, bikeAxis, rotatingObjects))
     {
         printf("Failed to load object / texture\n");
         return -1;
