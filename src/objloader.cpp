@@ -28,14 +28,14 @@ ObjLoader::ObjLoader(const std::string &filePath) : path(filePath)
 
 ObjLoader::~ObjLoader()
 {
-    for (auto i = std::begin(meshes); i != std::end(meshes); i++)
+    for (auto &i : meshes)
     {
-        glDeleteBuffers(1, &i->indiceBuffer);
-        glDeleteBuffers(1, &i->normalBuffer);
-        glDeleteBuffers(1, &i->vertexBuffer);
-        if (i->hasTexture)
+        glDeleteBuffers(1, &i.indiceBuffer);
+        glDeleteBuffers(1, &i.normalBuffer);
+        glDeleteBuffers(1, &i.vertexBuffer);
+        if (i.hasTexture)
         {
-            glDeleteBuffers(1, &i->uvBuffer);
+            glDeleteBuffers(1, &i.uvBuffer);
         }
     }
 }

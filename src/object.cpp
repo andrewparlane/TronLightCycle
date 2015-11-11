@@ -70,9 +70,9 @@ void Object::drawMesh(const Mesh &mesh) const
 
 void Object::internalDrawAll(const std::vector<Mesh> &meshes) const
 {
-    for (auto it = std::begin(meshes); it != std::end(meshes); it++)
+    for (auto &it : meshes)
     {
-        drawMesh(*it);
+        drawMesh(it);
     }
 }
 
