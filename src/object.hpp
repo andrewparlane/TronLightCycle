@@ -20,7 +20,7 @@ public:
            const glm::mat4 &modelMat);
     ~Object();
 
-    void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
+    virtual void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
     void rotate(float radians, const glm::vec3 &axis) { modelMatrix *= glm::rotate(radians, axis); }
 
     void drawAll() const;
@@ -30,6 +30,7 @@ public:
 
 protected:
 
+    virtual void internalDrawAll(const std::vector<Mesh> &meshes) const;
     void drawMesh(const Mesh &mesh) const;
 
     std::shared_ptr<const ObjLoader> objLoader;

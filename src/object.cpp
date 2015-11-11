@@ -68,6 +68,14 @@ void Object::drawMesh(const Mesh &mesh) const
     glDisableVertexAttribArray(vertexNormal_ModelID);
 }
 
+void Object::internalDrawAll(const std::vector<Mesh> &meshes) const
+{
+    for (auto it = std::begin(meshes); it != std::end(meshes); it++)
+    {
+        drawMesh(*it);
+    }
+}
+
 void Object::drawAll() const
 {
     const std::vector<Mesh> &meshes = objLoader->getMeshes();
@@ -82,8 +90,5 @@ void Object::drawAll() const
     // send lighting
     world->sendLight(shader);
 
-    for (auto it = std::begin(meshes); it != std::end(meshes); it++)
-    {
-        drawMesh(*it);
-    }
+    internalDrawAll(meshes);
 }
