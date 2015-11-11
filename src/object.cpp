@@ -1,7 +1,17 @@
 #include <object.hpp>
 
-Object::Object(std::shared_ptr<const ObjLoader> _objLoader, const glm::mat4 &mat)
-    : objLoader(_objLoader), modelMatrix(mat), defaultColour(glm::vec3(0.0f, 0.0f, 0.0f))
+#include <world.hpp>
+#include <shader.hpp>
+
+Object::Object(std::shared_ptr<const ObjLoader> _objLoader, 
+               std::shared_ptr<World> _world,
+               std::shared_ptr<const Shader> _shader,
+               const glm::mat4 &modelMat)
+    : objLoader(_objLoader), 
+      world(_world),
+      shader(_shader),
+      modelMatrix(modelMat), 
+      defaultColour(glm::vec3(0.0f, 0.0f, 0.0f))
 {
 }
 
@@ -11,6 +21,14 @@ Object::~Object()
 
 void Object::drawMesh(const Mesh &mesh) const
 {
+    GLuint vertexPosition_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_POS);
+    GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_NORMAL);
+    GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VECTOR_UV);
+    GLuint fragmentIsTextureID = shader->getUniformID(SHADER_UNIFORM_IS_TEXTURE);
+
+    glEnableVertexAttribArray(vertexPosition_ModelID);
+    glEnableVertexAttribArray(vertexNormal_ModelID);
+
     if (mesh.hasTexture)
     {
         glEnableVertexAttribArray(vertexTextureUVID);
@@ -31,7 +49,7 @@ void Object::drawMesh(const Mesh &mesh) const
     }
     else
     {
-        glUniform3fv(fragmentColourID,  1, &defaultColour[0]);
+        glUniform3fv(shader->getUniformID(SHADER_UNIFORM_FRAGMENT_COLOUR),  1, &defaultColour[0]);
         glUniform1f(fragmentIsTextureID, 0.0f);
     }
 
@@ -45,22 +63,24 @@ void Object::drawMesh(const Mesh &mesh) const
     {
         glDisableVertexAttribArray(vertexTextureUVID);
     }
+
+    glDisableVertexAttribArray(vertexPosition_ModelID);
+    glDisableVertexAttribArray(vertexNormal_ModelID);
 }
 
 void Object::drawAll() const
 {
     const std::vector<Mesh> &meshes = objLoader->getMeshes();
 
+    // bind shader
+    shader->useShader();
+
     // for the generic object we only use one model matrix for the entire object
     // send MVP now
+    world->sendMVP(shader, modelMatrix);
 
-    // todo world singleton class?
-    sendMVP(modelMatrix);
-    // mvp matrix = model -> homogenous
-    glm::mat4 mvp = projection * viewMatrix * modelMatrix;
-    glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
-
+    // send lighting
+    world->sendLight(shader);
 
     for (auto it = std::begin(meshes); it != std::end(meshes); it++)
     {

@@ -4,6 +4,8 @@
 #include <memory>
 
 #include <objloader.hpp>
+#include <shader.hpp>
+#include <world.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,7 +14,10 @@
 class Object
 {
 public:
-    Object(std::shared_ptr<const ObjLoader> _objLoader, const glm::mat4 &mat);
+    Object(std::shared_ptr<const ObjLoader> _objLoader, 
+           std::shared_ptr<World> _world, 
+           std::shared_ptr<const Shader> _shader,
+           const glm::mat4 &modelMat);
     ~Object();
 
     void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
@@ -28,6 +33,9 @@ protected:
     void drawMesh(const Mesh &mesh) const;
 
     std::shared_ptr<const ObjLoader> objLoader;
+
+    std::shared_ptr<World> world;
+    std::shared_ptr<const Shader> shader;
 
     glm::mat4 modelMatrix;
 

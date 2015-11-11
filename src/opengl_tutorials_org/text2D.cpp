@@ -12,15 +12,12 @@ using namespace glm;
 
 #include "text2D.hpp"
 
-unsigned int Text2DTextureID;              // Texture containing the font
-unsigned int Text2DVertexBufferID;         // Buffer containing the vertices
-unsigned int Text2DUVBufferID;             //                       UVs
-unsigned int Text2DShaderID;               // Program used to disaply the text
-unsigned int vertexPosition_screenspaceID; // Location of the program's "vertexPosition_screenspace" attribute
-unsigned int vertexUVID;                   // Location of the program's "vertexUV" attribute
-unsigned int Text2DUniformID;              // Location of the program's texture attribute
+static unsigned int Text2DTextureID;              // Texture containing the font
+static unsigned int Text2DVertexBufferID;         // Buffer containing the vertices
+static unsigned int Text2DUVBufferID;             //                       UVs
+static Shader *textShader;
 
-void initText2D(const char * texturePath){
+bool initText2D(const char * texturePath){
 
 	// Initialize texture
 	Text2DTextureID = loadDDS(texturePath);
@@ -29,16 +26,26 @@ void initText2D(const char * texturePath){
 	glGenBuffers(1, &Text2DVertexBufferID);
 	glGenBuffers(1, &Text2DUVBufferID);
 
-	// Initialize Shader
-	Text2DShaderID = LoadShaders( "shaders/TextVertexShader.vertexshader", "shaders/TextFragmentShader.fragmentshader" );
+    // initialise text shader
+    textShader = new Shader( "shaders/TextVertexShader.vertexshader", "shaders/TextFragmentShader.fragmentshader" );
+    if (!textShader->compile())
+    {
+        printf("Failed to compile text shader\n");
+        return false;
+    }
+    else
+    {
+        // Get a handle for our buffers
+        if (!textShader->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VECTOR_POS_SCREEN) ||
+            !textShader->addAttribID("vertexUV", SHADER_ATTRIB_VECTOR_UV) ||
+            !textShader->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER))
+        {
+            printf("Failed to add text shader IDs\n");
+            return false;
+        }
+    }
 
-	// Get a handle for our buffers
-	vertexPosition_screenspaceID = glGetAttribLocation(Text2DShaderID, "vertexPosition_screenspace");
-	vertexUVID = glGetAttribLocation(Text2DShaderID, "vertexUV");
-
-	// Initialize uniforms' IDs
-	Text2DUniformID = glGetUniformLocation( Text2DShaderID, "myTextureSampler" );
-
+    return true;
 }
 
 void printText2D(const char * text, int x, int y, int size){
@@ -85,20 +92,22 @@ void printText2D(const char * text, int x, int y, int size){
 	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec2), &UVs[0], GL_STATIC_DRAW);
 
 	// Bind shader
-	glUseProgram(Text2DShaderID);
+	textShader->useShader();
 
 	// Bind texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Text2DTextureID);
 	// Set our "myTextureSampler" sampler to user Texture Unit 0
-	glUniform1i(Text2DUniformID, 0);
+	glUniform1i(textShader->getUniformID(SHADER_UNIFORM_TEXTURE_SAMPLER), 0);
 
 	// 1rst attribute buffer : vertices
+    GLuint vertexPosition_screenspaceID = textShader->getAttribID(SHADER_ATTRIB_VECTOR_POS_SCREEN);
 	glEnableVertexAttribArray(vertexPosition_screenspaceID);
 	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
 	glVertexAttribPointer(vertexPosition_screenspaceID, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
 	// 2nd attribute buffer : UVs
+    GLuint vertexUVID = textShader->getAttribID(SHADER_ATTRIB_VECTOR_UV);
 	glEnableVertexAttribArray(vertexUVID);
 	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
 	glVertexAttribPointer(vertexUVID, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
@@ -125,6 +134,6 @@ void cleanupText2D(){
 	// Delete texture
 	glDeleteTextures(1, &Text2DTextureID);
 
-	// Delete shader
-	glDeleteProgram(Text2DShaderID);
+    // delete the shader
+    delete textShader;
 }

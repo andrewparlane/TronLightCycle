@@ -124,9 +124,10 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\objloader.cpp" />
-    <ClCompile Include="src\opengl_tutorials_org\shader.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\text2D.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\texture.cpp" />
+    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\world.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

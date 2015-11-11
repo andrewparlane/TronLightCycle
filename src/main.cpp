@@ -13,33 +13,52 @@ GLFWwindow* window;
 
 #include <objloader.hpp>
 #include <object.hpp>
+#include <world.hpp>
+#include <shader.hpp>
 
-#include <opengl_tutorials_org/shader.hpp>
 #include <opengl_tutorials_org/texture.hpp>
 #include <opengl_tutorials_org/text2D.hpp>
 
-// vertex shader params
-static GLuint vertexPosition_ModelID;
-static GLuint vertexNormal_ModelID;
-static GLuint vertexTextureUVID;
-static GLuint mvpID;
-static GLuint modelMatrixID;
-static GLuint viewMatrixID;
-static GLuint lightPosition_WorldID;
-
-// fragment shader params
-static GLuint fragmentIsTextureID;
-static GLuint textureSamplerID;
-static GLuint fragmentColourID;
-static GLuint lightColourID;
-static GLuint lightPowerID;
-
-// transformations
-glm::mat4 projection;
-glm::mat4 viewMatrix;
-
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
+
+Shader *setupMainShader()
+{
+    // first init main shader
+    Shader *mainShader = new Shader("shaders/mainVertexShader.vertexshader", "shaders/mainFragmentShader.fragmentshader");
+    if (!mainShader->compile())
+    {
+        printf("Failed to compile main shader\n");
+        delete mainShader;
+        return NULL;
+    }
+    else
+    {
+        // Get main shader parameters
+        if (// vertex params (variable)
+            !mainShader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VECTOR_POS) ||
+            !mainShader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VECTOR_NORMAL) ||
+            !mainShader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VECTOR_UV) ||
+            // vertex params (static)
+            !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
+            !mainShader->addUniformID("ModelMatrix", SHADER_UNIFORM_MODEL_MATRIX) ||
+            !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
+            !mainShader->addUniformID("lightPosition_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
+            // fragment params
+            !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
+            !mainShader->addUniformID("lightPower", SHADER_UNIFORM_LIGHT_POWER) ||
+            !mainShader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
+            !mainShader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
+            !mainShader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
+        {
+            printf("Error adding main shader IDs\n");
+            delete mainShader;
+            return NULL;
+        }
+    }
+
+    return mainShader;
+}
 
 int main(void)
 {
@@ -47,6 +66,7 @@ int main(void)
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
+        system("pause");
         return -1;
     }
 
@@ -61,6 +81,7 @@ int main(void)
     if (window == NULL) {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         glfwTerminate();
+        system("pause");
         return -1;
     }
     glfwMakeContextCurrent(window);
@@ -68,6 +89,7 @@ int main(void)
     // Initialize GLEW
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW\n");
+        system("pause");
         return -1;
     }
 
@@ -77,50 +99,44 @@ int main(void)
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-    GLuint mainProgramID = LoadShaders("shaders/mainVertexShader.vertexshader", "shaders/mainFragmentShader.fragmentshader");
-    if (mainProgramID == 0)
+    std::shared_ptr<const Shader> mainShader;
+    mainShader.reset(setupMainShader());
+    if (!mainShader)
     {
+        system("pause");
         return -1;
     }
-    initText2D("textures/compressed/Holstein.DDS");
+    if (!initText2D("textures/compressed/Holstein.DDS"))
+    {
+        system("pause");
+        return -1;
+    }
 
     // projection matrix = camera -> homogenous (3d -> 2d)
     int width, height;
     glfwGetWindowSize(window, &width, &height);
-    projection = glm::perspective(45.0f, (float)width / height, 0.1f, 100.0f);
+
+    std::shared_ptr<World> world;
+    world.reset(new World);
+    world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 100.0f));
 
     // view matrix = world -> camera
-    viewMatrix = glm::lookAt(glm::vec3(0, 0, 5),    // where the camera is in world co-ordinates
-        glm::vec3(0, 0, 0),    // target (direction = target - location)
-        glm::vec3(0, 1, 0));   // which way is up
+    world->setCamera(glm::lookAt(glm::vec3(0, 0, 5),    // where the camera is in world co-ordinates
+                                 glm::vec3(0, 0, 0),    // target (direction = target - location)
+                                 glm::vec3(0, 1, 0)));  // which way is up
 
-                               // lighting
-    glm::vec3 lightPosition_World = glm::vec3(0, 2, 4);
-    glm::vec3 lightColour = glm::vec3(0.6f, 0.6f, 1.0f);
+    // lighting
+    world->setLight(glm::vec3(0, 2, 4),             // position
+                    glm::vec3(0.6f, 0.6f, 1.0f),    // colour
+                    50.0f);                         // power
 
-    // Get main shader parameters
-    // vertex params (variable)
-    vertexPosition_ModelID = glGetAttribLocation(mainProgramID, "vertexPosition_Model");
-    vertexNormal_ModelID = glGetAttribLocation(mainProgramID, "vertexNormal_Model");
-    vertexTextureUVID = glGetAttribLocation(mainProgramID, "vertexTextureUV");
-
-    // vertex params (static)
-    mvpID = glGetUniformLocation(mainProgramID, "MVP");
-    modelMatrixID = glGetUniformLocation(mainProgramID, "ModelMatrix");
-    viewMatrixID = glGetUniformLocation(mainProgramID, "ViewMatrix");
-    lightPosition_WorldID = glGetUniformLocation(mainProgramID, "lightPosition_World");
-
-    // fragment params
-    fragmentIsTextureID = glGetUniformLocation(mainProgramID, "fragmentIsTexture");
-    textureSamplerID = glGetUniformLocation(mainProgramID, "textureSampler");
-    fragmentColourID = glGetUniformLocation(mainProgramID, "fragmentColour");
-    lightColourID = glGetUniformLocation(mainProgramID, "lightColour");
-    lightPowerID = glGetUniformLocation(mainProgramID, "lightPower");
+    
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj"));
     if (!bikeLoader->loadObj())
     {
         printf("Failed to load object / texture\n");
+        system("pause");
         return -1;
     }
 
@@ -130,7 +146,7 @@ int main(void)
         glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
 
-    Object bike(bikeLoader, bike_model);
+    Object bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
 
     // Enable depth test
@@ -155,23 +171,10 @@ int main(void)
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(mainProgramID);
-
-        // parameters that don't change per mesh (can change per frame)
-        glUniformMatrix4fv(viewMatrixID, 1, GL_FALSE, &viewMatrix[0][0]);
-        glUniform3fv(lightPosition_WorldID, 1, &lightPosition_World[0]);
-        glUniform3fv(lightColourID, 1, &lightColour[0]);
-        glUniform1f(lightPowerID, 50.0f);
-
-        glEnableVertexAttribArray(vertexPosition_ModelID);
-        glEnableVertexAttribArray(vertexNormal_ModelID);
-
+        
         // draw bike
         //bike_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
         bike.drawAll();
-
-        glDisableVertexAttribArray(vertexNormal_ModelID);
-        glDisableVertexAttribArray(vertexPosition_ModelID);
 
         char textBuff[16];
         snprintf(textBuff, 16, "FR: %d\n", frameRate);
@@ -186,9 +189,7 @@ int main(void)
         glfwWindowShouldClose(window) == 0);
 
 
-    // Cleanup VBO
-    glDeleteProgram(mainProgramID);
-    glDeleteTextures(1, &textureSamplerID);
+    // Cleanup    
     cleanupText2D();
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
