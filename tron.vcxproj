@@ -121,6 +121,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\bike.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\objloader.cpp" />

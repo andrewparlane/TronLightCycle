@@ -15,6 +15,7 @@ GLFWwindow* window;
 #include <object.hpp>
 #include <world.hpp>
 #include <shader.hpp>
+#include <bike.hpp>
 
 #include <opengl_tutorials_org/texture.hpp>
 #include <opengl_tutorials_org/text2D.hpp>
@@ -146,7 +147,7 @@ int main(void)
         glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
 
-    Object bike(bikeLoader, world, mainShader, bike_model);
+    Bike bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
 
     // Enable depth test
