@@ -82,6 +82,24 @@ bool ObjLoader::loadObj()
 
             axis.push_back(ma);
         }
+        if (std::string(mesh->mName.C_Str()).find("seperator") != std::string::npos)
+        {
+            // this is a seperator, so don't render it
+            MeshSeperator ms;
+            ms.name = mesh->mName.C_Str();
+
+            aiVector3D n = mesh->mNormals[0];
+            ms.normal = glm::vec3(n.x, n.y, n.z);
+
+            ms.point = glm::vec3(0, 0, 0);
+            for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+                aiVector3D pos = mesh->mVertices[i];
+                ms.point += glm::vec3(pos.x, pos.y, pos.z);
+            }
+            ms.point /= mesh->mNumVertices;
+
+            seperators.push_back(ms);
+        }
         else
         {
             Mesh newMesh;

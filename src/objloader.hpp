@@ -27,6 +27,13 @@ struct MeshAxis
     glm::vec3 axis;
 };
 
+struct MeshSeperator
+{
+    std::string name;
+    glm::vec3 point;
+    glm::vec3 normal;
+};
+
 class ObjLoader
 {
 public:
@@ -37,12 +44,14 @@ public:
 
     const std::vector<Mesh> &getMeshes() const { return meshes; }
     const std::vector<MeshAxis> &getAxis() const { return axis; }
+    const std::vector<MeshSeperator> &getSeperators() const { return seperators; }
 
 protected:
     std::string path;
 
     std::vector<Mesh> meshes;
     std::vector<MeshAxis> axis;
+    std::vector<MeshSeperator> seperators;
 };
 
 
