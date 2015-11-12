@@ -13,6 +13,8 @@ struct Mesh
     std::string name;
     bool hasTexture;
 
+    glm::vec3 firstVertex; // needed for use with seperators
+
     GLuint vertexBuffer;
     GLuint uvBuffer;
     GLuint normalBuffer;

@@ -82,7 +82,7 @@ bool ObjLoader::loadObj()
 
             axis.push_back(ma);
         }
-        if (std::string(mesh->mName.C_Str()).find("seperator") != std::string::npos)
+        else if (std::string(mesh->mName.C_Str()).find("seperator") != std::string::npos)
         {
             // this is a seperator, so don't render it
             MeshSeperator ms;
@@ -111,7 +111,12 @@ bool ObjLoader::loadObj()
             md.vertices.reserve(mesh->mNumVertices);
             for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
                 aiVector3D pos = mesh->mVertices[i];
-                md.vertices.push_back(glm::vec3(pos.x, pos.y, pos.z));
+                glm::vec3 v(pos.x, pos.y, pos.z);
+                md.vertices.push_back(v);
+                if (i == 0)
+                {
+                    newMesh.firstVertex = v;
+                }
             }
 
             // Fill vertices texture coordinates
