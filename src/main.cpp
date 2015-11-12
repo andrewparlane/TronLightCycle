@@ -174,7 +174,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // draw bike
-        //bike_model *= glm::rotate(glm::radians(-0.1f), glm::vec3(0, 1, 0));
+        bike.translate(glm::vec3(0,0,0));
         bike.drawAll();
 
         char textBuff[16];

@@ -27,10 +27,10 @@ protected:
     std::vector<unsigned int> rightengineIndexes;
     std::vector<unsigned int> remainderIndexes;
 
-    unsigned int frontTyreAxis;
-    unsigned int backTyreAxis;
-    unsigned int rightEngineAxis;
-    unsigned int leftEngineAxis;
+    MeshAxis frontTyreAxis;
+    MeshAxis backTyreAxis;
+    MeshAxis rightEngineAxis;
+    MeshAxis leftEngineAxis;
 };
 
 #endif

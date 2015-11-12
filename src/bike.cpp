@@ -72,15 +72,13 @@ Bike::Bike(std::shared_ptr<const ObjLoader> _objLoader,
                 else
                 {
                     // ???
-                    i++;
-                    continue;
+                    break;  // this seperator is no good, break out of mesh loop
                 }
             }
             i++;
         }
 
         // now match this with the name of the axis
-        i = 0;
         for (auto &ax : axis)
         {
             // does it start with the same thing the seperator started with?
@@ -94,36 +92,30 @@ Bike::Bike(std::shared_ptr<const ObjLoader> _objLoader,
                 {
                     if (cosTheta > 0)
                     {
-                        frontTyreAxis = i;
+                        frontTyreAxis = ax;
                     }
                     else
                     {
-                        backTyreAxis = i;
+                        backTyreAxis = ax;
                     }
-                    // done, only one axis
-                    break;
                 }
                 else if (sepType.compare("engine") == 0)
                 {
                     if (cosTheta > 0)
                     {
-                        rightEngineAxis = i;
+                        rightEngineAxis = ax;
                     }
                     else
                     {
-                        leftEngineAxis = i;
+                        leftEngineAxis = ax;
                     }
-                    // done only one axis
-                    break;
                 }
                 else
                 {
                     // ???
-                    i++;
-                    continue;
+                    break; // this seperator is no good, break out of axis loop
                 }
             }
-            i++;
         }
     }
 
@@ -159,36 +151,66 @@ void Bike::translate(const glm::vec3 &vec)
     // length of arc of segment = angle * radius
     // length of arc of segment = length of distance moved over the ground
     // angle = distance over the ground / radius
-    wheelAngle += vec.length() / RADIUS_OF_WHEEL;
+    wheelAngle += glm::length(vec) / RADIUS_OF_WHEEL;
 
     // update engineAngle, if we move it gets updated regardless of speed
     // TODO tweak to what looks good
-    engineAngle += glm::radians(1.0f);
+    // TODO base on time since last frame rather than here, it slows and speeds up as frame rate changes
+    engineAngle += glm::radians(2.0f);
 }
 
 void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const
 {
+    glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
+                     glm::rotate(wheelAngle, frontTyreAxis.axis) *      // 2nd rotate around origin
+                     glm::translate(-frontTyreAxis.point);              // 1st translate axis to origin
+
+    glm::mat4 btmm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(backTyreAxis.point) *               // 3rd translate back to initial point
+                     glm::rotate(wheelAngle, backTyreAxis.axis) *       // 2nd rotate around origin
+                     glm::translate(-backTyreAxis.point);               // 1st translate axis to origin
+
+    glm::mat4 remm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(rightEngineAxis.point) *            // 3rd translate back to initial point
+                     glm::rotate(-engineAngle, rightEngineAxis.axis) *   // 2nd rotate around origin
+                     glm::translate(-rightEngineAxis.point);            // 1st translate axis to origin
+
+    glm::mat4 lemm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(leftEngineAxis.point) *             // 3rd translate back to initial point
+                     glm::rotate(engineAngle, leftEngineAxis.axis) *   // 2nd rotate around origin
+                     glm::translate(-leftEngineAxis.point);             // 1st translate axis to origin
+
     // front tyre
+    world->sendMVP(shader, ftmm);
     for (auto it : frontTyreMeshIndexes)
     {
         drawMesh(meshes[it]);
     }
+    
     // back tyre
+    world->sendMVP(shader, btmm);
     for (auto it : backTyreMeshIndexes)
     {
         drawMesh(meshes[it]);
     }
+
     // left engine
+    world->sendMVP(shader, lemm);
     for (auto it : leftEngineIndexes)
     {
         drawMesh(meshes[it]);
     }
+
     // right engine
+    world->sendMVP(shader, remm);
     for (auto it : rightengineIndexes)
     {
         drawMesh(meshes[it]);
     }
+
     // everything else
+    world->sendMVP(shader, modelMatrix);
     for (auto it : remainderIndexes)
     {
         drawMesh(meshes[it]);
