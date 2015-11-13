@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #include <GL/glew.h>
 
@@ -10,16 +11,16 @@
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
-GLuint loadDDS(const char * imagepath){
+GLuint loadDDS(const std::string &imagepath){
 
 	unsigned char header[124];
 
 	FILE *fp; 
  
 	/* try to open the file */ 
-	fp = fopen(imagepath, "rb"); 
+	fp = fopen(imagepath.c_str(), "rb"); 
 	if (fp == NULL){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath);
+		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath.c_str());
 		return 0;
 	}
    
