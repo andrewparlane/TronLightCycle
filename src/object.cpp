@@ -25,6 +25,7 @@ void Object::drawMesh(const Mesh &mesh) const
     GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_NORMAL);
     GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VECTOR_UV);
     GLuint fragmentIsTextureID = shader->getUniformID(SHADER_UNIFORM_IS_TEXTURE);
+    GLuint textureSamplerID = shader->getUniformID(SHADER_UNIFORM_TEXTURE_SAMPLER);
 
     glEnableVertexAttribArray(vertexPosition_ModelID);
     glEnableVertexAttribArray(vertexNormal_ModelID);
@@ -32,11 +33,11 @@ void Object::drawMesh(const Mesh &mesh) const
     if (mesh.hasTexture)
     {
         glEnableVertexAttribArray(vertexTextureUVID);
-    }
 
-    /*glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(textureSamplerID, 0);*/
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mesh.texture);
+        glUniform1i(textureSamplerID, 0);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
     glVertexAttribPointer(vertexPosition_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
