@@ -19,6 +19,7 @@ struct Mesh
     GLuint uvBuffer;
     GLuint normalBuffer;
     GLuint indiceBuffer;
+    GLuint texture;
     unsigned int numIndices;
 };
 
@@ -39,17 +40,19 @@ struct MeshSeperator
 class ObjLoader
 {
 public:
-    ObjLoader(const std::string &path);
+    ObjLoader(const std::string &objPath, const std::string &nameToTexturePath);
     ~ObjLoader();
 
     bool loadObj();
+    bool loadTextures();
 
     const std::vector<Mesh> &getMeshes() const { return meshes; }
     const std::vector<MeshAxis> &getAxis() const { return axis; }
     const std::vector<MeshSeperator> &getSeperators() const { return seperators; }
 
 protected:
-    std::string path;
+    std::string objPath;
+    std::string nameToTexturePath;
 
     std::vector<Mesh> meshes;
     std::vector<MeshAxis> axis;
