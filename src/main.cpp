@@ -207,8 +207,16 @@ int main(void)
         return -1;
     }
 
+    // get the lowest point of the bike, so we can move it so the wheels rest on the floor
+    BoundingBox bikeBB = bikeLoader->getBoundingBox();
+    float lowest = FLT_MAX;
+    for (unsigned int i = 0; i < 8; i++)
+    {
+        if (bikeBB.vertices[i].y < lowest) lowest = bikeBB.vertices[i].y;
+    }
+
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 1.5f, -20.0f)) *
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, -20.0f)) *
         //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
         glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
