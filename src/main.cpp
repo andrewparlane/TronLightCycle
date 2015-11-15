@@ -61,6 +61,70 @@ Shader *setupMainShader()
     return mainShader;
 }
 
+ObjData *createArena()
+{
+    ObjData *arenaObjData = new ObjData();
+    MeshData md;
+    md.name = "arena";
+    md.hasTexture = true;
+    md.texturePath = "arena.DDS";
+
+    // it's the floor, so all normals are the same
+    // we can use indexing so only need to specify unique vertices
+    // we want the texture to repeat per square, so just use vertex numbers for uvs
+
+    const unsigned int STRETCH_FACTOR = 50;
+    const unsigned int NUM_X = 11;
+    const unsigned int NUM_Z = 11;
+
+    for (int x = 0; x < NUM_X; x++)
+    {
+        for (int z = 0; z < NUM_Z; z++)
+        {
+            md.vertices.push_back(glm::vec3((x - ((NUM_X - 1.0f) / 2.0f)) * STRETCH_FACTOR,
+                                            0.0f,
+                                            (z - ((NUM_Z - 1.0f) / 2.0f)) * STRETCH_FACTOR));
+            md.normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+            md.uvs.push_back(glm::vec2(x, z));
+        }
+    }
+
+    // now to create indices
+    // we have (NUM_X - 1) * (NUM_Z - 1) squares
+    // go through each square
+    for (unsigned short x = 0; x < (NUM_X - 1); x++)
+    {
+        for (unsigned short z = 0; z < (NUM_Z - 1); z++)
+        {
+            // 1---2
+            // |   |
+            // 0---3
+            unsigned short corners[4] = { (x * NUM_X) + z,
+                                          (x * NUM_X) + z + 1,
+                                          ((x + 1) * NUM_X) + z + 1,
+                                          ((x + 1) * NUM_X) + z };
+
+            // each square consists of two triangular faces:
+            // 0,1,3 and 1,2,3
+            md.indices.push_back(corners[0]);
+            md.indices.push_back(corners[1]);
+            md.indices.push_back(corners[3]);
+
+            md.indices.push_back(corners[1]);
+            md.indices.push_back(corners[2]);
+            md.indices.push_back(corners[3]);
+        }
+    }
+
+    arenaObjData->addMesh(md);
+    if (!arenaObjData->createBuffers())
+    {
+        delete arenaObjData;
+        arenaObjData = NULL;
+    }
+    return arenaObjData;
+}
+
 int main(void)
 {
     // Initialise GLFW
@@ -119,11 +183,11 @@ int main(void)
 
     std::shared_ptr<World> world;
     world.reset(new World);
-    world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 100.0f));
+    world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    world->setCamera(glm::lookAt(glm::vec3(0, 0, 5),    // where the camera is in world co-ordinates
-                                 glm::vec3(0, 0, 0),    // target (direction = target - location)
+    world->setCamera(glm::lookAt(glm::vec3(0, 10, 15),    // where the camera is in world co-ordinates
+                                 glm::vec3(0, 7, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
     // lighting
@@ -144,13 +208,22 @@ int main(void)
     }
 
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 0.0f, -5.0f)) *
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, 1.5f, -20.0f)) *
         //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
         glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
 
     Bike bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
+
+    std::shared_ptr<ObjData> arenaObjData(createArena());
+    if (!arenaObjData)
+    {
+        printf("Failed to create arena obj data\n");
+        system("pause");
+        return -1;
+    }
+    Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -179,6 +252,9 @@ int main(void)
         bike.rotate(glm::radians(0.1f), glm::vec3(0,1,0));
         bike.translate(glm::vec3(0,0,0));
         bike.drawAll();
+
+        // draw arena
+        arena.drawAll();
 
         char textBuff[16];
         snprintf(textBuff, 16, "FR: %d\n", frameRate);
