@@ -83,7 +83,7 @@ bool ObjLoader::loadObj()
 {
     Assimp::Importer importer;
 
-    const aiScene* scene = importer.ReadFile(objPath, 0/*aiProcess_JoinIdenticalVertices | aiProcess_SortByPType*/);
+    const aiScene* scene = importer.ReadFile(objPath, aiProcess_JoinIdenticalVertices /*| aiProcess_SortByPType*/);
     if (!scene) {
         fprintf(stderr, importer.GetErrorString());
         return false;
