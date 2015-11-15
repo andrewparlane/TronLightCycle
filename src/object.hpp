@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <objloader.hpp>
+#include <object_data.hpp>
 #include <shader.hpp>
 #include <world.hpp>
 
@@ -14,7 +14,7 @@
 class Object
 {
 public:
-    Object(std::shared_ptr<const ObjLoader> _objLoader, 
+    Object(std::shared_ptr<const ObjData> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat);
@@ -33,7 +33,7 @@ protected:
     virtual void internalDrawAll(const std::vector<Mesh> &meshes) const;
     void drawMesh(const Mesh &mesh) const;
 
-    std::shared_ptr<const ObjLoader> objLoader;
+    std::shared_ptr<const ObjData> objData;
 
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string>
 #include <cstring>
+#include <utility>
 
 #include <glm/glm.hpp>
 
@@ -14,34 +15,68 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
-// for temporary use as we don't need to store the data
-// once it's been loaded into the bufers
-struct MeshData
-{
-    std::vector<unsigned short> indices;
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-};
-
-ObjLoader::ObjLoader(const std::string &objFilePath, const std::string &nameToTextureFilePath)
-    : objPath(objFilePath), nameToTexturePath(nameToTextureFilePath)
+ObjLoader::ObjLoader(const std::string &objFilePath, const std::string &_textureMapPath)
+    : ObjData(), objPath(objFilePath), textureMapPath(_textureMapPath)
 {
 }
 
 ObjLoader::~ObjLoader()
 {
-    for (auto &i : meshes)
+}
+
+bool ObjLoader::loadTextureMap()
+{
+    const unsigned int SIZEOF_BUFFERS = 512;
+    char inBuffer[SIZEOF_BUFFERS];
+
+    textureMap.empty();
+
+    FILE *fd;
+    fopen_s(&fd, textureMapPath.c_str(), "r");
+    if (fd == NULL)
     {
-        glDeleteBuffers(1, &i.indiceBuffer);
-        glDeleteBuffers(1, &i.normalBuffer);
-        glDeleteBuffers(1, &i.vertexBuffer);
-        if (i.hasTexture)
-        {
-            glDeleteTextures(1, &i.texture);
-            glDeleteBuffers(1, &i.uvBuffer);
-        }
+        printf("unable to open %s\n", textureMapPath.c_str());
+        return false;
     }
+    while (1)
+    {
+        if (fgets(inBuffer, SIZEOF_BUFFERS, fd) == NULL)
+        {
+            // EOF
+            fclose(fd);
+            return true;
+        }
+
+        std::string inStr(inBuffer);
+
+        size_t commaOffset = inStr.find(',');
+        if (commaOffset == std::string::npos)
+        {
+            printf("Error, no ',' found\n");
+            fclose(fd);
+            return false;
+        }
+
+        // remove \r
+        inStr.erase(std::remove(inStr.begin(), inStr.end(), '\r'), inStr.end());
+
+        // check for \n
+        size_t newLineOffset = inStr.find('\n');
+        if (newLineOffset == std::string::npos)
+        {
+            printf("Error, no '\\n' found, buffer size too small\n");
+            fclose(fd);
+            return false;
+        }
+
+        std::string meshName = inStr.substr(0, commaOffset);
+        std::string textureName = inStr.substr(commaOffset + 1, newLineOffset - (commaOffset + 1));
+
+        textureMap.push_back(std::make_pair(meshName, textureName));
+    }
+
+    // shouldn't get here
+    return false;
 }
 
 bool ObjLoader::loadObj()
@@ -106,10 +141,9 @@ bool ObjLoader::loadObj()
         }
         else
         {
-            Mesh newMesh;
             MeshData md;
 
-            newMesh.name = mesh->mName.C_Str();
+            md.name = mesh->mName.C_Str();
 
             // Fill vertices positions
             md.vertices.reserve(mesh->mNumVertices);
@@ -117,10 +151,6 @@ bool ObjLoader::loadObj()
                 aiVector3D pos = mesh->mVertices[i];
                 glm::vec3 v(pos.x, pos.y, pos.z);
                 md.vertices.push_back(v);
-                if (i == 0)
-                {
-                    newMesh.firstVertex = v;
-                }
             }
 
             // Fill vertices texture coordinates
@@ -132,12 +162,28 @@ bool ObjLoader::loadObj()
                     aiVector3D UVW = mesh->mTextureCoords[0][i]; // Assume only 1 set of UV coords; AssImp supports 8 UV sets.
                     md.uvs.push_back(glm::vec2(UVW.x, -UVW.y));
                 }
-                newMesh.hasTexture = true;
+                md.hasTexture = true;
+
+                // look up the name in the texture map
+                bool found = false;
+                for (auto &tm : textureMap)
+                {
+                    if (tm.first.compare(md.name) == 0)
+                    {
+                        md.texturePath = tm.second;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    printf("No entry in texture map for %s\n", md.name.c_str());
+                }
             }
             else
             {
                 printf("\tno texture\n");
-                newMesh.hasTexture = false;
+                md.hasTexture = false;
             }
             // Fill vertices normals
             md.normals.reserve(mesh->mNumVertices);
@@ -156,31 +202,7 @@ bool ObjLoader::loadObj()
                 md.indices.push_back(mesh->mFaces[i].mIndices[2]);
             }
 
-            newMesh.numIndices = md.indices.size();
-
-            // generate buffers
-            glGenBuffers(1, &newMesh.vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, newMesh.vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0], GL_STATIC_DRAW);
-
-            if (newMesh.hasTexture)
-            {
-                glGenBuffers(1, &newMesh.uvBuffer);
-                glBindBuffer(GL_ARRAY_BUFFER, newMesh.uvBuffer);
-                glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0], GL_STATIC_DRAW);;
-            }
-
-            glGenBuffers(1, &newMesh.normalBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, newMesh.normalBuffer);
-            glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), &md.normals[0], GL_STATIC_DRAW);
-
-            glGenBuffers(1, &newMesh.indiceBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh.indiceBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), &md.indices[0], GL_STATIC_DRAW);
-
-            newMesh.texture = 0;
-
-            meshes.push_back(newMesh);
+            addMesh(md);
         }
     }
 
@@ -189,76 +211,4 @@ bool ObjLoader::loadObj()
 
 	// The "scene" pointer will be deleted automatically by "importer"
     return true;
-}
-
-bool ObjLoader::loadTextures()
-{
-    const unsigned int SIZEOF_BUFFERS = 512;
-    char inBuffer[SIZEOF_BUFFERS];
-
-    FILE *fd;
-    fopen_s(&fd, nameToTexturePath.c_str(), "r");
-    if (fd == NULL)
-    {
-        printf("unable to open %s\n", nameToTexturePath.c_str());
-        return false;
-    }
-    while (1)
-    {
-        if (fgets(inBuffer, SIZEOF_BUFFERS, fd) == NULL)
-        {
-            // EOF
-            fclose(fd);
-
-            // sanity check
-            for (auto &m : meshes)
-            {
-                if (m.hasTexture && m.texture == 0)
-                {
-                    printf("%s should have texture, does not\n", m.name.c_str());
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        std::string inStr(inBuffer);
-
-        size_t commaOffset = inStr.find(',');
-        if (commaOffset == std::string::npos)
-        {
-            printf("Error, no ',' found\n");
-            fclose(fd);
-            return false;
-        }
-
-        // remove \r
-        inStr.erase(std::remove(inStr.begin(), inStr.end(), '\r'), inStr.end());
-
-        // check for \n
-        size_t newLineOffset = inStr.find('\n');
-        if (newLineOffset == std::string::npos)
-        {
-            printf("Error, no '\\n' found, buffer size too small\n");
-            fclose(fd);
-            return false;
-        }
-
-        std::string meshName = inStr.substr(0, commaOffset);
-        std::string textureName = inStr.substr(commaOffset + 1, newLineOffset - (commaOffset + 1));
-
-        // match meshName
-        for (auto &m : meshes)
-        {
-            if (m.name.compare(meshName) == 0)
-            {
-                m.texture = loadDDS(std::string("textures/compressed/") + textureName);
-                break;
-            }
-        }
-    }
-
-    // shouldn't get here
-    return false;
 }

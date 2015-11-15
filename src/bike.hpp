@@ -6,7 +6,7 @@
 class Bike : public Object
 {
 public:
-    Bike(std::shared_ptr<const ObjLoader> _objLoader, 
+    Bike(std::shared_ptr<const ObjData> _objData, 
         std::shared_ptr<World> _world, 
         std::shared_ptr<const Shader> _shader,
         const glm::mat4 &modelMat);

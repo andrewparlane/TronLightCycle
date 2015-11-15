@@ -3,11 +3,11 @@
 #include <world.hpp>
 #include <shader.hpp>
 
-Object::Object(std::shared_ptr<const ObjLoader> _objLoader, 
+Object::Object(std::shared_ptr<const ObjData> _objData, 
                std::shared_ptr<World> _world,
                std::shared_ptr<const Shader> _shader,
                const glm::mat4 &modelMat)
-    : objLoader(_objLoader), 
+    : objData(_objData), 
       world(_world),
       shader(_shader),
       modelMatrix(modelMat), 
@@ -79,7 +79,7 @@ void Object::internalDrawAll(const std::vector<Mesh> &meshes) const
 
 void Object::drawAll() const
 {
-    const std::vector<Mesh> &meshes = objLoader->getMeshes();
+    const std::vector<Mesh> &meshes = objData->getMeshes();
 
     // bind shader
     shader->useShader();

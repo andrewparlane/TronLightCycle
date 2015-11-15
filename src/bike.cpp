@@ -2,16 +2,16 @@
 
 #include <set>
 
-Bike::Bike(std::shared_ptr<const ObjLoader> _objLoader, 
+Bike::Bike(std::shared_ptr<const ObjData> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat) 
-    : Object(_objLoader, _world, _shader, modelMat),
+    : Object(_objData, _world, _shader, modelMat),
       wheelAngle(0.0f), engineAngle(0.0f)
 {
-    const std::vector<Mesh> &meshes = objLoader->getMeshes();
-    const std::vector<MeshAxis> &axis = objLoader->getAxis();
-    const std::vector<MeshSeperator> &seperators = objLoader->getSeperators();
+    const std::vector<Mesh> &meshes = objData->getMeshes();
+    const std::vector<MeshAxis> &axis = objData->getAxis();
+    const std::vector<MeshSeperator> &seperators = objData->getSeperators();
 
     // need to split bike into front tyre, back tyre, left engine, right engine, remainder
     // so we can look for "tyre" and "engine" in their names.

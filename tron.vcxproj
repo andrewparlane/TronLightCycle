@@ -124,6 +124,7 @@
     <ClCompile Include="src\bike.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\object.cpp" />
+    <ClCompile Include="src\object_data.cpp" />
     <ClCompile Include="src\objloader.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\text2D.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\texture.cpp" />

@@ -134,8 +134,9 @@ int main(void)
     
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex"));
-    if (!bikeLoader->loadObj() ||
-        !bikeLoader->loadTextures())
+    if (!bikeLoader->loadTextureMap() ||
+        !bikeLoader->loadObj() ||
+        !bikeLoader->createBuffers())
     {
         printf("Failed to load object / texture\n");
         system("pause");
