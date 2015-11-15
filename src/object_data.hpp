@@ -49,6 +49,11 @@ struct MeshSeperator
     glm::vec3 normal;
 };
 
+struct BoundingBox
+{
+    glm::vec3 vertices[8];
+};
+
 class ObjData
 {
 public:
@@ -62,6 +67,8 @@ public:
     const std::vector<Mesh> &getMeshes() const { return meshes; }
     const std::vector<MeshAxis> &getAxis() const { return axis; }
     const std::vector<MeshSeperator> &getSeperators() const { return seperators; }
+
+    BoundingBox getBoundingBox() const;
 
 protected:
     std::vector<MeshData> meshData;
