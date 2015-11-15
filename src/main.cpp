@@ -186,8 +186,8 @@ int main(void)
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    world->setCamera(glm::lookAt(glm::vec3(0, 10, 15),    // where the camera is in world co-ordinates
-                                 glm::vec3(0, 7, 0),    // target (direction = target - location)
+    world->setCamera(glm::lookAt(glm::vec3(0, 8, 5),    // where the camera is in world co-ordinates
+                                 glm::vec3(0, 6, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
     // lighting
@@ -216,7 +216,7 @@ int main(void)
     }
 
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, -20.0f)) *
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, -8.0f)) *
         //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
         glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
