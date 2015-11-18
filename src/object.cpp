@@ -10,7 +10,8 @@ Object::Object(std::shared_ptr<const ObjData> _objData,
     : objData(_objData), 
       world(_world),
       shader(_shader),
-      modelMatrix(modelMat), 
+      modelMatrix(modelMat),
+      rotationRads(0.0f),
       defaultColour(glm::vec3(0.0f, 0.0f, 0.0f))
 {
 }

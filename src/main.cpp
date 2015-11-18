@@ -187,7 +187,8 @@ int main(void)
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    world->setCamera(glm::lookAt(glm::vec3(0, 8, 18),    // where the camera is in world co-ordinates
+    const float distanceBetweenBikeAndCamera = 18.0f;
+    world->setCamera(glm::lookAt(glm::vec3(0, 8, distanceBetweenBikeAndCamera),    // where the camera is in world co-ordinates
                                  glm::vec3(0, 6, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
@@ -258,12 +259,32 @@ int main(void)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // always moving forwards with camera chasing
+        // always moving forwards
         bike.translate(glm::vec3(0,0,-0.1f));
-        world->translateCamera(glm::vec3(0,0,0.1f));
+
+        // deal with keyboard input
+        if (glfwGetKey(window, GLFW_KEY_RIGHT ) == GLFW_PRESS)
+        {
+            bike.rotate(glm::radians(-0.5f), glm::vec3(0,1,0));
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS)
+        {
+            bike.rotate(glm::radians(0.5f), glm::vec3(0,1,0));
+        }
+
+        // update camera location
+        glm::vec3 bikeLocation = bike.getWorldLocation();
+        float bikeAngleRads = bike.getRotationRads();
+        glm::vec3 cameraPosition = glm::vec3(bikeLocation.x + distanceBetweenBikeAndCamera * sin(bikeAngleRads),
+                                             8,
+                                             bikeLocation.z + distanceBetweenBikeAndCamera * cos(bikeAngleRads));
+        glm::vec3 cameraDirection = glm::vec3(bikeLocation.x, 6, bikeLocation.z);
+
+        world->setCamera(glm::lookAt(cameraPosition,       // where the camera is in world co-ordinates
+                                     cameraDirection,      // target (direction = target - location)
+                                     glm::vec3(0, 1, 0)));  // which way is up
         
         // draw bike
-        //bike.rotate(glm::radians(0.1f), glm::vec3(0,1,0));
         bike.drawAll();
 
         // draw arena
