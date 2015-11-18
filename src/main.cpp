@@ -187,7 +187,7 @@ int main(void)
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    world->setCamera(glm::lookAt(glm::vec3(0, 8, 5),    // where the camera is in world co-ordinates
+    world->setCamera(glm::lookAt(glm::vec3(0, 8, 18),    // where the camera is in world co-ordinates
                                  glm::vec3(0, 6, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
@@ -218,9 +218,9 @@ int main(void)
     }
 
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, -8.0f)) *
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f)) *
         //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
-        glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
+        //glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::mat4(1.0f);
 
     Bike bike(bikeLoader, world, mainShader, bike_model);
@@ -257,10 +257,13 @@ int main(void)
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // always moving forwards with camera chasing
+        bike.translate(glm::vec3(0,0,-0.1f));
+        world->translateCamera(glm::vec3(0,0,0.1f));
         
         // draw bike
-        bike.rotate(glm::radians(0.1f), glm::vec3(0,1,0));
-        bike.translate(glm::vec3(0,0,0));
+        //bike.rotate(glm::radians(0.1f), glm::vec3(0,1,0));
         bike.drawAll();
 
         // draw arena
