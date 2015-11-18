@@ -151,7 +151,7 @@ void Bike::translate(const glm::vec3 &vec)
     // length of arc of segment = angle * radius
     // length of arc of segment = length of distance moved over the ground
     // angle = distance over the ground / radius
-    wheelAngle += glm::length(vec) / RADIUS_OF_WHEEL;
+    wheelAngle -= glm::length(vec) / RADIUS_OF_WHEEL;
 
     // update engineAngle, if we move it gets updated regardless of speed
     // TODO tweak to what looks good
