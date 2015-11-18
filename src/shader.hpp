@@ -15,6 +15,7 @@ enum ShaderUniformID
     SHADER_UNIFORM_LIGHT_POS_WORLD,
     SHADER_UNIFORM_LIGHT_COLOUR,
     SHADER_UNIFORM_LIGHT_POWER,
+    SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR,
 
     SHADER_UNIFORM_IS_TEXTURE,
     SHADER_UNIFORM_TEXTURE_SAMPLER,
@@ -62,6 +63,7 @@ protected:
     GLuint shader_uniform_light_pos_world;
     GLuint shader_uniform_light_colour;
     GLuint shader_uniform_light_power;
+    GLuint shader_uniform_light_ambient_colour;
     GLuint shader_uniform_is_texture;
     GLuint shader_uniform_texture_sampler;
     GLuint shader_uniform_fragment_colour;

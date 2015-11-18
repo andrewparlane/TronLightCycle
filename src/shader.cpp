@@ -140,15 +140,16 @@ bool Shader::addUniformID(const std::string &name, ShaderUniformID id)
     
     switch (id)
     {
-        case SHADER_UNIFORM_MVP:                shader_uniform_mvp = ret; break;
-        case SHADER_UNIFORM_MODEL_MATRIX:       shader_uniform_model_matrix = ret; break;
-        case SHADER_UNIFORM_VIEW_MATRIX:        shader_uniform_view_matrix = ret; break;
-        case SHADER_UNIFORM_LIGHT_POS_WORLD:    shader_uniform_light_pos_world = ret; break;
-        case SHADER_UNIFORM_LIGHT_COLOUR:       shader_uniform_light_colour = ret; break;
-        case SHADER_UNIFORM_LIGHT_POWER:        shader_uniform_light_power = ret; break;
-        case SHADER_UNIFORM_IS_TEXTURE:         shader_uniform_is_texture = ret; break;
-        case SHADER_UNIFORM_TEXTURE_SAMPLER:    shader_uniform_texture_sampler = ret; break;
-        case SHADER_UNIFORM_FRAGMENT_COLOUR:    shader_uniform_fragment_colour = ret; break;
+        case SHADER_UNIFORM_MVP:                    shader_uniform_mvp = ret; break;
+        case SHADER_UNIFORM_MODEL_MATRIX:           shader_uniform_model_matrix = ret; break;
+        case SHADER_UNIFORM_VIEW_MATRIX:            shader_uniform_view_matrix = ret; break;
+        case SHADER_UNIFORM_LIGHT_POS_WORLD:        shader_uniform_light_pos_world = ret; break;
+        case SHADER_UNIFORM_LIGHT_COLOUR:           shader_uniform_light_colour = ret; break;
+        case SHADER_UNIFORM_LIGHT_POWER:            shader_uniform_light_power = ret; break;
+        case SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR:   shader_uniform_light_ambient_colour = ret; break;
+        case SHADER_UNIFORM_IS_TEXTURE:             shader_uniform_is_texture = ret; break;
+        case SHADER_UNIFORM_TEXTURE_SAMPLER:        shader_uniform_texture_sampler = ret; break;
+        case SHADER_UNIFORM_FRAGMENT_COLOUR:        shader_uniform_fragment_colour = ret; break;
         default: return false;
     }
     
@@ -190,15 +191,16 @@ GLuint Shader::getUniformID(ShaderUniformID id) const
     
     switch (id)
     {
-        case SHADER_UNIFORM_MVP:                return shader_uniform_mvp;
-        case SHADER_UNIFORM_MODEL_MATRIX:       return shader_uniform_model_matrix;
-        case SHADER_UNIFORM_VIEW_MATRIX:        return shader_uniform_view_matrix;
-        case SHADER_UNIFORM_LIGHT_POS_WORLD:    return shader_uniform_light_pos_world;
-        case SHADER_UNIFORM_LIGHT_COLOUR:       return shader_uniform_light_colour;
-        case SHADER_UNIFORM_LIGHT_POWER:        return shader_uniform_light_power;
-        case SHADER_UNIFORM_IS_TEXTURE:         return shader_uniform_is_texture;
-        case SHADER_UNIFORM_TEXTURE_SAMPLER:    return shader_uniform_texture_sampler;
-        case SHADER_UNIFORM_FRAGMENT_COLOUR:    return shader_uniform_fragment_colour;
+        case SHADER_UNIFORM_MVP:                    return shader_uniform_mvp;
+        case SHADER_UNIFORM_MODEL_MATRIX:           return shader_uniform_model_matrix;
+        case SHADER_UNIFORM_VIEW_MATRIX:            return shader_uniform_view_matrix;
+        case SHADER_UNIFORM_LIGHT_POS_WORLD:        return shader_uniform_light_pos_world;
+        case SHADER_UNIFORM_LIGHT_COLOUR:           return shader_uniform_light_colour;
+        case SHADER_UNIFORM_LIGHT_POWER:            return shader_uniform_light_power;
+        case SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR:   return shader_uniform_light_ambient_colour;
+        case SHADER_UNIFORM_IS_TEXTURE:             return shader_uniform_is_texture;
+        case SHADER_UNIFORM_TEXTURE_SAMPLER:        return shader_uniform_texture_sampler;
+        case SHADER_UNIFORM_FRAGMENT_COLOUR:        return shader_uniform_fragment_colour;
         default: return -1;
     }
 }

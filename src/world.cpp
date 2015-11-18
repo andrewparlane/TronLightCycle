@@ -12,6 +12,14 @@ World::~World()
 {
 }
 
+void World::setLight(const glm::vec3 &position, const glm::vec3 &colour, float power, const glm::vec3 &ambient)
+{
+    lightPos = position;
+    lightColour = colour;
+    lightPower = power;
+    lightAmbient = ambient;
+}
+
 void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const
 {
     // mvp matrix = model -> homogenous
@@ -28,4 +36,5 @@ void World::sendLight(std::shared_ptr<const Shader> shader) const
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), 1, &lightPos[0]);
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), 1, &lightColour[0]);
     glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_POWER), lightPower);
+    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR), 1, &lightAmbient[0]);
 }

@@ -21,7 +21,7 @@ public:
 
     void setProjection(const glm::mat4 &projection) { projectionMatrix = projection; }
 
-    void setLight(const glm::vec3 &position, const glm::vec3 &colour, float power) { lightPos = position; lightColour = colour; lightPower = power; }
+    void setLight(const glm::vec3 &position, const glm::vec3 &colour, float power, const glm::vec3 &ambient);
 
     void sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const;
     void sendLight(std::shared_ptr<const Shader> shader) const;
@@ -33,6 +33,7 @@ protected:
     glm::vec3 lightPos;
     glm::vec3 lightColour;
     float lightPower;
+    glm::vec3 lightAmbient;
 };
 
 #endif

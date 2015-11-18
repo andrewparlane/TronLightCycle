@@ -48,6 +48,7 @@ Shader *setupMainShader()
             // fragment params
             !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
             !mainShader->addUniformID("lightPower", SHADER_UNIFORM_LIGHT_POWER) ||
+            !mainShader->addUniformID("lightAmbientColour", SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR) ||
             !mainShader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
             !mainShader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
             !mainShader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
@@ -193,7 +194,8 @@ int main(void)
     // lighting
     world->setLight(glm::vec3(0, 2, 4),             // position
                     glm::vec3(0.6f, 0.6f, 1.0f),    // colour
-                    50.0f);                         // power
+                    50.0f,                          // power
+                    glm::vec3(0.6f, 0.6f, 0.6f));   // ambient
 
     
 
