@@ -273,11 +273,16 @@ int main(void)
         }
 
         // update camera location
-        glm::vec3 bikeLocation = bike.getWorldLocation();
-        float bikeAngleRads = bike.getRotationRads();
-        glm::vec3 cameraPosition = glm::vec3(bikeLocation.x + distanceBetweenBikeAndCamera * sin(bikeAngleRads),
-                                             8,
-                                             bikeLocation.z + distanceBetweenBikeAndCamera * cos(bikeAngleRads));
+        // transform origin of bike to world co-ords.
+        glm::vec3 bikeLocation = bike.applyModelMatrx(glm::vec3(0.0f));
+        // transform a point distanceBetweenBikeAndCamera behind the bike into world co-ords
+        // note: this applies rotations, translations and scaling + any other transform
+        //       so it won't work correctly if you scale your model in the Z direction
+        //       your camera position will be scaled too
+        glm::vec3 cameraPosition = bike.applyModelMatrx(glm::vec3(0,0,distanceBetweenBikeAndCamera));
+        // We want the y co-ord to be a bit above the bike
+        cameraPosition.y = 8.0f;
+        // point the camera at the bike, but adjust the y so we aren't looking too much down
         glm::vec3 cameraDirection = glm::vec3(bikeLocation.x, 6, bikeLocation.z);
 
         world->setCamera(glm::lookAt(cameraPosition,       // where the camera is in world co-ordinates
