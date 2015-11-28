@@ -321,18 +321,21 @@ int main(void)
             cameraRotationDegrees += 0.1f;
         }
 
-        // draw bike
+        // draw bike ===========================================================
         bike.drawAll();
 
-        // draw arena
+        // draw arena ==========================================================
         arena.drawAll();
 
+        // output debug stats ==================================================
         char textBuff[16];
         snprintf(textBuff, 16, "FR: %d\n", frameRate);
         printText2D(textBuff, 10, 560, 35);
 
-        // Swap buffers
+        // Swap buffers ========================================================
         glfwSwapBuffers(window);
+
+        // Check for key presses ===============================================
         glfwPollEvents();
 
     } // Check if the ESC key was pressed or the window was closed
