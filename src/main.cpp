@@ -187,7 +187,7 @@ int main(void)
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    const float distanceBetweenBikeAndCamera = 18.0f;
+    float distanceBetweenBikeAndCamera = 18.0f;
     world->setCamera(glm::lookAt(glm::vec3(0, 8, distanceBetweenBikeAndCamera),    // where the camera is in world co-ordinates
                                  glm::vec3(0, 6, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
@@ -288,6 +288,23 @@ int main(void)
         {
             cKeyPressed = 0;
             cameraRotating = !cameraRotating;
+        }
+
+        // zoom camera in or out using up + down keys
+        // TODO: Add mouse wheel support
+        if (glfwGetKey(window, GLFW_KEY_UP))
+        {
+            if (distanceBetweenBikeAndCamera > 8.0f)
+            {
+                distanceBetweenBikeAndCamera -= 0.05f;
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN))
+        {
+            if (distanceBetweenBikeAndCamera < 30.0f)
+            {
+                distanceBetweenBikeAndCamera += 0.05f;
+            }
         }
 
         // update camera location =============================================
