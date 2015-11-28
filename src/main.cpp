@@ -221,9 +221,11 @@ int main(void)
     // model matrix = model -> world
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f));
 
+    // Load bike
     Bike bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
 
+    // create arena
     std::shared_ptr<ObjData> arenaObjData(createArena());
     if (!arenaObjData)
     {
@@ -285,6 +287,7 @@ int main(void)
     const double minTimeBetweenFrames = 1.0/frameRateLimit;
     double lastFrameStartTime = glfwGetTime();
 
+    // camera rotation
     float cameraRotationDegrees = 0.0f;
     bool cameraRotating = false;
     bool cKeyPressed = false;
