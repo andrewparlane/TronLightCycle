@@ -219,10 +219,7 @@ int main(void)
     }
 
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f)) *
-        //glm::rotate(glm::radians(-60.0f), glm::vec3(0, 1, 0)) *
-        //glm::rotate(glm::radians(90.0f), glm::vec3(0.0f,1.0f,0.0f)) *
-        glm::mat4(1.0f);
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f));
 
     Bike bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
