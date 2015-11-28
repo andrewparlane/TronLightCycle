@@ -291,6 +291,11 @@ int main(void)
 
     // track whether we were turning or not, for normals for light trail
     bool wasTurning = false;
+
+    // debug stuff
+    // stop moving the bike with the 's' key
+    bool stop = false;
+    bool sKeyPressed = false;
     do
     {
         // frame rate limiting =====================================================
@@ -360,6 +365,22 @@ int main(void)
             {
                 distanceBetweenBikeAndCamera += 0.2f;
             }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_S ))
+        {
+            sKeyPressed = 1;
+        }
+        if (sKeyPressed && !glfwGetKey(window, GLFW_KEY_S ))
+        {
+            sKeyPressed = 0;
+            stop = !stop;
+        }
+
+        // bike always moving forwards ========================================
+        if (!stop)
+        {
+            bike.translate(glm::vec3(0,0,-0.4f));
         }
 
         // update camera location =============================================
