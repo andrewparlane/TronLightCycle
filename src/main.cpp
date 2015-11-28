@@ -244,19 +244,42 @@ int main(void)
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    double lastTime = glfwGetTime();
+    // frame rate reporting
+    double lastFrameCountUpdateTime = glfwGetTime();
     unsigned int frameCount = 0;
     unsigned int frameRate = 0;
+    double timeSpentBusy = 0;
+    unsigned int displayedMaxPossibleFrameRate = 0;
+
+    // frame rate limiting
+    const double frameRateLimit = 60.0;
+    const double minTimeBetweenFrames = 1.0/frameRateLimit;
+    double lastFrameStartTime = glfwGetTime();
+
     float cameraRotationDegrees = 0.0f;
     bool cameraRotating = false;
     bool cKeyPressed = false;
     do
     {
+        // frame rate limiting =====================================================
+        while ((glfwGetTime() - lastFrameStartTime) < minTimeBetweenFrames);
+        lastFrameStartTime = glfwGetTime();
+
+        // frame rate reporting ====================================================
         frameCount++;
-        if (glfwGetTime() - lastTime >= 0.5)
+        // update displayed frame rate evry second
+        if ((glfwGetTime() - lastFrameCountUpdateTime) >= 1.0)
         {
-            lastTime = glfwGetTime();
-            frameRate = frameCount * 2;
+            lastFrameCountUpdateTime = glfwGetTime();
+            frameRate = frameCount;
+
+            // in the last second we spent "timeSpentBusy" seconds actually donig stuff
+            // to display "frameCount" frames.
+            // so we spent timeSpentBusy / frameCount seconds per frame (on average)
+            // so max possible frame rate would be 1 / that, so just swap the order
+            displayedMaxPossibleFrameRate = (unsigned int)(frameCount / timeSpentBusy);
+
+            timeSpentBusy = 0;
             frameCount = 0;
         }
 
@@ -345,15 +368,20 @@ int main(void)
         arena.drawAll();
 
         // output debug stats ==================================================
-        char textBuff[16];
-        snprintf(textBuff, 16, "FR: %d\n", frameRate);
+        char textBuff[32];
+        snprintf(textBuff, 32, "FR (Actual): %d\n", frameRate);
         printText2D(textBuff, 10, 560, 35);
+        snprintf(textBuff, 32, "      (MAX): %d\n", displayedMaxPossibleFrameRate);
+        printText2D(textBuff, 10, 530, 35);
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);
 
         // Check for key presses ===============================================
         glfwPollEvents();
+
+        // finished this frame, update timeSpentBusy ===========================
+        timeSpentBusy += glfwGetTime() - lastFrameStartTime;
 
     } // Check if the ESC key was pressed or the window was closed
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
