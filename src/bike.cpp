@@ -156,7 +156,7 @@ void Bike::translate(const glm::vec3 &vec)
     // update engineAngle, if we move it gets updated regardless of speed
     // TODO tweak to what looks good
     // TODO base on time since last frame rather than here, it slows and speeds up as frame rate changes
-    engineAngle += glm::radians(2.0f);
+    engineAngle += glm::radians(8.0f);
 }
 
 void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const

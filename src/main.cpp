@@ -286,19 +286,19 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // always moving forwards
-        bike.translate(glm::vec3(0,0,-0.1f));
+        bike.translate(glm::vec3(0,0,-0.4f));
 
         // deal with keyboard input =====================================
 
         // bike turning right
         if (glfwGetKey(window, GLFW_KEY_RIGHT ))
         {
-            bike.rotate(glm::radians(-0.5f), glm::vec3(0,1,0));
+            bike.rotate(glm::radians(-2.0f), glm::vec3(0,1,0));
         }
         // bike turning left
         if (glfwGetKey(window, GLFW_KEY_LEFT ))
         {
-            bike.rotate(glm::radians(0.5f), glm::vec3(0,1,0));
+            bike.rotate(glm::radians(2.0f), glm::vec3(0,1,0));
         }
 
         // camera rotating?
@@ -319,14 +319,14 @@ int main(void)
         {
             if (distanceBetweenBikeAndCamera > 8.0f)
             {
-                distanceBetweenBikeAndCamera -= 0.05f;
+                distanceBetweenBikeAndCamera -= 0.2f;
             }
         }
         if (glfwGetKey(window, GLFW_KEY_DOWN))
         {
             if (distanceBetweenBikeAndCamera < 30.0f)
             {
-                distanceBetweenBikeAndCamera += 0.05f;
+                distanceBetweenBikeAndCamera += 0.2f;
             }
         }
 
@@ -358,7 +358,7 @@ int main(void)
         // if the camera is rotating around the bike, then update the angle
         if (cameraRotating)
         {
-            cameraRotationDegrees += 0.1f;
+            cameraRotationDegrees += 0.4f;
         }
 
         // draw bike ===========================================================
