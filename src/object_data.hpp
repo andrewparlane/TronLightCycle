@@ -18,6 +18,8 @@ struct MeshData
     std::string name;
     std::string texturePath;
     bool hasTexture;
+
+    bool needsUpdate;
 };
 
 struct Mesh
@@ -62,7 +64,10 @@ public:
 
     void addMesh(const MeshData &data);
 
+    bool updateMesh(const MeshData &data);
+
     bool createBuffers();
+    void updateBuffers();
 
     const std::vector<Mesh> &getMeshes() const { return meshes; }
     const std::vector<MeshAxis> &getAxis() const { return axis; }

@@ -26,6 +26,20 @@ void ObjData::addMesh(const MeshData &md)
     meshData.push_back(md);
 }
 
+bool ObjData::updateMesh(const MeshData &data)
+{
+    for (auto &md : meshData)
+    {
+        if (md.name.compare(data.name) == 0)
+        {
+            md = data;
+            md.needsUpdate = true;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool ObjData::createBuffers()
 {
     meshes.empty();
@@ -74,11 +88,55 @@ bool ObjData::createBuffers()
         {
             newMesh.texture = 0;
         }
+        md.needsUpdate = false;
 
         meshes.push_back(newMesh);
     }
 
     return true;
+}
+
+void ObjData::updateBuffers()
+{
+    for (auto &md : meshData)
+    {
+        if (md.needsUpdate)
+        {
+            for (auto &m : meshes)
+            {
+                if (m.name.compare(md.name) == 0)
+                {
+                    m.numIndices = md.indices.size();
+                    m.firstVertex = md.vertices[0];
+
+                    // buffer orphaning
+                    // see: http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/
+                    // and: https://www.opengl.org/wiki/Buffer_Object_Streaming
+                    // TODO: does this work when md.vertices.size() changes?
+
+                    glBindBuffer(GL_ARRAY_BUFFER, m.vertexBuffer);
+                    glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), NULL, GL_STREAM_DRAW);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0]);
+
+                    if (md.hasTexture)
+                    {
+                        glBindBuffer(GL_ARRAY_BUFFER, m.uvBuffer);
+                        glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), NULL, GL_STREAM_DRAW);
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0]);
+                    }
+
+                    glBindBuffer(GL_ARRAY_BUFFER, m.normalBuffer);
+                    glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), NULL, GL_STREAM_DRAW);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, md.normals.size() * sizeof(glm::vec3), &md.normals[0]);
+
+                    glBindBuffer(GL_ARRAY_BUFFER, m.indiceBuffer);
+                    glBufferData(GL_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), NULL, GL_STREAM_DRAW);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, md.indices.size() * sizeof(unsigned short), &md.indices[0]);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 BoundingBox ObjData::getBoundingBox() const
