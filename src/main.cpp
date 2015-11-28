@@ -265,12 +265,15 @@ int main(void)
         // always moving forwards
         bike.translate(glm::vec3(0,0,-0.1f));
 
-        // deal with keyboard input
-        if (glfwGetKey(window, GLFW_KEY_RIGHT ) == GLFW_PRESS)
+        // deal with keyboard input =====================================
+
+        // bike turning right
+        if (glfwGetKey(window, GLFW_KEY_RIGHT ))
         {
             bike.rotate(glm::radians(-0.5f), glm::vec3(0,1,0));
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS)
+        // bike turning left
+        if (glfwGetKey(window, GLFW_KEY_LEFT ))
         {
             bike.rotate(glm::radians(0.5f), glm::vec3(0,1,0));
         }
