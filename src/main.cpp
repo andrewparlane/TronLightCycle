@@ -247,6 +247,9 @@ int main(void)
     double lastTime = glfwGetTime();
     unsigned int frameCount = 0;
     unsigned int frameRate = 0;
+    float cameraRotationDegrees = 0.0f;
+    bool cameraRotating = false;
+    bool cKeyPressed = false;
     do
     {
         frameCount++;
@@ -272,14 +275,34 @@ int main(void)
             bike.rotate(glm::radians(0.5f), glm::vec3(0,1,0));
         }
 
-        // update camera location
+        // camera rotating?
+        // first detect c pressed, then wait for release
+        if (glfwGetKey(window, GLFW_KEY_C ))
+        {
+            cKeyPressed = 1;
+        }
+        if (cKeyPressed && !glfwGetKey(window, GLFW_KEY_C ))
+        {
+            cKeyPressed = 0;
+            cameraRotating = !cameraRotating;
+        }
+
+        // update camera location =============================================
         // transform origin of bike to world co-ords.
         glm::vec3 bikeLocation = bike.applyModelMatrx(glm::vec3(0.0f));
-        // transform a point distanceBetweenBikeAndCamera behind the bike into world co-ords
+
+        // we want the camera to be distanceBetweenBikeAndCamera from the bike.
+        // by default it should be directly behind the bike so we can see where we are going
+        // however I also want a mode where the camera rotates around so you can see the bike
+        // so take a vector where the camera is directly behind the bike, in bike model space
+        // and rotate it, this rotates the point around the bike.
+        glm::vec3 cameraOffsetFromBike = glm::vec3(glm::vec4(0,0,distanceBetweenBikeAndCamera,1) *
+                                                   glm::rotate(glm::radians(cameraRotationDegrees), glm::vec3(0,1,0)));
+        // transform the camera position into world co-ordinates
         // note: this applies rotations, translations and scaling + any other transform
         //       so it won't work correctly if you scale your model in the Z direction
         //       your camera position will be scaled too
-        glm::vec3 cameraPosition = bike.applyModelMatrx(glm::vec3(0,0,distanceBetweenBikeAndCamera));
+        glm::vec3 cameraPosition = bike.applyModelMatrx(cameraOffsetFromBike);
         // We want the y co-ord to be a bit above the bike
         cameraPosition.y = 8.0f;
         // point the camera at the bike, but adjust the y so we aren't looking too much down
@@ -289,6 +312,12 @@ int main(void)
                                      cameraDirection,      // target (direction = target - location)
                                      glm::vec3(0, 1, 0)));  // which way is up
         
+        // if the camera is rotating around the bike, then update the angle
+        if (cameraRotating)
+        {
+            cameraRotationDegrees += 0.1f;
+        }
+
         // draw bike
         bike.drawAll();
 
