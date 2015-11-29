@@ -224,6 +224,7 @@ int main(void)
     // Load bike
     Bike bike(bikeLoader, world, mainShader, bike_model);
     bike.setDefaultColour(tronBlue);
+    bike.initialise();
 
     // create arena
     std::shared_ptr<ObjData> arenaObjData(createArena());
@@ -234,38 +235,6 @@ int main(void)
         return -1;
     }
     Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
-
-    // create light trail
-    const float lightTrailHeight = 3.8f;
-    std::shared_ptr<ObjData> lightTrailObjData(new ObjData());
-    MeshData lightTrailMeshData;
-    lightTrailMeshData. name = "LT";
-    lightTrailMeshData.hasTexture = false;
-    lightTrailMeshData.texturePath = "light_trail.DDS";
-    lightTrailMeshData.vertices.push_back(glm::vec3(0.0f, 0.0f,             0.0f));        // bottom nearest
-    lightTrailMeshData.vertices.push_back(glm::vec3(0.0f, lightTrailHeight, 0.0f));        // top nearest
-    lightTrailMeshData.vertices.push_back(glm::vec3(0.0f, 0.0f,             -0.1f));    // bottom furthest
-    lightTrailMeshData.vertices.push_back(glm::vec3(0.0f, lightTrailHeight, -0.1f));    // top furthest
-    lightTrailMeshData.normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-    lightTrailMeshData.normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-    lightTrailMeshData.normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-    lightTrailMeshData.normals.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
-    lightTrailMeshData.uvs.push_back(glm::vec2(0.0f, 0.0f));
-    lightTrailMeshData.uvs.push_back(glm::vec2(0.0f, 1.0f));
-    lightTrailMeshData.uvs.push_back(glm::vec2(0.1f, 0.0f));
-    lightTrailMeshData.uvs.push_back(glm::vec2(0.1f, 1.0f));
-    lightTrailMeshData.indices.push_back(0); lightTrailMeshData.indices.push_back(1); lightTrailMeshData.indices.push_back(3);
-    lightTrailMeshData.indices.push_back(0); lightTrailMeshData.indices.push_back(3); lightTrailMeshData.indices.push_back(2);
-    lightTrailObjData->addMesh(lightTrailMeshData);
-    if (!lightTrailObjData->createBuffers())
-    {
-        // fali
-        printf("Failed to create light trail obj data\n");
-        system("pause");
-        return -1;
-    }
-    Object lightTrail(lightTrailObjData, world, mainShader, glm::mat4(1.0f));
-    lightTrail.setDefaultColour(tronBlue);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -291,9 +260,6 @@ int main(void)
     float cameraRotationDegrees = 0.0f;
     bool cameraRotating = false;
     bool cKeyPressed = false;
-
-    // track whether we were turning or not, for normals for light trail
-    bool wasTurning = false;
 
     // debug stuff
     // stop moving the bike with the 's' key
@@ -328,17 +294,18 @@ int main(void)
         // deal with keyboard input =====================================
 
         // bike turning right
-        bool turned = false;
         if (glfwGetKey(window, GLFW_KEY_RIGHT ))
         {
-            bike.rotate(glm::radians(-2.0f), glm::vec3(0,1,0));
-            turned = true;
+            bike.turn(Bike::TURN_RIGHT);
         }
         // bike turning left
         else if (glfwGetKey(window, GLFW_KEY_LEFT ))
         {
-            bike.rotate(glm::radians(2.0f), glm::vec3(0,1,0));
-            turned = true;
+            bike.turn(Bike::TURN_LEFT);
+        }
+        else
+        {
+            bike.turn(Bike::NO_TURN);
         }
 
         // camera rotating?
@@ -383,7 +350,7 @@ int main(void)
         // bike always moving forwards ========================================
         if (!stop)
         {
-            bike.translate(glm::vec3(0,0,-0.4f));
+            bike.updateLocation();
         }
 
         // update camera location =============================================
@@ -417,138 +384,9 @@ int main(void)
             cameraRotationDegrees += 0.4f;
         }
 
-        if (turned)
-        {
-            // because the bike has turned, we need to add a new face
-            // to our light trail data.
-
-            unsigned int numVertices = lightTrailMeshData.vertices.size();
-            glm::vec3 lastVertexPosBottom = lightTrailMeshData.vertices[numVertices - 2];
-            glm::vec3 lastVertexPosTop = lightTrailMeshData.vertices[numVertices - 1];
-            // wall is alwasy verticle, so newNormal is (bikePos - lastVertex) CROSS vertical
-            glm::vec3 newNormal = glm::normalize(glm::cross(bikeLocation - lastVertexPosBottom,
-                                                            glm::vec3(0,1,0)));
-
-            // if we just started turning we don't want the past long wall
-            // to look curved, ie. don't average normals for the corner vertex
-            // so we need to duplicate the last two vertices (corner vertices),
-            // and amend the normals
-
-            if (!wasTurning)
-            {
-                wasTurning = true;
-
-                // duplicate positions and uvs
-                lightTrailMeshData.vertices.push_back(lastVertexPosBottom);
-                lightTrailMeshData.vertices.push_back(lastVertexPosTop);
-
-                lightTrailMeshData.uvs.push_back(lightTrailMeshData.uvs[numVertices - 2]);
-                lightTrailMeshData.uvs.push_back(lightTrailMeshData.uvs[numVertices - 1]);
-
-                // create new normals
-                lightTrailMeshData.normals.push_back(newNormal);
-                lightTrailMeshData.normals.push_back(newNormal);
-
-                numVertices += 2;
-            }
-            else
-            {
-                // haven't just started turning, so we share our normals
-                // to make a smooth curve
-                glm::vec3 averagedNormal = glm::normalize(newNormal + lightTrailMeshData.normals[numVertices - 2]);
-                lightTrailMeshData.normals[numVertices - 2] = averagedNormal;
-                lightTrailMeshData.normals[numVertices - 1] = averagedNormal;
-            }
-
-            // now we need to add the two new vertices for this face
-            // which means two more vertices, two more normals and 6 more indices
-
-            lightTrailMeshData.vertices.push_back(glm::vec3(bikeLocation.x, 0.0f, bikeLocation.z));
-            lightTrailMeshData.vertices.push_back(glm::vec3(bikeLocation.x, lightTrailHeight, bikeLocation.z));
-
-            // TODO: do UVs properly
-            lightTrailMeshData.uvs.push_back(glm::vec2(0.0f, 0.0f));
-            lightTrailMeshData.uvs.push_back(glm::vec2(0.0f, 0.0f));
-
-            lightTrailMeshData.normals.push_back(newNormal);
-            lightTrailMeshData.normals.push_back(newNormal);
-
-            numVertices += 2;
-            lightTrailMeshData.indices.push_back(numVertices - 4); lightTrailMeshData.indices.push_back(numVertices - 3); lightTrailMeshData.indices.push_back(numVertices - 1);
-            lightTrailMeshData.indices.push_back(numVertices - 4); lightTrailMeshData.indices.push_back(numVertices - 1); lightTrailMeshData.indices.push_back(numVertices - 2);
-        }
-        else
-        {
-            // not turning
-            // did we just stop?
-            if (wasTurning)
-            {
-                wasTurning = false;
-
-                // just stopped turning, so to render this as flat
-                // we need to create two extra vertices for the corner
-                // with unique normals
-
-                unsigned int numVertices = lightTrailMeshData.vertices.size();
-
-                // duplicate positions
-                glm::vec3 lastTopPos = lightTrailMeshData.vertices.back();
-                lightTrailMeshData.vertices.pop_back();
-                glm::vec3 lastBottomPos = lightTrailMeshData.vertices.back();
-                lightTrailMeshData.vertices.pop_back();
-
-                lightTrailMeshData.vertices.push_back(lightTrailMeshData.vertices[numVertices - 4]);
-                lightTrailMeshData.vertices.push_back(lightTrailMeshData.vertices[numVertices - 3]);
-                lightTrailMeshData.vertices.push_back(lastBottomPos);
-                lightTrailMeshData.vertices.push_back(lastTopPos);
-
-                // duplicate UVs
-                glm::vec2 lastTopUV = lightTrailMeshData.uvs.back();
-                lightTrailMeshData.uvs.pop_back();
-                glm::vec2 lastBottomUV = lightTrailMeshData.uvs.back();
-                lightTrailMeshData.uvs.pop_back();
-
-                lightTrailMeshData.uvs.push_back(lightTrailMeshData.uvs[numVertices - 4]);
-                lightTrailMeshData.uvs.push_back(lightTrailMeshData.uvs[numVertices - 3]);
-                lightTrailMeshData.uvs.push_back(lastBottomUV);
-                lightTrailMeshData.uvs.push_back(lastTopUV);
-
-                // update normals
-                // the last set of normals are the same for all 4 vertices
-                // we just need to create those extra two vertices
-                lightTrailMeshData.normals.push_back(lightTrailMeshData.normals[numVertices - 2]);
-                lightTrailMeshData.normals.push_back(lightTrailMeshData.normals[numVertices - 1]);
-                // the two normals before that were averaged with this last face
-                // which we don't want anymore, calculate the new normals
-                glm::vec3 newNormal = glm::normalize(glm::cross(lightTrailMeshData.normals[numVertices - 6] - lightTrailMeshData.normals[numVertices - 4],
-                                                                glm::vec3(0,1,0)));
-                lightTrailMeshData.normals[numVertices - 4] = newNormal;
-                lightTrailMeshData.normals[numVertices - 3] = newNormal;
-
-                // update indices
-                numVertices += 2;
-                for (unsigned int i = 0; i < 6; i++)
-                {
-                    lightTrailMeshData.indices.pop_back();
-                }
-                lightTrailMeshData.indices.push_back(numVertices - 4); lightTrailMeshData.indices.push_back(numVertices - 3); lightTrailMeshData.indices.push_back(numVertices - 1);
-                lightTrailMeshData.indices.push_back(numVertices - 4); lightTrailMeshData.indices.push_back(numVertices - 1); lightTrailMeshData.indices.push_back(numVertices - 2);
-            }
-
-            // update the positions of the last two vertices
-            lightTrailMeshData.vertices.pop_back();
-            lightTrailMeshData.vertices.pop_back();
-            lightTrailMeshData.vertices.push_back(glm::vec3(bikeLocation.x, 0.0f, bikeLocation.z));
-            lightTrailMeshData.vertices.push_back(glm::vec3(bikeLocation.x, lightTrailHeight, bikeLocation.z));
-        }
-        lightTrailObjData->updateMesh(lightTrailMeshData);
-        lightTrailObjData->updateBuffers();
-
         // draw bike ===========================================================
+        bike.updateLightTrail();
         bike.drawAll();
-
-        // draw light trail ====================================================
-        lightTrail.drawAll();
 
         // draw arena ==========================================================
         arena.drawAll();

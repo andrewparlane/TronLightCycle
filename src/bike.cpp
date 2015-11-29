@@ -7,7 +7,125 @@ Bike::Bike(std::shared_ptr<const ObjData> _objData,
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat) 
     : Object(_objData, _world, _shader, modelMat),
-      wheelAngle(0.0f), engineAngle(0.0f)
+      bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f)
+{
+}
+
+Bike::~Bike()
+{
+}
+
+bool Bike::initialise()
+{
+    initialiseBikeParts();
+    return trail.initialise(world, shader, defaultColour);
+}
+
+void Bike::updateLocation()
+{
+    const glm::vec3 vec(0,0,-0.4f);
+    translate(vec);
+
+    // calculate wheel spin based on distance travelled
+    // TODO calculate?
+    // current value is based off importing tyre vertices into libra office
+    // getting min and max for all axis, taking the difference and /2
+    const float RADIUS_OF_WHEEL = 1.87f;
+
+    // length of arc of segment = angle * radius
+    // length of arc of segment = length of distance moved over the ground
+    // angle = distance over the ground / radius
+    wheelAngle -= glm::length(vec) / RADIUS_OF_WHEEL;
+
+    // update engineAngle, if we move it gets updated regardless of speed
+    // TODO tweak to what looks good
+    // TODO base on time since last frame rather than here, it slows and speeds up as frame rate changes
+    engineAngle += glm::radians(8.0f);
+
+    trail.updateLastVertices(applyModelMatrx(glm::vec3(0.0f)));
+}
+
+void Bike::turn(TurnDirection dir)
+{
+    if (dir == NO_TURN)
+    {
+        trail.stopTurning();
+        return;
+    }
+
+    float angleRads = glm::radians((dir == TURN_RIGHT) ? -2.0f : 2.0f);
+    bikeAngleAroundYRads += angleRads;
+    rotate(angleRads, glm::vec3(0,1,0));
+
+    trail.turn(bikeAngleAroundYRads);
+}
+
+void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const
+{
+    glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
+                     glm::rotate(wheelAngle, frontTyreAxis.axis) *      // 2nd rotate around origin
+                     glm::translate(-frontTyreAxis.point);              // 1st translate axis to origin
+
+    glm::mat4 btmm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(backTyreAxis.point) *               // 3rd translate back to initial point
+                     glm::rotate(wheelAngle, backTyreAxis.axis) *       // 2nd rotate around origin
+                     glm::translate(-backTyreAxis.point);               // 1st translate axis to origin
+
+    glm::mat4 remm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(rightEngineAxis.point) *            // 3rd translate back to initial point
+                     glm::rotate(-engineAngle, rightEngineAxis.axis) *   // 2nd rotate around origin
+                     glm::translate(-rightEngineAxis.point);            // 1st translate axis to origin
+
+    glm::mat4 lemm = modelMatrix *                                      // finally apply overal model transformation
+                     glm::translate(leftEngineAxis.point) *             // 3rd translate back to initial point
+                     glm::rotate(engineAngle, leftEngineAxis.axis) *   // 2nd rotate around origin
+                     glm::translate(-leftEngineAxis.point);             // 1st translate axis to origin
+
+    // front tyre
+    world->sendMVP(shader, ftmm);
+    for (auto it : frontTyreMeshIndexes)
+    {
+        drawMesh(meshes[it]);
+    }
+
+    // back tyre
+    world->sendMVP(shader, btmm);
+    for (auto it : backTyreMeshIndexes)
+    {
+        drawMesh(meshes[it]);
+    }
+
+    // left engine
+    world->sendMVP(shader, lemm);
+    for (auto it : leftEngineIndexes)
+    {
+        drawMesh(meshes[it]);
+    }
+
+    // right engine
+    world->sendMVP(shader, remm);
+    for (auto it : rightengineIndexes)
+    {
+        drawMesh(meshes[it]);
+    }
+
+    // everything else
+    world->sendMVP(shader, modelMatrix);
+    for (auto it : remainderIndexes)
+    {
+        drawMesh(meshes[it]);
+    }
+}
+
+void Bike::updateLightTrail()
+{
+    // light trail
+    trail.update();
+    trail.drawAll();
+}
+
+void Bike::initialiseBikeParts()
 {
     const std::vector<Mesh> &meshes = objData->getMeshes();
     const std::vector<MeshAxis> &axis = objData->getAxis();
@@ -19,7 +137,7 @@ Bike::Bike(std::shared_ptr<const ObjData> _objData,
     // and see if it's in front or behind the seperator planes.
     // I decided the normal of the plane should point towards the front or the right, depending on orientation
     // we can decide this using the dot product of the normal and the (vertex - centre point of the plane)
-    
+
     std::set<unsigned int> used;
 
     for (auto &sep : seperators)
@@ -131,88 +249,5 @@ Bike::Bike(std::shared_ptr<const ObjData> _objData,
             }
         }
         i++;
-    }
-}
-
-Bike::~Bike()
-{
-}
-
-void Bike::translate(const glm::vec3 &vec)
-{
-    Object::translate(vec);
-
-    // calculate wheel spin based on distance travelled
-    // TODO calculate?
-    // current value is based off importing tyre vertices into libra office
-    // getting min and max for all axis, taking the difference and /2
-    const float RADIUS_OF_WHEEL = 1.87f;
-
-    // length of arc of segment = angle * radius
-    // length of arc of segment = length of distance moved over the ground
-    // angle = distance over the ground / radius
-    wheelAngle -= glm::length(vec) / RADIUS_OF_WHEEL;
-
-    // update engineAngle, if we move it gets updated regardless of speed
-    // TODO tweak to what looks good
-    // TODO base on time since last frame rather than here, it slows and speeds up as frame rate changes
-    engineAngle += glm::radians(8.0f);
-}
-
-void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const
-{
-    glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
-                     glm::rotate(wheelAngle, frontTyreAxis.axis) *      // 2nd rotate around origin
-                     glm::translate(-frontTyreAxis.point);              // 1st translate axis to origin
-
-    glm::mat4 btmm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(backTyreAxis.point) *               // 3rd translate back to initial point
-                     glm::rotate(wheelAngle, backTyreAxis.axis) *       // 2nd rotate around origin
-                     glm::translate(-backTyreAxis.point);               // 1st translate axis to origin
-
-    glm::mat4 remm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(rightEngineAxis.point) *            // 3rd translate back to initial point
-                     glm::rotate(-engineAngle, rightEngineAxis.axis) *   // 2nd rotate around origin
-                     glm::translate(-rightEngineAxis.point);            // 1st translate axis to origin
-
-    glm::mat4 lemm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(leftEngineAxis.point) *             // 3rd translate back to initial point
-                     glm::rotate(engineAngle, leftEngineAxis.axis) *   // 2nd rotate around origin
-                     glm::translate(-leftEngineAxis.point);             // 1st translate axis to origin
-
-    // front tyre
-    world->sendMVP(shader, ftmm);
-    for (auto it : frontTyreMeshIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
-    
-    // back tyre
-    world->sendMVP(shader, btmm);
-    for (auto it : backTyreMeshIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
-
-    // left engine
-    world->sendMVP(shader, lemm);
-    for (auto it : leftEngineIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
-
-    // right engine
-    world->sendMVP(shader, remm);
-    for (auto it : rightengineIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
-
-    // everything else
-    world->sendMVP(shader, modelMatrix);
-    for (auto it : remainderIndexes)
-    {
-        drawMesh(meshes[it]);
     }
 }
