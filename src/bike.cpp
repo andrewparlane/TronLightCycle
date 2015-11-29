@@ -8,18 +8,14 @@ Bike::Bike(std::shared_ptr<const ObjData> _objData,
            const glm::mat4 &modelMat,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
-      bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f)
+      bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
+      trail(_world, _shader, _defaultColour)
 {
+    initialiseBikeParts();
 }
 
 Bike::~Bike()
 {
-}
-
-bool Bike::initialise()
-{
-    initialiseBikeParts();
-    return trail.initialise(world, shader, defaultColour);
 }
 
 void Bike::updateLocation()
@@ -117,13 +113,15 @@ void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const
     {
         drawMesh(meshes[it]);
     }
+
+    // light trail
+    trail.drawAll();
 }
 
 void Bike::updateLightTrail()
 {
     // light trail
     trail.update();
-    trail.drawAll();
 }
 
 void Bike::initialiseBikeParts()

@@ -220,9 +220,7 @@ int main(void)
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f));
 
     // Load bike
-    Bike bike(bikeLoader, world, mainShader, bike_model);
-    bike.setDefaultColour(tronBlue);
-    bike.initialise();
+    Bike bike(bikeLoader, world, mainShader, bike_model, tronBlue);
 
     // create arena
     std::shared_ptr<ObjData> arenaObjData(createArena());
@@ -257,12 +255,15 @@ int main(void)
     // camera rotation
     float cameraRotationDegrees = 0.0f;
     bool cameraRotating = false;
-    bool cKeyPressed = false;
+
+    // key flags
+    bool cKeyPressed = false;           // camera rotation
+    bool sKeyPressed = false;           // stop moving the bike
+    bool spaceKeyPressed = false;       // toggle light trail
 
     // debug stuff
     // stop moving the bike with the 's' key
     bool stop = false;
-    bool sKeyPressed = false;
     do
     {
         // frame rate limiting =====================================================
@@ -304,6 +305,17 @@ int main(void)
         else
         {
             bike.turn(Bike::NO_TURN);
+        }
+
+        // Light trail toggle
+        if (glfwGetKey(window, GLFW_KEY_SPACE ))
+        {
+            spaceKeyPressed = 1;
+        }
+        if (spaceKeyPressed && !glfwGetKey(window, GLFW_KEY_SPACE ))
+        {
+            spaceKeyPressed = 0;
+            bike.toggleLightTrail();
         }
 
         // camera rotating?

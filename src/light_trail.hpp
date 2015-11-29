@@ -11,25 +11,40 @@
 class LightTrail
 {
 public:
-    LightTrail();
+    LightTrail(std::shared_ptr<World> _world, 
+               std::shared_ptr<const Shader> _shader,
+               glm::vec3 _colour);
     ~LightTrail();
 
-    bool initialise(std::shared_ptr<World> _world, 
-                    std::shared_ptr<const Shader> _shader,
-                    glm::vec3 colour);
+    void toggle();
 
     void turn(float bikeAngleRadians);
     void stopTurning();
-    void updateLastVertices(const glm::vec3 &bikeLocationWorld);
+    void updateLastVertices(glm::vec3 bikeLocationWorld);   // not passing by const & as we store it
 
-    void update() { lightTrailObjData->updateMesh(lightTrailMeshData); lightTrailObjData->updateBuffers(); }
-    void drawAll() { lightTrail->drawAll(); }
+    void update();
+    void drawAll() const { if (lightTrailMeshData.size() > 0) lightTrail->drawAll(); }
 
 protected:
-    MeshData lightTrailMeshData;
+    enum State
+    {
+        STATE_STOPPED = 0,
+        STATE_ON,
+        STATE_STOPPING,
+    };
+
+
+    std::shared_ptr<World> world;
+    std::shared_ptr<const Shader> shader;
+    glm::vec3 colour;
+
+    std::vector<MeshData> lightTrailMeshData;
     std::shared_ptr<ObjData> lightTrailObjData;
     std::unique_ptr<Object> lightTrail;
 
+    glm::vec3 bikeLocation;
+    unsigned int trailNumber;
+    State state;
     bool turning;
 };
 

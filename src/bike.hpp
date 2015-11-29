@@ -22,11 +22,10 @@ public:
         const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
     ~Bike();
 
-    bool initialise();
-
     void updateLocation();
     void turn(TurnDirection dir);
 
+    void toggleLightTrail() { trail.toggle(); }
     void updateLightTrail();
 
 protected:
