@@ -6,12 +6,13 @@
 Object::Object(std::shared_ptr<const ObjData> _objData, 
                std::shared_ptr<World> _world,
                std::shared_ptr<const Shader> _shader,
-               const glm::mat4 &modelMat)
+               const glm::mat4 &modelMat,
+               const glm::vec3 &_defaultColour)
     : objData(_objData), 
       world(_world),
       shader(_shader),
       modelMatrix(modelMat),
-      defaultColour(glm::vec3(0.0f, 0.0f, 0.0f))
+      defaultColour(_defaultColour)
 {
 }
 

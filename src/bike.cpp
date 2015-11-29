@@ -5,8 +5,9 @@
 Bike::Bike(std::shared_ptr<const ObjData> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
-           const glm::mat4 &modelMat) 
-    : Object(_objData, _world, _shader, modelMat),
+           const glm::mat4 &modelMat,
+           const glm::vec3 &_defaultColour)
+    : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f)
 {
 }

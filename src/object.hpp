@@ -17,7 +17,8 @@ public:
     Object(std::shared_ptr<const ObjData> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
-           const glm::mat4 &modelMat);
+           const glm::mat4 &modelMat,
+           const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
     ~Object();
 
     virtual void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
