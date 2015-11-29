@@ -21,9 +21,10 @@ ObjData::~ObjData()
     }
 }
 
-void ObjData::addMesh(const MeshData &md)
+bool ObjData::addMesh(const MeshData &md)
 {
     meshData.push_back(md);
+    return createBuffers(meshData.back());
 }
 
 bool ObjData::updateMesh(const MeshData &data)
@@ -40,58 +41,53 @@ bool ObjData::updateMesh(const MeshData &data)
     return false;
 }
 
-bool ObjData::createBuffers()
+bool ObjData::createBuffers(MeshData &md)
 {
-    meshes.empty();
+    Mesh newMesh;
 
-    for (auto &md : meshData)
+    newMesh.name = md.name;
+    newMesh.hasTexture = md.hasTexture;
+
+    newMesh.numIndices = md.indices.size();
+
+    newMesh.firstVertex = md.vertices[0];
+
+    // generate buffers
+    glGenBuffers(1, &newMesh.vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, newMesh.vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0], GL_STATIC_DRAW);
+
+    if (newMesh.hasTexture)
     {
-        Mesh newMesh;
-
-        newMesh.name = md.name;
-        newMesh.hasTexture = md.hasTexture;
-
-        newMesh.numIndices = md.indices.size();
-
-        newMesh.firstVertex = md.vertices[0];
-
-        // generate buffers
-        glGenBuffers(1, &newMesh.vertexBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, newMesh.vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0], GL_STATIC_DRAW);
-
-        if (newMesh.hasTexture)
-        {
-            glGenBuffers(1, &newMesh.uvBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, newMesh.uvBuffer);
-            glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0], GL_STATIC_DRAW);;
-        }
-
-        glGenBuffers(1, &newMesh.normalBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, newMesh.normalBuffer);
-        glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), &md.normals[0], GL_STATIC_DRAW);
-
-        glGenBuffers(1, &newMesh.indiceBuffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh.indiceBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), &md.indices[0], GL_STATIC_DRAW);
-
-        if (newMesh.hasTexture)
-        {
-            newMesh.texture = loadDDS(std::string("textures/compressed/") + md.texturePath);
-            if (newMesh.texture == 0)
-            {
-                printf("Couldn't loadDDS texture: %s\n", md.texturePath.c_str());
-                return false;
-            }
-        }
-        else
-        {
-            newMesh.texture = 0;
-        }
-        md.needsUpdate = false;
-
-        meshes.push_back(newMesh);
+        glGenBuffers(1, &newMesh.uvBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, newMesh.uvBuffer);
+        glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0], GL_STATIC_DRAW);;
     }
+
+    glGenBuffers(1, &newMesh.normalBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, newMesh.normalBuffer);
+    glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), &md.normals[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &newMesh.indiceBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh.indiceBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), &md.indices[0], GL_STATIC_DRAW);
+
+    if (newMesh.hasTexture)
+    {
+        newMesh.texture = loadDDS(std::string("textures/compressed/") + md.texturePath);
+        if (newMesh.texture == 0)
+        {
+            printf("Couldn't loadDDS texture: %s\n", md.texturePath.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        newMesh.texture = 0;
+    }
+    md.needsUpdate = false;
+
+    meshes.push_back(newMesh);
 
     return true;
 }

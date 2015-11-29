@@ -62,11 +62,10 @@ public:
     ObjData();
     ~ObjData();
 
-    void addMesh(const MeshData &data);
+    bool addMesh(const MeshData &data);
 
     bool updateMesh(const MeshData &data);
 
-    bool createBuffers();
     void updateBuffers();
 
     const std::vector<Mesh> &getMeshes() const { return meshes; }
@@ -76,6 +75,8 @@ public:
     BoundingBox getBoundingBox() const;
 
 protected:
+    bool createBuffers(MeshData &data);
+
     std::vector<MeshData> meshData;
     std::vector<Mesh> meshes;
     std::vector<MeshAxis> axis;

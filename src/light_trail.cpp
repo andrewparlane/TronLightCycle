@@ -34,8 +34,7 @@ bool LightTrail::initialise(std::shared_ptr<World> world,
     lightTrailMeshData.uvs.push_back(glm::vec2(0.1f, 1.0f));*/
     lightTrailMeshData.indices.push_back(0); lightTrailMeshData.indices.push_back(1); lightTrailMeshData.indices.push_back(3);
     lightTrailMeshData.indices.push_back(0); lightTrailMeshData.indices.push_back(3); lightTrailMeshData.indices.push_back(2);
-    lightTrailObjData->addMesh(lightTrailMeshData);
-    if (!lightTrailObjData->createBuffers())
+    if (!lightTrailObjData->addMesh(lightTrailMeshData))
     {
         // fali
         printf("Failed to create light trail obj data\n");
