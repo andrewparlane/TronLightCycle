@@ -337,6 +337,7 @@ int main(void)
             }
         }
 
+        // Stop moving the bike for debug purposes
         if (glfwGetKey(window, GLFW_KEY_S ))
         {
             sKeyPressed = 1;
