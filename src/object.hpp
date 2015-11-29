@@ -21,7 +21,7 @@ public:
     ~Object();
 
     virtual void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
-    void rotate(float radians, const glm::vec3 &axis) { modelMatrix *= glm::rotate(radians, axis); }
+    virtual void rotate(float radians, const glm::vec3 &axis) { modelMatrix *= glm::rotate(radians, axis); }
 
     glm::vec3 applyModelMatrx(const glm::vec3 &input) const { return glm::vec3(modelMatrix * glm::vec4(input,1.0f)); }
 
