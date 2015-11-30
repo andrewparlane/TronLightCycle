@@ -8,17 +8,6 @@ ObjData::ObjData()
 
 ObjData::~ObjData()
 {
-    for (auto &i : meshes)
-    {
-        glDeleteBuffers(1, &i.indiceBuffer);
-        glDeleteBuffers(1, &i.normalBuffer);
-        glDeleteBuffers(1, &i.vertexBuffer);
-        if (i.hasTexture)
-        {
-            glDeleteTextures(1, &i.texture);
-            glDeleteBuffers(1, &i.uvBuffer);
-        }
-    }
 }
 
 bool ObjData::addMesh(const MeshData &md)
@@ -43,39 +32,39 @@ bool ObjData::updateMesh(const MeshData &data)
 
 bool ObjData::createBuffers(MeshData &md)
 {
-    Mesh newMesh;
+    std::shared_ptr<Mesh> newMesh(new Mesh);
 
-    newMesh.name = md.name;
-    newMesh.hasTexture = md.hasTexture;
+    newMesh->name = md.name;
+    newMesh->hasTexture = md.hasTexture;
 
-    newMesh.numIndices = md.indices.size();
+    newMesh->numIndices = md.indices.size();
 
-    newMesh.firstVertex = md.vertices[0];
+    newMesh->firstVertex = md.vertices[0];
 
     // generate buffers
-    glGenBuffers(1, &newMesh.vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, newMesh.vertexBuffer);
+    glGenBuffers(1, &newMesh->vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, newMesh->vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0], GL_STATIC_DRAW);
 
-    if (newMesh.hasTexture)
+    if (newMesh->hasTexture)
     {
-        glGenBuffers(1, &newMesh.uvBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, newMesh.uvBuffer);
+        glGenBuffers(1, &newMesh->uvBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, newMesh->uvBuffer);
         glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0], GL_STATIC_DRAW);;
     }
 
-    glGenBuffers(1, &newMesh.normalBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, newMesh.normalBuffer);
+    glGenBuffers(1, &newMesh->normalBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, newMesh->normalBuffer);
     glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), &md.normals[0], GL_STATIC_DRAW);
 
-    glGenBuffers(1, &newMesh.indiceBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh.indiceBuffer);
+    glGenBuffers(1, &newMesh->indiceBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh->indiceBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), &md.indices[0], GL_STATIC_DRAW);
 
-    if (newMesh.hasTexture)
+    if (newMesh->hasTexture)
     {
-        newMesh.texture = loadDDS(std::string("textures/compressed/") + md.texturePath);
-        if (newMesh.texture == 0)
+        newMesh->texture = loadDDS(std::string("textures/compressed/") + md.texturePath);
+        if (newMesh->texture == 0)
         {
             printf("Couldn't loadDDS texture: %s\n", md.texturePath.c_str());
             return false;
@@ -83,7 +72,7 @@ bool ObjData::createBuffers(MeshData &md)
     }
     else
     {
-        newMesh.texture = 0;
+        newMesh->texture = 0;
     }
     md.needsUpdate = false;
 
@@ -100,32 +89,32 @@ void ObjData::updateBuffers()
         {
             for (auto &m : meshes)
             {
-                if (m.name.compare(md.name) == 0)
+                if (m->name.compare(md.name) == 0)
                 {
-                    m.numIndices = md.indices.size();
-                    m.firstVertex = md.vertices[0];
+                    m->numIndices = md.indices.size();
+                    m->firstVertex = md.vertices[0];
 
                     // buffer orphaning
                     // see: http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/particles-instancing/
                     // and: https://www.opengl.org/wiki/Buffer_Object_Streaming
                     // TODO: does this work when md.vertices.size() changes?
 
-                    glBindBuffer(GL_ARRAY_BUFFER, m.vertexBuffer);
+                    glBindBuffer(GL_ARRAY_BUFFER, m->vertexBuffer);
                     glBufferData(GL_ARRAY_BUFFER, md.vertices.size() * sizeof(glm::vec3), NULL, GL_STREAM_DRAW);
                     glBufferSubData(GL_ARRAY_BUFFER, 0, md.vertices.size() * sizeof(glm::vec3), &md.vertices[0]);
 
                     if (md.hasTexture)
                     {
-                        glBindBuffer(GL_ARRAY_BUFFER, m.uvBuffer);
+                        glBindBuffer(GL_ARRAY_BUFFER, m->uvBuffer);
                         glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(glm::vec2), NULL, GL_STREAM_DRAW);
                         glBufferSubData(GL_ARRAY_BUFFER, 0, md.uvs.size() * sizeof(glm::vec2), &md.uvs[0]);
                     }
 
-                    glBindBuffer(GL_ARRAY_BUFFER, m.normalBuffer);
+                    glBindBuffer(GL_ARRAY_BUFFER, m->normalBuffer);
                     glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(glm::vec3), NULL, GL_STREAM_DRAW);
                     glBufferSubData(GL_ARRAY_BUFFER, 0, md.normals.size() * sizeof(glm::vec3), &md.normals[0]);
 
-                    glBindBuffer(GL_ARRAY_BUFFER, m.indiceBuffer);
+                    glBindBuffer(GL_ARRAY_BUFFER, m->indiceBuffer);
                     glBufferData(GL_ARRAY_BUFFER, md.indices.size() * sizeof(unsigned short), NULL, GL_STREAM_DRAW);
                     glBufferSubData(GL_ARRAY_BUFFER, 0, md.indices.size() * sizeof(unsigned short), &md.indices[0]);
                     break;

@@ -33,8 +33,8 @@ public:
 
 protected:
 
-    virtual void internalDrawAll(const std::vector<Mesh> &meshes) const;
-    void drawMesh(const Mesh &mesh) const;
+    virtual void internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const;
+    void drawMesh(const std::shared_ptr<Mesh> &mesh) const;
 
     std::shared_ptr<const ObjData> objData;
 

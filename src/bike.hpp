@@ -33,7 +33,7 @@ protected:
     void translate(const glm::vec3 &vec) { Object::translate(vec); }
     void rotate(float radians, const glm::vec3 &axis) { Object::rotate(radians, axis); }
 
-    void internalDrawAll(const std::vector<Mesh> &meshes) const;
+    void internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const;
 
     void initialiseBikeParts();
 

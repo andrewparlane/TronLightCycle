@@ -20,7 +20,7 @@ Object::~Object()
 {
 }
 
-void Object::drawMesh(const Mesh &mesh) const
+void Object::drawMesh(const std::shared_ptr<Mesh> &mesh) const
 {
     GLuint vertexPosition_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_POS);
     GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_NORMAL);
@@ -31,21 +31,21 @@ void Object::drawMesh(const Mesh &mesh) const
     glEnableVertexAttribArray(vertexPosition_ModelID);
     glEnableVertexAttribArray(vertexNormal_ModelID);
 
-    if (mesh.hasTexture)
+    if (mesh->hasTexture)
     {
         glEnableVertexAttribArray(vertexTextureUVID);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mesh.texture);
+        glBindTexture(GL_TEXTURE_2D, mesh->texture);
         glUniform1i(textureSamplerID, 0);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
     glVertexAttribPointer(vertexPosition_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    if (mesh.hasTexture)
+    if (mesh->hasTexture)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, mesh.uvBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->uvBuffer);
         glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
         glUniform1f(fragmentIsTextureID, 1.0f);
     }
@@ -55,13 +55,13 @@ void Object::drawMesh(const Mesh &mesh) const
         glUniform1f(fragmentIsTextureID, 0.0f);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.normalBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->normalBuffer);
     glVertexAttribPointer(vertexNormal_ModelID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indiceBuffer);
-    glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_SHORT, (void *)0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indiceBuffer);
+    glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_SHORT, (void *)0);
 
-    if (mesh.hasTexture)
+    if (mesh->hasTexture)
     {
         glDisableVertexAttribArray(vertexTextureUVID);
     }
@@ -70,7 +70,7 @@ void Object::drawMesh(const Mesh &mesh) const
     glDisableVertexAttribArray(vertexNormal_ModelID);
 }
 
-void Object::internalDrawAll(const std::vector<Mesh> &meshes) const
+void Object::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const
 {
     for (auto &it : meshes)
     {
@@ -80,7 +80,7 @@ void Object::internalDrawAll(const std::vector<Mesh> &meshes) const
 
 void Object::drawAll() const
 {
-    const std::vector<Mesh> &meshes = objData->getMeshes();
+    const std::vector<std::shared_ptr<Mesh>> &meshes = objData->getMeshes();
 
     // bind shader
     shader->useShader();

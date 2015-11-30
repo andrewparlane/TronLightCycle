@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <glm/glm.hpp>
 
@@ -24,6 +25,18 @@ struct MeshData
 
 struct Mesh
 {
+    ~Mesh()
+    {
+        glDeleteBuffers(1, &indiceBuffer);
+        glDeleteBuffers(1, &normalBuffer);
+        glDeleteBuffers(1, &vertexBuffer);
+        if (hasTexture)
+        {
+            glDeleteTextures(1, &texture);
+            glDeleteBuffers(1, &uvBuffer);
+        }
+    }
+
     std::string name;
     bool hasTexture;
 
@@ -68,7 +81,7 @@ public:
 
     void updateBuffers();
 
-    const std::vector<Mesh> &getMeshes() const { return meshes; }
+    const std::vector<std::shared_ptr<Mesh>> &getMeshes() const { return meshes; }
     const std::vector<MeshAxis> &getAxis() const { return axis; }
     const std::vector<MeshSeperator> &getSeperators() const { return seperators; }
 
@@ -78,7 +91,7 @@ protected:
     bool createBuffers(MeshData &data);
 
     std::vector<MeshData> meshData;
-    std::vector<Mesh> meshes;
+    std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<MeshAxis> axis;
     std::vector<MeshSeperator> seperators;
 };

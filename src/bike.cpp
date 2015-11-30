@@ -57,7 +57,7 @@ void Bike::turn(TurnDirection dir)
     trail.turn(bikeAngleAroundYRads);
 }
 
-void Bike::internalDrawAll(const std::vector<Mesh> &meshes) const
+void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const
 {
     glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
                      glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
@@ -126,7 +126,7 @@ void Bike::updateLightTrail()
 
 void Bike::initialiseBikeParts()
 {
-    const std::vector<Mesh> &meshes = objData->getMeshes();
+    const std::vector<std::shared_ptr<Mesh>> &meshes = objData->getMeshes();
     const std::vector<MeshAxis> &axis = objData->getAxis();
     const std::vector<MeshSeperator> &seperators = objData->getSeperators();
 
@@ -156,11 +156,11 @@ void Bike::initialiseBikeParts()
         for (auto &mesh : meshes)
         {
             // does it start with the same thing the seperator started with?
-            if (mesh.name.find(sepType) == 0)
+            if (mesh->name.find(sepType) == 0)
             {
                 // ok are we in front or behind
                 // note don't need to normalise them, as we only care about the sign
-                float cosTheta = glm::dot(sep.normal, mesh.firstVertex - sep.point);
+                float cosTheta = glm::dot(sep.normal, mesh->firstVertex - sep.point);
 
                 if (sepType.compare("tyre") == 0)
                 {
