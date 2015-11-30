@@ -79,6 +79,8 @@ public:
 
     bool updateMesh(const MeshData &data);
 
+    void deleteMesh(const std::string &name);
+
     void updateBuffers();
 
     const std::vector<std::shared_ptr<Mesh>> &getMeshes() const { return meshes; }

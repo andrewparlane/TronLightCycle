@@ -30,6 +30,27 @@ bool ObjData::updateMesh(const MeshData &data)
     return false;
 }
 
+void ObjData::deleteMesh(const std::string &name)
+{
+    for (auto it = meshData.begin(); it != meshData.end(); it++)
+    {
+        if (it->name.compare(name) == 0)
+        {
+            meshData.erase(it);
+            break;
+        }
+    }
+
+    for (auto it = meshes.begin(); it != meshes.end(); it++)
+    {
+        if ((*it)->name.compare(name) == 0)
+        {
+            meshes.erase(it);
+            break;
+        }
+    }
+}
+
 bool ObjData::createBuffers(MeshData &md)
 {
     std::shared_ptr<Mesh> newMesh(new Mesh);
