@@ -206,6 +206,54 @@ void LightTrail::updateLastVertices(glm::vec3 bikeLocationWorld)
 
 void LightTrail::update()
 {
+    // all light trails other than the current running one should fade down to nothing
+    // the current one should do that too, if state is stopping
+
+    if (lightTrailMeshData.size() > 1)
+    {
+        for (unsigned int i = 0; i < lightTrailMeshData.size() - 1; i++)
+        {
+            bool changedSomething = false;
+            for (auto &v : lightTrailMeshData[i].vertices)
+            {
+                if (v.y > 0.1f)
+                {
+                    v.y -= 0.05f;
+                    changedSomething = true;
+                }
+            }
+            if (!changedSomething)
+            {
+                // we can delete this one
+                lightTrailObjData->deleteMesh(lightTrailMeshData[i].name);
+                lightTrailMeshData.erase(lightTrailMeshData.begin()+i);
+                i--; // so when we loop, we stay at the same increment
+            }
+        }
+    }
+
+    if (state == STATE_STOPPING)
+    {
+        // also start fading down the current back()
+        MeshData &md = lightTrailMeshData.back();
+        bool changedSomething = false;
+        for (auto &v : md.vertices)
+        {
+            if (v.y > 0.1f)
+            {
+                v.y -= 0.05f;
+                changedSomething = true;
+            }
+        }
+        if (!changedSomething)
+        {
+            // delete this last element
+            lightTrailObjData->deleteMesh(md.name);
+            lightTrailMeshData.erase(lightTrailMeshData.end()-1);
+            state = STATE_STOPPED;
+        }
+    }
+
     for (auto &md : lightTrailMeshData)
     {
         lightTrailObjData->updateMesh(md);
