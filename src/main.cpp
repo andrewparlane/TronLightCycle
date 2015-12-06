@@ -358,6 +358,20 @@ int main(void)
             stop = !stop;
         }
 
+        // bike speed using up and down arrow keys
+        if (glfwGetKey(window, GLFW_KEY_UP))
+        {
+            bike.updateSpeed(Bike::SPEED_ACCELERATE);
+        }
+        else if (glfwGetKey(window, GLFW_KEY_DOWN))
+        {
+            bike.updateSpeed(Bike::SPEED_BRAKE);
+        }
+        else
+        {
+            bike.updateSpeed(Bike::SPEED_NORMAL);
+        }
+
         // bike always moving forwards ========================================
         if (!stop)
         {

@@ -2,6 +2,11 @@
 
 #include <set>
 
+#define SPEED_DEFAULT       0.4f
+#define SPEED_SLOWEST       0.2f
+#define SPEED_FASTEST       0.6f
+#define SPEED_GRANULARITY   0.005f
+
 Bike::Bike(std::shared_ptr<const ObjData> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
@@ -9,7 +14,7 @@ Bike::Bike(std::shared_ptr<const ObjData> _objData,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trail(_world, _shader, _defaultColour)
+      trail(_world, _shader, _defaultColour), speed(SPEED_DEFAULT)
 {
     initialiseBikeParts();
 }
@@ -20,7 +25,7 @@ Bike::~Bike()
 
 void Bike::updateLocation()
 {
-    const glm::vec3 vec(0,0,-0.4f);
+    const glm::vec3 vec(0,0,-speed);
     translate(vec);
 
     // calculate wheel spin based on distance travelled
@@ -55,6 +60,54 @@ void Bike::turn(TurnDirection dir)
     rotate(angleRads, glm::vec3(0,1,0));
 
     trail.turn(bikeAngleAroundYRads);
+}
+
+void Bike::updateSpeed(Speed s)
+{
+    switch (s)
+    {
+        case SPEED_NORMAL:
+        {
+            // not accelerating or braking, move back towards default
+            if (speed > SPEED_DEFAULT + 0.0049f)
+            {
+                speed -= SPEED_GRANULARITY;
+            }
+            else if (speed < SPEED_DEFAULT - 0.0049f)
+            {
+                speed += SPEED_GRANULARITY;
+            }
+            else
+            {
+                speed = SPEED_DEFAULT;
+            }
+            break;
+        }
+        case SPEED_ACCELERATE:
+        {
+            if (speed < SPEED_FASTEST)
+            {
+                speed += SPEED_GRANULARITY;
+                if (speed > SPEED_FASTEST)
+                {
+                    speed = SPEED_FASTEST;
+                }
+            }
+            break;
+        }
+        case SPEED_BRAKE:
+        {
+            if (speed > SPEED_SLOWEST)
+            {
+                speed -= SPEED_GRANULARITY;
+                if (speed < SPEED_SLOWEST)
+                {
+                    speed = SPEED_SLOWEST;
+                }
+            }
+            break;
+        }
+    }
 }
 
 void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const

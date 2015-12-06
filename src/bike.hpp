@@ -15,6 +15,13 @@ public:
         TURN_RIGHT
     };
 
+    enum Speed
+    {
+        SPEED_NORMAL = 0,
+        SPEED_ACCELERATE,
+        SPEED_BRAKE
+    };
+
     Bike(std::shared_ptr<const ObjData> _objData, 
         std::shared_ptr<World> _world, 
         std::shared_ptr<const Shader> _shader,
@@ -24,6 +31,7 @@ public:
 
     void updateLocation();
     void turn(TurnDirection dir);
+    void updateSpeed(Speed s);
 
     void toggleLightTrail() { trail.toggle(); }
     void updateLightTrail();
@@ -54,6 +62,8 @@ protected:
 
     // note lightTrail is in world co-ords
     LightTrail trail;
+
+    float speed;
 };
 
 #endif
