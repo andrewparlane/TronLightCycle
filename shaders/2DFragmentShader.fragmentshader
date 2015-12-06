@@ -4,9 +4,13 @@
 varying vec2 uv;
 
 // const input per mesh
+uniform float fragmentIsTexture;
 uniform sampler2D myTextureSampler;
+uniform vec3 fragmentColour;
 
 void main()
 {
-    gl_FragColor = texture2D(myTextureSampler, uv);
+    gl_FragColor = (fragmentIsTexture > 0.5f) ?
+                        texture2D(myTextureSampler, uv) :
+                        vec4(fragmentColour, 1);
 }
