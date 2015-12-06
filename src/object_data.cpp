@@ -57,6 +57,14 @@ template<typename T> void ObjData<T>::deleteMesh(const std::string &name)
     boundingBoxIsCached = false;
 }
 
+template<typename T> void ObjData<T>::deleteAll()
+{
+    meshData.clear();
+    meshes.clear();
+
+    boundingBoxIsCached = false;
+}
+
 template<typename T> bool ObjData<T>::createBuffers(MeshData<T> &md)
 {
     std::shared_ptr<Mesh<T>> newMesh(new Mesh<T>());

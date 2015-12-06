@@ -80,6 +80,7 @@ public:
     bool updateMesh(const MeshData<T> &data);
 
     void deleteMesh(const std::string &name);
+    void deleteAll();
 
     void updateBuffers();
 
