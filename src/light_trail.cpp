@@ -8,7 +8,7 @@ LightTrail::LightTrail(std::shared_ptr<World> _world,
     : world(_world), shader(_shader), colour(_colour),
       trailNumber(0), state(STATE_STOPPED), turning(false)
 {
-    lightTrailObjData.reset(new ObjData());
+    lightTrailObjData.reset(new ObjData3D());
 }
 
 LightTrail::~LightTrail()
@@ -29,8 +29,8 @@ void LightTrail::toggle()
         // deosn't matter create new light trail
         state = STATE_ON;
 
-        lightTrailMeshData.push_back(MeshData());
-        MeshData &md = lightTrailMeshData.back();
+        lightTrailMeshData.push_back(MeshData<glm::vec3>());
+        MeshData<glm::vec3> &md = lightTrailMeshData.back();
 
         md.name = "LT" + std::to_string(trailNumber++);
         md.hasTexture = false;
@@ -68,7 +68,7 @@ void LightTrail::turn(float bikeAngleRadians)
         // because the bike has turned, we need to add a new face
         // to our light trail data.
 
-        MeshData &md = lightTrailMeshData.back();
+        MeshData<glm::vec3> &md = lightTrailMeshData.back();
 
         unsigned int numVertices = md.vertices.size();
         glm::vec3 lastVertexPosBottom = md.vertices[numVertices - 2];
@@ -134,7 +134,7 @@ void LightTrail::stopTurning()
 {
     if (state == STATE_ON)
     {
-        MeshData &md = lightTrailMeshData.back();
+        MeshData<glm::vec3> &md = lightTrailMeshData.back();
         if (turning)
         {
             turning = false;
@@ -195,7 +195,7 @@ void LightTrail::updateLastVertices(glm::vec3 bikeLocationWorld)
     bikeLocation = bikeLocationWorld;
     if (state == STATE_ON)
     {
-        MeshData &md = lightTrailMeshData.back();
+        MeshData<glm::vec3> &md = lightTrailMeshData.back();
         // update the positions of the last two vertices
         md.vertices.pop_back();
         md.vertices.pop_back();
@@ -235,7 +235,7 @@ void LightTrail::update()
     if (state == STATE_STOPPING)
     {
         // also start fading down the current back()
-        MeshData &md = lightTrailMeshData.back();
+        MeshData<glm::vec3> &md = lightTrailMeshData.back();
         bool changedSomething = false;
         for (auto &v : md.vertices)
         {

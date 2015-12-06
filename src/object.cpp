@@ -3,7 +3,7 @@
 #include <world.hpp>
 #include <shader.hpp>
 
-Object::Object(std::shared_ptr<const ObjData> _objData, 
+Object::Object(std::shared_ptr<const ObjData3D> _objData, 
                std::shared_ptr<World> _world,
                std::shared_ptr<const Shader> _shader,
                const glm::mat4 &modelMat,
@@ -20,7 +20,7 @@ Object::~Object()
 {
 }
 
-void Object::drawMesh(const std::shared_ptr<Mesh> &mesh) const
+void Object::drawMesh(const std::shared_ptr<Mesh<glm::vec3>> &mesh) const
 {
     GLuint vertexPosition_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_POS);
     GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_NORMAL);
@@ -70,7 +70,7 @@ void Object::drawMesh(const std::shared_ptr<Mesh> &mesh) const
     glDisableVertexAttribArray(vertexNormal_ModelID);
 }
 
-void Object::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const
+void Object::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const
 {
     for (auto &it : meshes)
     {
@@ -80,7 +80,7 @@ void Object::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) c
 
 void Object::drawAll() const
 {
-    const std::vector<std::shared_ptr<Mesh>> &meshes = objData->getMeshes();
+    const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes = objData->getMeshes();
 
     // bind shader
     shader->useShader();

@@ -7,7 +7,7 @@
 #define SPEED_FASTEST       0.6f
 #define SPEED_GRANULARITY   0.005f
 
-Bike::Bike(std::shared_ptr<const ObjData> _objData, 
+Bike::Bike(std::shared_ptr<const ObjData3D> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat,
@@ -110,7 +110,7 @@ void Bike::updateSpeed(Speed s)
     }
 }
 
-void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const
+void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const
 {
     glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
                      glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
@@ -179,7 +179,7 @@ void Bike::updateLightTrail()
 
 void Bike::initialiseBikeParts()
 {
-    const std::vector<std::shared_ptr<Mesh>> &meshes = objData->getMeshes();
+    const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes = objData->getMeshes();
     const std::vector<MeshAxis> &axis = objData->getAxis();
     const std::vector<MeshSeperator> &seperators = objData->getSeperators();
 

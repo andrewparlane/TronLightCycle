@@ -10,7 +10,7 @@
 
 #include <object_data.hpp>
 
-class ObjLoader : public ObjData
+class ObjLoader : public ObjData3D
 {
 public:
     ObjLoader(const std::string &objPath, const std::string &_textureMapPath);

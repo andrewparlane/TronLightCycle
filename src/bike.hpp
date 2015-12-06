@@ -22,7 +22,7 @@ public:
         SPEED_BRAKE
     };
 
-    Bike(std::shared_ptr<const ObjData> _objData, 
+    Bike(std::shared_ptr<const ObjData3D> _objData, 
         std::shared_ptr<World> _world, 
         std::shared_ptr<const Shader> _shader,
         const glm::mat4 &modelMat,
@@ -41,7 +41,7 @@ protected:
     void translate(const glm::vec3 &vec) override { Object::translate(vec); }
     void rotate(float radians, const glm::vec3 &axis) override { Object::rotate(radians, axis); }
 
-    void internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const override;
+    void internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const override;
 
     void initialiseBikeParts();
 

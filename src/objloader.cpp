@@ -16,7 +16,7 @@
 #include <assimp/postprocess.h>     // Post processing flags
 
 ObjLoader::ObjLoader(const std::string &objFilePath, const std::string &_textureMapPath)
-    : ObjData(), objPath(objFilePath), textureMapPath(_textureMapPath)
+    : ObjData3D(), objPath(objFilePath), textureMapPath(_textureMapPath)
 {
 }
 
@@ -141,7 +141,7 @@ bool ObjLoader::loadObj()
         }
         else
         {
-            MeshData md;
+            MeshData<glm::vec3> md;
 
             md.name = mesh->mName.C_Str();
 

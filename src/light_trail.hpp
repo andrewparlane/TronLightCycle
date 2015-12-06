@@ -38,8 +38,8 @@ protected:
     std::shared_ptr<const Shader> shader;
     glm::vec3 colour;
 
-    std::vector<MeshData> lightTrailMeshData;
-    std::shared_ptr<ObjData> lightTrailObjData;
+    std::vector<MeshData<glm::vec3>> lightTrailMeshData;
+    std::shared_ptr<ObjData3D> lightTrailObjData;
     std::unique_ptr<Object> lightTrail;
 
     glm::vec3 bikeLocation;

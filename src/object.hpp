@@ -14,7 +14,7 @@
 class Object
 {
 public:
-    Object(std::shared_ptr<const ObjData> _objData, 
+    Object(std::shared_ptr<const ObjData3D> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat,
@@ -33,10 +33,10 @@ public:
 
 protected:
 
-    virtual void internalDrawAll(const std::vector<std::shared_ptr<Mesh>> &meshes) const;
-    void drawMesh(const std::shared_ptr<Mesh> &mesh) const;
+    virtual void internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const;
+    void drawMesh(const std::shared_ptr<Mesh<glm::vec3>> &mesh) const;
 
-    std::shared_ptr<const ObjData> objData;
+    std::shared_ptr<const ObjData3D> objData;
 
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;

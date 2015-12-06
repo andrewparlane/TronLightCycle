@@ -62,10 +62,34 @@ Shader *setupMainShader()
     return mainShader;
 }
 
-ObjData *createArena()
+Shader *setup2DShader()
 {
-    ObjData *arenaObjData = new ObjData();
-    MeshData md;
+    // initialise text shader
+    Shader *shader2D = new Shader( "shaders/2DVertexShader.vertexshader", "shaders/2DFragmentShader.fragmentshader" );
+    if (!shader2D->compile())
+    {
+        printf("Failed to compile 2D shader\n");
+        return NULL;
+    }
+    else
+    {
+        // Get a handle for our buffers
+        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VECTOR_POS_SCREEN) ||
+            !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VECTOR_UV) ||
+            !shader2D->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER))
+        {
+            printf("Failed to add 2D shader IDs\n");
+            return NULL;
+        }
+    }
+
+    return shader2D;
+}
+
+ObjData3D *createArena()
+{
+    ObjData3D *arenaObjData = new ObjData3D();
+    MeshData<glm::vec3> md;
     md.name = "arena";
     md.hasTexture = true;
     md.texturePath = "arena.DDS";
@@ -209,7 +233,7 @@ int main(void)
     }
 
     // get the lowest point of the bike, so we can move it so the wheels rest on the floor
-    BoundingBox bikeBB = bikeLoader->getBoundingBox();
+    BoundingBox<glm::vec3> bikeBB = bikeLoader->getBoundingBox();
     float lowest = FLT_MAX;
     for (unsigned int i = 0; i < 8; i++)
     {
@@ -223,7 +247,7 @@ int main(void)
     Bike bike(bikeLoader, world, mainShader, bike_model, tronBlue);
 
     // create arena
-    std::shared_ptr<ObjData> arenaObjData(createArena());
+    std::shared_ptr<ObjData3D> arenaObjData(createArena());
     if (!arenaObjData)
     {
         printf("Failed to create arena obj data\n");
