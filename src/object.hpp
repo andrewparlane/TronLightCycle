@@ -19,7 +19,7 @@ public:
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat,
            const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
-    ~Object();
+    virtual ~Object();
 
     virtual void translate(const glm::vec3 &vec) { modelMatrix *= glm::translate(vec); }
     virtual void rotate(float radians, const glm::vec3 &axis) { modelMatrix *= glm::rotate(radians, axis); }

@@ -73,7 +73,7 @@ class ObjData
 {
 public:
     ObjData();
-    ~ObjData();
+    virtual ~ObjData();
 
     bool addMesh(const MeshData &data);
 
