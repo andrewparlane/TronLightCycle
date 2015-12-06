@@ -330,16 +330,16 @@ int main(void)
             cameraRotating = !cameraRotating;
         }
 
-        // zoom camera in or out using up + down keys
+        // zoom camera in or out using left shift and control keys
         // TODO: Add mouse wheel support
-        if (glfwGetKey(window, GLFW_KEY_UP))
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT))
         {
             if (distanceBetweenBikeAndCamera > 8.0f)
             {
                 distanceBetweenBikeAndCamera -= 0.2f;
             }
         }
-        if (glfwGetKey(window, GLFW_KEY_DOWN))
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL))
         {
             if (distanceBetweenBikeAndCamera < 30.0f)
             {
