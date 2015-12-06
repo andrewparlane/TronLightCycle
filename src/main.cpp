@@ -268,7 +268,7 @@ int main(void)
     }
 
     // create debug text object
-    TwoDimensional text(shader2D);
+    Text text(shader2D);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
