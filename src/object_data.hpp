@@ -87,7 +87,7 @@ public:
     const std::vector<MeshAxis> &getAxis() const { return axis; }
     const std::vector<MeshSeperator> &getSeperators() const { return seperators; }
 
-    BoundingBox getBoundingBox() const;
+    BoundingBox getBoundingBox();
 
 protected:
     bool createBuffers(MeshData &data);
@@ -96,6 +96,9 @@ protected:
     std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<MeshAxis> axis;
     std::vector<MeshSeperator> seperators;
+
+    BoundingBox cachedBoundingBox;
+    bool boundingBoxIsCached;
 };
 
 #endif

@@ -13,6 +13,7 @@ ObjData::~ObjData()
 bool ObjData::addMesh(const MeshData &md)
 {
     meshData.push_back(md);
+    boundingBoxIsCached = false;
     return createBuffers(meshData.back());
 }
 
@@ -24,6 +25,7 @@ bool ObjData::updateMesh(const MeshData &data)
         {
             md = data;
             md.needsUpdate = true;
+            boundingBoxIsCached = false;
             return true;
         }
     }
@@ -49,6 +51,7 @@ void ObjData::deleteMesh(const std::string &name)
             break;
         }
     }
+    boundingBoxIsCached = false;
 }
 
 bool ObjData::createBuffers(MeshData &md)
@@ -145,10 +148,16 @@ void ObjData::updateBuffers()
     }
 }
 
-BoundingBox ObjData::getBoundingBox() const
+BoundingBox ObjData::getBoundingBox()
 {
+    if (boundingBoxIsCached)
+    {
+        return cachedBoundingBox;
+    }
+
     // calculate boinding box
-    BoundingBox bb;
+    BoundingBox &bb = cachedBoundingBox;
+    boundingBoxIsCached = true;
 
     // axis increas to the right, up, towards us
     float rightMost = -FLT_MAX;
