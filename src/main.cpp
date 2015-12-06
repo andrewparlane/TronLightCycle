@@ -16,9 +16,9 @@ GLFWwindow* window;
 #include <world.hpp>
 #include <shader.hpp>
 #include <bike.hpp>
+#include <two_dimensional.hpp>
 
 #include <opengl_tutorials_org/texture.hpp>
-#include <opengl_tutorials_org/text2D.hpp>
 
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
@@ -195,7 +195,9 @@ int main(void)
         system("pause");
         return -1;
     }
-    if (!initText2D("textures/compressed/Holstein.DDS"))
+    std::shared_ptr<const Shader> shader2D;
+    shader2D.reset(setup2DShader());
+    if (!shader2D)
     {
         system("pause");
         return -1;
@@ -255,6 +257,18 @@ int main(void)
         return -1;
     }
     Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
+
+    // load default font
+    unsigned int defaultFont = loadDDS(std::string("textures/compressed/Holstein.DDS"));
+    if (defaultFont == 0)
+    {
+        printf("Couldn't loadDDS font texture\n");
+        system("pause");
+        return false;
+    }
+
+    // create debug text object
+    TwoDimensional text(shader2D);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -441,11 +455,18 @@ int main(void)
         arena.drawAll();
 
         // output debug stats ==================================================
-        char textBuff[32];
-        snprintf(textBuff, 32, "FR (Actual): %d\n", frameRate);
-        printText2D(textBuff, 10, 560, 35);
-        snprintf(textBuff, 32, "      (MAX): %d\n", displayedMaxPossibleFrameRate);
-        printText2D(textBuff, 10, 530, 35);
+        if (frameCount == 0)
+        {
+            char textBuff[32];
+            text.deleteAllObjData();
+
+            snprintf(textBuff, 32, "FR (Actual): %d\n", frameRate);
+            text.addText2D(textBuff, 10, 560, 35, defaultFont);
+
+            snprintf(textBuff, 32, "      (MAX): %d\n", displayedMaxPossibleFrameRate);
+            text.addText2D(textBuff, 10, 530, 35, defaultFont);
+        }
+        text.drawAll();
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);
@@ -461,8 +482,9 @@ int main(void)
         glfwWindowShouldClose(window) == 0);
 
 
-    // Cleanup    
-    cleanupText2D();
+    // Cleanup
+    // delete default font
+    glDeleteTextures(1, &defaultFont);
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
 

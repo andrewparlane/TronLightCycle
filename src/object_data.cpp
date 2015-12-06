@@ -88,9 +88,13 @@ template<typename T> bool ObjData<T>::createBuffers(MeshData<T> &md)
         glBufferData(GL_ARRAY_BUFFER, md.uvs.size() * sizeof(md.uvs[0]), &md.uvs[0], GL_STATIC_DRAW);;
     }
 
-    glGenBuffers(1, &newMesh->normalBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, newMesh->normalBuffer);
-    glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(md.normals[0]), &md.normals[0], GL_STATIC_DRAW);
+    // we don't use normals in ObjData2D
+    if (md.normals.size())
+    {
+        glGenBuffers(1, &newMesh->normalBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, newMesh->normalBuffer);
+        glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(md.normals[0]), &md.normals[0], GL_STATIC_DRAW);
+    }
 
     glGenBuffers(1, &newMesh->indiceBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh->indiceBuffer);
