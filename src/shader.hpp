@@ -24,10 +24,10 @@ enum ShaderUniformID
 
 enum ShaderAttribID
 {
-    SHADER_ATTRIB_VECTOR_POS = 0,
-    SHADER_ATTRIB_VECTOR_POS_SCREEN,
-    SHADER_ATTRIB_VECTOR_NORMAL,
-    SHADER_ATTRIB_VECTOR_UV,
+    SHADER_ATTRIB_VERTEX_POS = 0,
+    SHADER_ATTRIB_VERTEX_POS_SCREEN,
+    SHADER_ATTRIB_VERTEX_NORMAL,
+    SHADER_ATTRIB_VERTEX_UV,
 };
 
 class Shader
@@ -69,10 +69,10 @@ protected:
     GLuint shader_uniform_fragment_colour;
     
     
-    GLuint shader_attrib_vector_pos;
-    GLuint shader_attrib_vector_pos_screen;
-    GLuint shader_attrib_vector_normal;
-    GLuint shader_attrib_vector_uv;
+    GLuint shader_attrib_vertex_pos;
+    GLuint shader_attrib_vertex_pos_screen;
+    GLuint shader_attrib_vertex_normal;
+    GLuint shader_attrib_vertex_uv;
 };
 
 #endif

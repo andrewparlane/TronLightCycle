@@ -170,10 +170,10 @@ bool Shader::addAttribID(const std::string &name, ShaderAttribID id)
     
     switch (id)
     {
-        case SHADER_ATTRIB_VECTOR_POS:          shader_attrib_vector_pos = ret; break;
-        case SHADER_ATTRIB_VECTOR_POS_SCREEN:   shader_attrib_vector_pos_screen = ret; break;
-        case SHADER_ATTRIB_VECTOR_NORMAL:       shader_attrib_vector_normal = ret; break;
-        case SHADER_ATTRIB_VECTOR_UV:           shader_attrib_vector_uv = ret; break;
+        case SHADER_ATTRIB_VERTEX_POS:          shader_attrib_vertex_pos = ret; break;
+        case SHADER_ATTRIB_VERTEX_POS_SCREEN:   shader_attrib_vertex_pos_screen = ret; break;
+        case SHADER_ATTRIB_VERTEX_NORMAL:       shader_attrib_vertex_normal = ret; break;
+        case SHADER_ATTRIB_VERTEX_UV:           shader_attrib_vertex_uv = ret; break;
         default: return false;
     }
 
@@ -216,10 +216,10 @@ GLuint Shader::getAttribID(ShaderAttribID id) const
     
     switch (id)
     {
-        case SHADER_ATTRIB_VECTOR_POS:          return shader_attrib_vector_pos;
-        case SHADER_ATTRIB_VECTOR_POS_SCREEN:   return shader_attrib_vector_pos_screen;
-        case SHADER_ATTRIB_VECTOR_NORMAL:       return shader_attrib_vector_normal;
-        case SHADER_ATTRIB_VECTOR_UV:           return shader_attrib_vector_uv;
+        case SHADER_ATTRIB_VERTEX_POS:          return shader_attrib_vertex_pos;
+        case SHADER_ATTRIB_VERTEX_POS_SCREEN:   return shader_attrib_vertex_pos_screen;
+        case SHADER_ATTRIB_VERTEX_NORMAL:       return shader_attrib_vertex_normal;
+        case SHADER_ATTRIB_VERTEX_UV:           return shader_attrib_vertex_uv;
         default: return -1;
     }
     

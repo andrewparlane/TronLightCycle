@@ -37,9 +37,9 @@ Shader *setupMainShader()
     {
         // Get main shader parameters
         if (// vertex params (variable)
-            !mainShader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VECTOR_POS) ||
-            !mainShader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VECTOR_NORMAL) ||
-            !mainShader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VECTOR_UV) ||
+            !mainShader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
+            !mainShader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VERTEX_NORMAL) ||
+            !mainShader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
             // vertex params (static)
             !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
             !mainShader->addUniformID("ModelMatrix", SHADER_UNIFORM_MODEL_MATRIX) ||
@@ -74,8 +74,8 @@ Shader *setup2DShader()
     else
     {
         // Get a handle for our buffers
-        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VECTOR_POS_SCREEN) ||
-            !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VECTOR_UV) ||
+        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VERTEX_POS_SCREEN) ||
+            !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VERTEX_UV) ||
             !shader2D->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
             !shader2D->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
             !shader2D->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))

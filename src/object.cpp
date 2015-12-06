@@ -22,9 +22,9 @@ Object::~Object()
 
 void Object::drawMesh(const std::shared_ptr<Mesh<glm::vec3>> &mesh) const
 {
-    GLuint vertexPosition_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_POS);
-    GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VECTOR_NORMAL);
-    GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VECTOR_UV);
+    GLuint vertexPosition_ModelID = shader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
+    GLuint vertexNormal_ModelID = shader->getAttribID(SHADER_ATTRIB_VERTEX_NORMAL);
+    GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
     GLuint fragmentIsTextureID = shader->getUniformID(SHADER_UNIFORM_IS_TEXTURE);
     GLuint textureSamplerID = shader->getUniformID(SHADER_UNIFORM_TEXTURE_SAMPLER);
 
