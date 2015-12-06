@@ -17,7 +17,8 @@ template<typename T> struct MeshData
     std::vector<T> normals;
 
     std::string name;
-    std::string texturePath;
+    std::string texturePath;        // only one of texturePath
+    unsigned int textureID;         // and textureID are used
     bool hasTexture;
 
     bool needsUpdate;
@@ -32,13 +33,17 @@ template<typename T> struct Mesh
         glDeleteBuffers(1, &vertexBuffer);
         if (hasTexture)
         {
-            glDeleteTextures(1, &texture);
+            if (ownTexture)
+            {
+                glDeleteTextures(1, &texture);
+            }
             glDeleteBuffers(1, &uvBuffer);
         }
     }
 
     std::string name;
     bool hasTexture;
+    bool ownTexture;
 
     T firstVertex; // needed for use with seperators
 
