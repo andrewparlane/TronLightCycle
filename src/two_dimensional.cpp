@@ -165,10 +165,17 @@ void Shape2D::addLine(glm::vec2 start, glm::vec2 end, glm::vec3 startColour, glm
             startColour, endColour, endColour, startColour);
 }
 
-void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl, glm::vec3 tlCol, glm::vec3 trCol, glm::vec3 brCol, glm::vec3 blCol)
+void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl, glm::vec3 tlCol, glm::vec3 trCol, glm::vec3 brCol, glm::vec3 blCol, const std::string &name)
 {
     MeshData<glm::vec2> md;
-    md.name = "rect" + std::to_string(numRects++);
+    if (name.size())
+    {
+        md.name = name;
+    }
+    else
+    {
+        md.name = "rect" + std::to_string(numRects++);
+    }
     md.hasTexture = false;
 
     md.vertices.push_back(tl);
