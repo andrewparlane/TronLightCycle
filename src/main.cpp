@@ -20,6 +20,9 @@ GLFWwindow* window;
 
 #include <opengl_tutorials_org/texture.hpp>
 
+#define SPEED_BAR_START_X 602.0f
+#define SPEED_BAR_END_X 778.0f
+
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
@@ -272,8 +275,16 @@ int main(void)
     // create debug text object
     Text text(shader2D);
 
-    // Enable depth test
-    glEnable(GL_DEPTH_TEST);
+    // create speed bar
+    Shape2D speedBar(shader2D, glm::vec3(1.0f, 1.0f, 1.0f));
+    speedBar.addRect(glm::vec2(SPEED_BAR_START_X-2.0f,580), glm::vec2(SPEED_BAR_END_X+2,580), glm::vec2(SPEED_BAR_END_X+2,560), glm::vec2(SPEED_BAR_START_X-2.0f,560),
+                     glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    speedBar.addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(SPEED_BAR_END_X,578), glm::vec2(SPEED_BAR_END_X,562), glm::vec2(SPEED_BAR_START_X,562),
+        glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+    Text speedBarText(shader2D);
+    speedBarText.addText2D("speed", (unsigned int)(SPEED_BAR_START_X - 156), 560, 26, defaultFont);
+
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
     // Enable blending
@@ -300,6 +311,9 @@ int main(void)
     bool cKeyPressed = false;           // camera rotation
     bool sKeyPressed = false;           // stop moving the bike
     bool spaceKeyPressed = false;       // toggle light trail
+
+    // misc
+    float lastSpeed = 0.0f;
 
     // debug stuff
     // stop moving the bike with the 's' key
@@ -449,24 +463,44 @@ int main(void)
             cameraRotationDegrees += 0.4f;
         }
 
-        // draw bike ===========================================================
+        // Draw 3D objects draw only what's in front ================================
+        glEnable(GL_DEPTH_TEST);
+
+        // draw bike
         bike.updateLightTrail();
         bike.drawAll();
 
-        // draw arena ==========================================================
+        // draw arena
         arena.drawAll();
 
-        // output debug stats ==================================================
+        // Draw 2D objects in order they are listed =================================
+        glDisable(GL_DEPTH_TEST);
+
+        // draw speed bar, only change the bar if the value has changed
+        float speedPercent = bike.getSpeedPercent();
+        if (abs(lastSpeed - speedPercent) > 0.01f)
+        {
+            lastSpeed = speedPercent;
+            float end_x = SPEED_BAR_START_X + (SPEED_BAR_END_X - SPEED_BAR_START_X) * speedPercent;
+            speedBar.deleteObjData("speed_bar");
+            speedBar.addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(end_x,578), glm::vec2(end_x,562), glm::vec2(SPEED_BAR_START_X,562),
+                             glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),
+                             "speed_bar");
+        }
+        speedBar.drawAll();
+        speedBarText.drawAll();
+
+        // output debug stats
         if (frameCount == 0)
         {
             char textBuff[32];
             text.deleteAllObjData();
 
             snprintf(textBuff, 32, "FR (Actual): %d\n", frameRate);
-            text.addText2D(textBuff, 10, 560, 35, defaultFont);
+            text.addText2D(textBuff, 10, 560, 26, defaultFont);
 
             snprintf(textBuff, 32, "      (MAX): %d\n", displayedMaxPossibleFrameRate);
-            text.addText2D(textBuff, 10, 530, 35, defaultFont);
+            text.addText2D(textBuff, 10, 530, 26, defaultFont);
         }
         text.drawAll();
 
