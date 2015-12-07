@@ -19,8 +19,6 @@ protected:
     ObjData2D objData;
 
     std::shared_ptr<const Shader> shader;
-
-    glm::vec3 defaultColour;
 };
 
 class Text : public Object2D
@@ -41,8 +39,8 @@ public:
     Shape2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour);
     ~Shape2D();
 
-    void addLine(glm::vec2 start, glm::vec2 end, float thickness);
-    void addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl);
+    void addLine(glm::vec2 start, glm::vec2 end, glm::vec3 startColour, glm::vec3 endColour, float thickness);
+    void addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl, glm::vec3 tlCol, glm::vec3 trCol, glm::vec3 brCol, glm::vec3 blCol);
 
 protected:
     unsigned int numRects;

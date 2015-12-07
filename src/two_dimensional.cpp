@@ -12,7 +12,7 @@
 #include "two_dimensional.hpp"
 
 Object2D::Object2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour)
-    : shader(_shader), defaultColour(_defaultColour)
+    : shader(_shader)
 {
 }
 
@@ -149,7 +149,7 @@ Shape2D::~Shape2D()
 {
 }
 
-void Shape2D::addLine(glm::vec2 start, glm::vec2 end, float thickness)
+void Shape2D::addLine(glm::vec2 start, glm::vec2 end, glm::vec3 startColour, glm::vec3 endColour, float thickness)
 {
     // a line is just a rectangle.
     // calculate top left and bottom right co-ords
@@ -161,13 +161,11 @@ void Shape2D::addLine(glm::vec2 start, glm::vec2 end, float thickness)
     direction.y = -direction.y;
     glm::vec2 otherEdge = glm::normalize(glm::vec2(direction.y, direction.x)) * (thickness / 2.0f);
 
-    addRect(start + otherEdge,
-            end + otherEdge,
-            end - otherEdge,
-            start - otherEdge);
+    addRect(start + otherEdge, end + otherEdge, end - otherEdge, start - otherEdge,
+            startColour, endColour, endColour, startColour);
 }
 
-void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl)
+void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl, glm::vec3 tlCol, glm::vec3 trCol, glm::vec3 brCol, glm::vec3 blCol)
 {
     MeshData<glm::vec2> md;
     md.name = "rect" + std::to_string(numRects++);
@@ -178,10 +176,10 @@ void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl)
     md.vertices.push_back(br);
     md.vertices.push_back(bl);
 
-    md.colours.push_back(defaultColour);
-    md.colours.push_back(defaultColour);
-    md.colours.push_back(defaultColour);
-    md.colours.push_back(defaultColour);
+    md.colours.push_back(tlCol);
+    md.colours.push_back(trCol);
+    md.colours.push_back(brCol);
+    md.colours.push_back(blCol);
 
     md.indices.push_back(0);
     md.indices.push_back(1);
