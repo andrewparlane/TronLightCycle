@@ -28,6 +28,7 @@ enum ShaderAttribID
     SHADER_ATTRIB_VERTEX_POS_SCREEN,
     SHADER_ATTRIB_VERTEX_NORMAL,
     SHADER_ATTRIB_VERTEX_UV,
+    SHADER_ATTRIB_VERTEX_COLOUR,
 };
 
 class Shader
@@ -73,6 +74,7 @@ protected:
     GLuint shader_attrib_vertex_pos_screen;
     GLuint shader_attrib_vertex_normal;
     GLuint shader_attrib_vertex_uv;
+    GLuint shader_attrib_vertex_colour;
 };
 
 #endif

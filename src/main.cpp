@@ -76,9 +76,9 @@ Shader *setup2DShader()
         // Get a handle for our buffers
         if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VERTEX_POS_SCREEN) ||
             !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VERTEX_UV) ||
+            !shader2D->addAttribID("vertexColour", SHADER_ATTRIB_VERTEX_COLOUR) ||
             !shader2D->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
-            !shader2D->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
-            !shader2D->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
+            !shader2D->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE))
         {
             printf("Failed to add 2D shader IDs\n");
             return NULL;

@@ -96,6 +96,14 @@ template<typename T> bool ObjData<T>::createBuffers(MeshData<T> &md)
         glBufferData(GL_ARRAY_BUFFER, md.normals.size() * sizeof(md.normals[0]), &md.normals[0], GL_STATIC_DRAW);
     }
 
+    // we don't have colours in Object3D
+    if (md.colours.size())
+    {
+        glGenBuffers(1, &newMesh->colourBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh->colourBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.colours.size() * sizeof(md.colours[0]), &md.colours[0], GL_STATIC_DRAW);
+    }
+
     glGenBuffers(1, &newMesh->indiceBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, newMesh->indiceBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, md.indices.size() * sizeof(md.indices[0]), &md.indices[0], GL_STATIC_DRAW);

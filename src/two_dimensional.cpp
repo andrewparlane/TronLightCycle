@@ -24,6 +24,7 @@ void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
 {
     GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
     GLuint vertexPosition_screenspaceID = shader->getAttribID(SHADER_ATTRIB_VERTEX_POS_SCREEN);
+    GLuint vertexColourID = shader->getAttribID(SHADER_ATTRIB_VERTEX_COLOUR);
     GLuint textureSamplerID = shader->getUniformID(SHADER_UNIFORM_TEXTURE_SAMPLER);
     GLuint fragmentIsTextureID = shader->getUniformID(SHADER_UNIFORM_IS_TEXTURE);
 
@@ -32,26 +33,26 @@ void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
     if (mesh->hasTexture)
     {
         glEnableVertexAttribArray(vertexTextureUVID);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->uvBuffer);
+        glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+        glUniform1f(fragmentIsTextureID, 1.0f);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, mesh->texture);
         glUniform1i(textureSamplerID, 0);
     }
+    else
+    {
+        glEnableVertexAttribArray(vertexColourID);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->colourBuffer);
+        glVertexAttribPointer(vertexColourID, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+        glUniform1f(fragmentIsTextureID, 0.0f);
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
     glVertexAttribPointer(vertexPosition_screenspaceID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-    if (mesh->hasTexture)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->uvBuffer);
-        glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-        glUniform1f(fragmentIsTextureID, 1.0f);
-    }
-    else
-    {
-        glUniform3fv(shader->getUniformID(SHADER_UNIFORM_FRAGMENT_COLOUR),  1, &defaultColour[0]);
-        glUniform1f(fragmentIsTextureID, 0.0f);
-    }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indiceBuffer);
     glDrawElements(GL_TRIANGLES, mesh->numIndices, GL_UNSIGNED_SHORT, (void *)0);
@@ -59,6 +60,10 @@ void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
     if (mesh->hasTexture)
     {
         glDisableVertexAttribArray(vertexTextureUVID);
+    }
+    else
+    {
+        glDisableVertexAttribArray(vertexColourID);
     }
 
     glDisableVertexAttribArray(vertexPosition_screenspaceID);
@@ -172,6 +177,11 @@ void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl)
     md.vertices.push_back(tr);
     md.vertices.push_back(br);
     md.vertices.push_back(bl);
+
+    md.colours.push_back(defaultColour);
+    md.colours.push_back(defaultColour);
+    md.colours.push_back(defaultColour);
+    md.colours.push_back(defaultColour);
 
     md.indices.push_back(0);
     md.indices.push_back(1);

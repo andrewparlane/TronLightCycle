@@ -174,6 +174,7 @@ bool Shader::addAttribID(const std::string &name, ShaderAttribID id)
         case SHADER_ATTRIB_VERTEX_POS_SCREEN:   shader_attrib_vertex_pos_screen = ret; break;
         case SHADER_ATTRIB_VERTEX_NORMAL:       shader_attrib_vertex_normal = ret; break;
         case SHADER_ATTRIB_VERTEX_UV:           shader_attrib_vertex_uv = ret; break;
+        case SHADER_ATTRIB_VERTEX_COLOUR:       shader_attrib_vertex_colour = ret; break;
         default: return false;
     }
 
@@ -220,6 +221,7 @@ GLuint Shader::getAttribID(ShaderAttribID id) const
         case SHADER_ATTRIB_VERTEX_POS_SCREEN:   return shader_attrib_vertex_pos_screen;
         case SHADER_ATTRIB_VERTEX_NORMAL:       return shader_attrib_vertex_normal;
         case SHADER_ATTRIB_VERTEX_UV:           return shader_attrib_vertex_uv;
+        case SHADER_ATTRIB_VERTEX_COLOUR:       return shader_attrib_vertex_colour;
         default: return -1;
     }
     

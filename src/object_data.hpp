@@ -15,6 +15,7 @@ template<typename T> struct MeshData
     std::vector<T> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<T> normals;
+    std::vector<glm::vec3> colours;
 
     std::string name;
     std::string texturePath;        // only one of texturePath
@@ -31,6 +32,7 @@ template<typename T> struct Mesh
         glDeleteBuffers(1, &indiceBuffer);
         glDeleteBuffers(1, &normalBuffer);
         glDeleteBuffers(1, &vertexBuffer);
+        glDeleteBuffers(1, &colourBuffer);
         if (hasTexture)
         {
             if (ownTexture)
@@ -51,6 +53,7 @@ template<typename T> struct Mesh
     GLuint uvBuffer;
     GLuint normalBuffer;
     GLuint indiceBuffer;
+    GLuint colourBuffer;
     GLuint texture;
     unsigned int numIndices;
 };

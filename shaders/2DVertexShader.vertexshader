@@ -2,9 +2,11 @@
 // Input vertex data, different for all executions of this shader.
 attribute vec2 vertexPosition_screenspace;
 attribute vec2 vertexUV;
+attribute vec3 vertexColour;
 
 // output to fragment shader
 varying vec2 uv;
+varying vec3 colour;
 
 void main()
 {
@@ -15,5 +17,6 @@ void main()
 	gl_Position =  vec4(vertexPosition_homoneneousspace,0,1);
     
     uv = vertexUV;
+    colour = vertexColour;
 }
 
