@@ -110,6 +110,22 @@ void Bike::updateSpeed(Speed s)
     }
 }
 
+float Bike::getSpeedPercent() const
+{
+    float percent = (speed - SPEED_SLOWEST) / (SPEED_FASTEST - SPEED_SLOWEST);
+
+    if (percent > 1.0f)
+    {
+        percent = 1.0f;
+    }
+    else if (percent < 0.0f)
+    {
+        percent = 0.0f;
+    }
+
+    return percent;
+}
+
 void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const
 {
     glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation

@@ -33,6 +33,8 @@ public:
     void turn(TurnDirection dir);
     void updateSpeed(Speed s);
 
+    float getSpeedPercent() const;
+
     void toggleLightTrail() { trail.toggle(); }
     void updateLightTrail();
 
