@@ -3,25 +3,11 @@
 
 #include "object.hpp"
 #include "light_trail.hpp"
+#include "bike_movements.hpp"
 
 class Bike : public Object
 {
 public:
-
-    enum TurnDirection
-    {
-        NO_TURN = 0,
-        TURN_LEFT,
-        TURN_RIGHT
-    };
-
-    enum Speed
-    {
-        SPEED_NORMAL = 0,
-        SPEED_ACCELERATE,
-        SPEED_BRAKE
-    };
-
     Bike(std::shared_ptr<const ObjData3D> _objData, 
         std::shared_ptr<World> _world, 
         std::shared_ptr<const Shader> _shader,
@@ -31,7 +17,7 @@ public:
 
     void updateLocation();
     void turn(TurnDirection dir);
-    void updateSpeed(Speed s);
+    void updateSpeed(Accelerating a);
 
     float getSpeedPercent() const;
 

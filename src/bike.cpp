@@ -62,9 +62,9 @@ void Bike::turn(TurnDirection dir)
     trail.turn(bikeAngleAroundYRads);
 }
 
-void Bike::updateSpeed(Speed s)
+void Bike::updateSpeed(Accelerating a)
 {
-    switch (s)
+    switch (a)
     {
         case SPEED_NORMAL:
         {

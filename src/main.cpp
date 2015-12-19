@@ -16,6 +16,7 @@ GLFWwindow* window;
 #include <world.hpp>
 #include <shader.hpp>
 #include <bike.hpp>
+#include <bike_movements.hpp>
 #include <two_dimensional.hpp>
 
 #include <opengl_tutorials_org/texture.hpp>
@@ -349,16 +350,16 @@ int main(void)
         // bike turning right
         if (glfwGetKey(window, GLFW_KEY_RIGHT ))
         {
-            bike.turn(Bike::TURN_RIGHT);
+            bike.turn(TURN_RIGHT);
         }
         // bike turning left
         else if (glfwGetKey(window, GLFW_KEY_LEFT ))
         {
-            bike.turn(Bike::TURN_LEFT);
+            bike.turn(TURN_LEFT);
         }
         else
         {
-            bike.turn(Bike::NO_TURN);
+            bike.turn(NO_TURN);
         }
 
         // Light trail toggle
@@ -415,15 +416,15 @@ int main(void)
         // bike speed using up and down arrow keys
         if (glfwGetKey(window, GLFW_KEY_UP))
         {
-            bike.updateSpeed(Bike::SPEED_ACCELERATE);
+            bike.updateSpeed(SPEED_ACCELERATE);
         }
         else if (glfwGetKey(window, GLFW_KEY_DOWN))
         {
-            bike.updateSpeed(Bike::SPEED_BRAKE);
+            bike.updateSpeed(SPEED_BRAKE);
         }
         else
         {
-            bike.updateSpeed(Bike::SPEED_NORMAL);
+            bike.updateSpeed(SPEED_NORMAL);
         }
 
         // bike always moving forwards ========================================
