@@ -14,7 +14,8 @@ Bike::Bike(std::shared_ptr<const ObjData3D> _objData,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trail(_world, _shader, _defaultColour), speed(SPEED_DEFAULT)
+      trailManager(_world, _shader, _defaultColour), speed(SPEED_DEFAULT),
+      lastTurn(NO_TURN), lastAccelerate(SPEED_NORMAL)
 {
     initialiseBikeParts();
 }
@@ -43,27 +44,25 @@ void Bike::updateLocation()
     // TODO tweak to what looks good
     // TODO base on time since last frame rather than here, it slows and speeds up as frame rate changes
     engineAngle += glm::radians(8.0f);
-
-    trail.updateLastVertices(applyModelMatrx(glm::vec3(0.0f)));
 }
 
 void Bike::turn(TurnDirection dir)
 {
+    lastTurn = dir;
+
     if (dir == NO_TURN)
     {
-        trail.stopTurning();
         return;
     }
 
     float angleRads = glm::radians((dir == TURN_RIGHT) ? -2.0f : 2.0f);
     bikeAngleAroundYRads += angleRads;
     rotate(angleRads, glm::vec3(0,1,0));
-
-    trail.turn(bikeAngleAroundYRads);
 }
 
 void Bike::updateSpeed(Accelerating a)
 {
+    lastAccelerate = SPEED_NORMAL;
     switch (a)
     {
         case SPEED_NORMAL:
@@ -72,10 +71,12 @@ void Bike::updateSpeed(Accelerating a)
             if (speed > SPEED_DEFAULT + 0.0049f)
             {
                 speed -= SPEED_GRANULARITY;
+                lastAccelerate = SPEED_BRAKE;
             }
             else if (speed < SPEED_DEFAULT - 0.0049f)
             {
                 speed += SPEED_GRANULARITY;
+                lastAccelerate = SPEED_ACCELERATE;
             }
             else
             {
@@ -87,6 +88,7 @@ void Bike::updateSpeed(Accelerating a)
         {
             if (speed < SPEED_FASTEST)
             {
+                lastAccelerate = SPEED_ACCELERATE;
                 speed += SPEED_GRANULARITY;
                 if (speed > SPEED_FASTEST)
                 {
@@ -99,6 +101,7 @@ void Bike::updateSpeed(Accelerating a)
         {
             if (speed > SPEED_SLOWEST)
             {
+                lastAccelerate = SPEED_BRAKE;
                 speed -= SPEED_GRANULARITY;
                 if (speed < SPEED_SLOWEST)
                 {
@@ -184,13 +187,13 @@ void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &
     }
 
     // light trail
-    trail.drawAll();
+    trailManager.drawAll();
 }
 
 void Bike::updateLightTrail()
 {
     // light trail
-    trail.update();
+    trailManager.update(lastTurn, lastAccelerate, speed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
 }
 
 void Bike::initialiseBikeParts()

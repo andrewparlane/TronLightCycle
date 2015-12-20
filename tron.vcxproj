@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClCompile Include="src\bike.cpp" />
     <ClCompile Include="src\light_trail.cpp" />
+    <ClCompile Include="src\light_trail_manager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\object_data.cpp" />

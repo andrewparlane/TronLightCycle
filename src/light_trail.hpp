@@ -5,6 +5,7 @@
 #include "object.hpp"
 #include "world.hpp"
 #include "shader.hpp"
+#include "bike_movements.hpp"
 
 #include <memory>
 
@@ -13,39 +14,52 @@ class LightTrail
 public:
     LightTrail(std::shared_ptr<World> _world, 
                std::shared_ptr<const Shader> _shader,
-               glm::vec3 _colour);
+               glm::vec3 _colour,
+               TurnDirection turning,
+               Accelerating accelerating);
     ~LightTrail();
 
-    void toggle();
+    void update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads);
 
-    void turn(float bikeAngleRadians);
-    void stopTurning();
-    void updateLastVertices(glm::vec3 bikeLocationWorld);   // not passing by const & as we store it
+    // start fading down the trail
+    void stop() { stopping = true; }
 
-    void update();
-    void drawAll() const { if (lightTrailMeshData.size() > 0) lightTrail->drawAll(); }
+    // have we fully faded down the trail?
+    // if so we can delete it
+    bool isDead() const { return isStopped; }
+
+    void draw() const { if (lightTrailObj) lightTrailObj->drawAll(); }
 
 protected:
     enum State
     {
-        STATE_STOPPED = 0,
-        STATE_ON,
-        STATE_STOPPING,
+        STATE_STRAIGHT = 0,
+        STATE_CIRCLE_LEFT,
+        STATE_CIRCLE_RIGHT,
+        STATE_SPIRAL_OUT_LEFT,
+        STATE_SPIRAL_OUT_RIGHT,
+        STATE_SPIRAL_IN_LEFT,
+        STATE_SPIRAL_IN_RIGHT,
     };
 
+    void createObject(glm::vec3 currentLocation, float currentAngleRads);
+    State calculateState(TurnDirection turning, Accelerating accelerating) const;
+    void LightTrail::turn(float currentAngleRads, bool justStarted);
+    void LightTrail::stopTurning();
+    void LightTrail::updateLastVertices(glm::vec3 currentLocation);
 
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;
     glm::vec3 colour;
 
-    std::vector<MeshData<glm::vec3>> lightTrailMeshData;
+    // meshes for drawing to the screen
+    MeshData<glm::vec3> lightTrailMeshData;
     std::shared_ptr<ObjData3D> lightTrailObjData;
-    std::unique_ptr<Object> lightTrail;
+    std::unique_ptr<Object> lightTrailObj;
 
-    glm::vec3 bikeLocation;
-    unsigned int trailNumber;
     State state;
-    bool turning;
+    bool stopping;
+    bool isStopped;
 };
 
 #endif

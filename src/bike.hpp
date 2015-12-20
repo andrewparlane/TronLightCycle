@@ -2,7 +2,7 @@
 #define __BIKE_HPP
 
 #include "object.hpp"
-#include "light_trail.hpp"
+#include "light_trail_manager.hpp"
 #include "bike_movements.hpp"
 
 class Bike : public Object
@@ -21,7 +21,7 @@ public:
 
     float getSpeedPercent() const;
 
-    void toggleLightTrail() { trail.toggle(); }
+    void toggleLightTrail() { trailManager.toggle(); }
     void updateLightTrail();
 
 protected:
@@ -48,10 +48,12 @@ protected:
     MeshAxis rightEngineAxis;
     MeshAxis leftEngineAxis;
 
-    // note lightTrail is in world co-ords
-    LightTrail trail;
+    // note light trails are in world co-ords
+    LightTrailManager trailManager;
 
     float speed;
+    TurnDirection lastTurn;
+    Accelerating lastAccelerate;
 };
 
 #endif
