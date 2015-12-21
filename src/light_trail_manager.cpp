@@ -50,3 +50,24 @@ void LightTrailManager::update(TurnDirection turning, Accelerating accelerating,
         trails.erase(trails.begin());
     }
 }
+
+bool LightTrailManager::collides(const glm::vec2 &location) const
+{
+    for (auto &t : trails)
+    {
+        if (t->collides(location))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool LightTrailManager::checkSelfCollision() const
+{
+    if (trails.size())
+    {
+        return trails.back()->checkSelfCollision();
+    }
+    return false;
+}

@@ -226,6 +226,84 @@ void LightTrail::updateLastVertices(glm::vec3 currentLocation)
     md.vertices.push_back(glm::vec3(currentLocation.x, lightTrailHeight, currentLocation.z));
 }
 
+void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, float currentAngleRads)
+{
+    std::unique_ptr<LightTrailSegment> uptr;
+    switch (state)
+    {
+        case STATE_STRAIGHT:
+        {
+            uptr = std::make_unique<LightTrailSegmentStraight>(glm::vec2(currentLocation.x, currentLocation.z));
+            break;
+        }
+        case STATE_CIRCLE_LEFT:
+        case STATE_CIRCLE_RIGHT:
+        {
+            // circ = 2PI*r
+            // because our circle is made of 360/ANGLE_OF_TURNS edges
+            // each of length speed, we have:
+            // circ = speed * 2PI / RADIANS(ANGLE_OF_TURNS)
+            // therefore r = speed / RADIANS(ANGLE_OF_TURNS)
+            // note: this is just an approximation. However for:
+            // angle = 2 degrees and speed = 0.2 - error = 0.0006
+            // angle = 2 degrees and speed = 0.6 - error = 0.0017
+            // 0.0017 is significantly less than the slowest speed of 0.2
+            // so we should be good.
+
+            // for reference the formulae that calculates the exact radius
+            // is r = speed((SUM between n=1 and n=(2PI/4A)-1 of sin(nA))+1/2)
+            // where A is RADIANS(ANGLE_OF_TURNS)
+            // see: notes/calculating_radius_of_circle.png
+            //  This shape has 30 degree angles and sides of length S.
+            //  length of (1) = S*sin(30)
+            //  length of (2) = S*sin(60)
+            //  length of (3) = S/2
+            //  (1) + (2) + (3) = radius
+
+            float radius = speed / glm::radians(ANGLE_OF_TURNS);
+
+            // now to find the centre
+            // currentAngle = 0 degrees means we are going straight along -ve Z
+            // so if we turn right our centre is directly to the right of us
+            // if we turn left, then it's to our left.
+            glm::vec3 radiusVector = glm::vec3(glm::vec4((state == STATE_CIRCLE_RIGHT) ? radius : -radius, 0, 0, 1) *
+                                               glm::rotate(currentAngleRads, glm::vec3(0,1,0)));
+            glm::vec3 centre = currentLocation + radiusVector;
+
+            // finally calculate startAngle
+            // this is the angle between th ebike and the centre point with respect to -ve Z
+            // ie. straight forward.
+            // this is pretty simple, it's 90 degrees offset from currentAngle
+            // if we turn right we are -90 degrees, and for left +90 degrees
+            float startAngle = currentAngleRads + glm::radians((state == STATE_CIRCLE_RIGHT) ? -90.0f : 90.0f);
+            // startAngle should be between 0 and 2PI
+            while (startAngle >= 2*glm::pi<float>())
+            {
+                startAngle -= 2*glm::pi<float>();
+            }
+            while (startAngle < 0)
+            {
+                startAngle += 2*glm::pi<float>();
+            }
+
+            uptr = std::make_unique<LightTrailSegmentCircle>(glm::vec2(centre.x, centre.z),
+                                                             radius,
+                                                             startAngle, 
+                                                             (state == STATE_CIRCLE_RIGHT) ? TURN_RIGHT : TURN_LEFT);
+            break;
+        }
+        case STATE_SPIRAL_OUT_LEFT:
+        case STATE_SPIRAL_OUT_RIGHT:
+        case STATE_SPIRAL_IN_LEFT:
+        case STATE_SPIRAL_IN_RIGHT:
+        {
+            uptr = std::make_unique<LightTrailSegmentSpiral>(glm::vec2(currentLocation.x, currentLocation.z), speed, currentAngleRads);
+            break;
+        }
+    }
+    pathSegments.push_back(std::move(uptr));
+}
+
 void LightTrail::update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads)
 {
     // are we stopping? if so fade down until we are dead
@@ -258,6 +336,12 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
         createObject(currentLocation, currentAngleRads);
     }
 
+    // create initial path segment if needed
+    if (pathSegments.size() == 0)
+    {
+        createNewPathSegment(speed, currentLocation, currentAngleRads);
+    }
+
     // deal with turning
     // this creates new faces and sorts out normals
     // so that our curves are smooth
@@ -279,8 +363,35 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
     if (state != newState)
     {
         state = newState;
+        createNewPathSegment(speed, currentLocation, currentAngleRads);
+    }
+    else
+    {
+        // update current path segment
+        pathSegments.back()->update(glm::vec2(currentLocation.x, currentLocation.z));
     }
 
     lightTrailObjData->updateMesh(lightTrailMeshData);
     lightTrailObjData->updateBuffers();
+}
+
+bool LightTrail::collides(const glm::vec2 &location) const
+{
+    for (auto &ps : pathSegments)
+    {
+        if (ps->collides(location))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool LightTrail::checkSelfCollision() const
+{
+    if (pathSegments.size())
+    {
+        return pathSegments.back()->checkSelfCollision();
+    }
+    return false;
 }

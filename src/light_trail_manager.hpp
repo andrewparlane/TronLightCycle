@@ -23,6 +23,9 @@ public:
     
     void update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads);
     
+    bool collides(const glm::vec2 &location) const;
+    bool checkSelfCollision() const;
+
     // draw all the light trails
     void drawAll() const { std::for_each( trails.begin(), trails.end(), [](const std::unique_ptr<LightTrail> &trail){ trail->draw(); }); };
 

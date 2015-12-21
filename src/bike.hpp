@@ -21,6 +21,10 @@ public:
 
     void toggleLightTrail() { trailManager.toggle(); }
 
+    const LightTrailManager &getTrailManager() const { return trailManager; }
+
+    bool checkSelfCollision() const { return trailManager.checkSelfCollision(); }
+
 protected:
     // overrides as protected, as we shouldn't use these, we should use updateLocation() and turn()
     void translate(const glm::vec3 &vec) override { Object::translate(vec); }

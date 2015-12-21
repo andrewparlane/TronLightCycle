@@ -241,15 +241,18 @@ int main(void)
     }
 
     // get the lowest point of the bike, so we can move it so the wheels rest on the floor
+    // and the most forward point, so we can use it for collision detection
     BoundingBox<glm::vec3> bikeBB = bikeLoader->getBoundingBox();
-    float lowest = FLT_MAX;
+    float bike_lowest = FLT_MAX;
+    float bike_most_forward = FLT_MAX;
     for (unsigned int i = 0; i < 8; i++)
     {
-        if (bikeBB.vertices[i].y < lowest) lowest = bikeBB.vertices[i].y;
+        if (bikeBB.vertices[i].y < bike_lowest)       bike_lowest =       bikeBB.vertices[i].y;
+        if (bikeBB.vertices[i].z < bike_most_forward) bike_most_forward = bikeBB.vertices[i].z;
     }
 
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -lowest, 0.0f));
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -bike_lowest, 0.0f));
 
     // Load bike
     Bike bike(bikeLoader, world, mainShader, bike_model, tronBlue);
@@ -425,9 +428,24 @@ int main(void)
         // update the bike and light trails
         bike.update(turnDirection, accelerating, stop);
 
+        // check for collisions
+        // only with it's own trail ATM, as there are no more
+
+        // transform co-ords of front of bike to world co-ords.
+        glm::vec3 bikeFrontLocation = bike.applyModelMatrx(glm::vec3(0,0,bike_most_forward));
+
+        const LightTrailManager &tm = bike.getTrailManager();
+        if (tm.collides(glm::vec2(bikeFrontLocation.x, bikeFrontLocation.z)) ||
+            bike.checkSelfCollision())
+        {
+            // TODO indicate collision occured
+            stop = true;
+            cameraRotating = true;
+        }
+
         // update camera location =============================================
         // transform origin of bike to world co-ords.
-        glm::vec3 bikeLocation = bike.applyModelMatrx(glm::vec3(0.0f));
+        glm::vec3 bikeLocation = bike.applyModelMatrx(glm::vec3(0,0,bike_most_forward));
 
         // we want the camera to be distanceBetweenBikeAndCamera from the bike.
         // by default it should be directly behind the bike so we can see where we are going

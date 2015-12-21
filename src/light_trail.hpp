@@ -6,6 +6,7 @@
 #include "world.hpp"
 #include "shader.hpp"
 #include "bike_movements.hpp"
+#include "light_trail_segment.hpp"
 
 #include <memory>
 
@@ -28,6 +29,9 @@ public:
     // if so we can delete it
     bool isDead() const { return isStopped; }
 
+    bool collides(const glm::vec2 &location) const;
+    bool checkSelfCollision() const;
+
     void draw() const { if (lightTrailObj) lightTrailObj->drawAll(); }
 
 protected:
@@ -47,6 +51,7 @@ protected:
     void LightTrail::turn(float currentAngleRads, bool justStarted);
     void LightTrail::stopTurning();
     void LightTrail::updateLastVertices(glm::vec3 currentLocation);
+    void createNewPathSegment(float speed, glm::vec3 currentLocation, float currentAngleRads);
 
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;
@@ -56,6 +61,9 @@ protected:
     MeshData<glm::vec3> lightTrailMeshData;
     std::shared_ptr<ObjData3D> lightTrailObjData;
     std::unique_ptr<Object> lightTrailObj;
+
+    // abstract path info for collision detection
+    std::vector<std::unique_ptr<LightTrailSegment>> pathSegments;
 
     State state;
     bool stopping;
