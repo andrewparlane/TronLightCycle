@@ -14,8 +14,7 @@ Bike::Bike(std::shared_ptr<const ObjData3D> _objData,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trailManager(_world, _shader, _defaultColour), speed(SPEED_DEFAULT),
-      lastTurn(NO_TURN), lastAccelerate(SPEED_NORMAL)
+      trailManager(_world, _shader, _defaultColour), speed(SPEED_DEFAULT)
 {
     initialiseBikeParts();
 }
@@ -48,8 +47,6 @@ void Bike::updateLocation()
 
 void Bike::turn(TurnDirection dir)
 {
-    lastTurn = dir;
-
     if (dir == NO_TURN)
     {
         return;
@@ -60,9 +57,9 @@ void Bike::turn(TurnDirection dir)
     rotate(angleRads, glm::vec3(0,-1,0));
 }
 
-void Bike::updateSpeed(Accelerating a)
+Accelerating Bike::updateSpeed(Accelerating a)
 {
-    lastAccelerate = SPEED_NORMAL;
+    Accelerating actualAction = SPEED_NORMAL;
     switch (a)
     {
         case SPEED_NORMAL:
@@ -71,12 +68,12 @@ void Bike::updateSpeed(Accelerating a)
             if (speed > SPEED_DEFAULT + 0.0049f)
             {
                 speed -= SPEED_GRANULARITY;
-                lastAccelerate = SPEED_BRAKE;
+                actualAction = SPEED_BRAKE;
             }
             else if (speed < SPEED_DEFAULT - 0.0049f)
             {
                 speed += SPEED_GRANULARITY;
-                lastAccelerate = SPEED_ACCELERATE;
+                actualAction = SPEED_ACCELERATE;
             }
             else
             {
@@ -88,7 +85,7 @@ void Bike::updateSpeed(Accelerating a)
         {
             if (speed < SPEED_FASTEST)
             {
-                lastAccelerate = SPEED_ACCELERATE;
+                actualAction = SPEED_ACCELERATE;
                 speed += SPEED_GRANULARITY;
                 if (speed > SPEED_FASTEST)
                 {
@@ -101,7 +98,7 @@ void Bike::updateSpeed(Accelerating a)
         {
             if (speed > SPEED_SLOWEST)
             {
-                lastAccelerate = SPEED_BRAKE;
+                actualAction = SPEED_BRAKE;
                 speed -= SPEED_GRANULARITY;
                 if (speed < SPEED_SLOWEST)
                 {
@@ -111,6 +108,7 @@ void Bike::updateSpeed(Accelerating a)
             break;
         }
     }
+    return actualAction;
 }
 
 float Bike::getSpeedPercent() const
@@ -190,10 +188,27 @@ void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &
     trailManager.drawAll();
 }
 
-void Bike::updateLightTrail()
+void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
 {
-    // light trail
-    trailManager.update(lastTurn, lastAccelerate, speed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+    if (stop)
+    {
+        return;
+    }
+
+    // update speed
+    // returns what actually happened.
+    // ie. if you were at max speed and no longer held the accelerate button
+    // you'd be deaccelerating (braking)
+    Accelerating actualAccelerating = updateSpeed(accelerating);
+
+    // update the light trail before we change angle or location
+    trailManager.update(turning, actualAccelerating, speed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+
+    // update angle
+    turn(turning);
+
+    // update location
+    updateLocation();
 }
 
 void Bike::initialiseBikeParts()

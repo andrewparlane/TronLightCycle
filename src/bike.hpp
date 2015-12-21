@@ -15,19 +15,19 @@ public:
         const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
     ~Bike();
 
-    void updateLocation();
-    void turn(TurnDirection dir);
-    void updateSpeed(Accelerating a);
+    void update(TurnDirection turning, Accelerating accelerating, bool stop);
 
     float getSpeedPercent() const;
 
     void toggleLightTrail() { trailManager.toggle(); }
-    void updateLightTrail();
 
 protected:
     // overrides as protected, as we shouldn't use these, we should use updateLocation() and turn()
     void translate(const glm::vec3 &vec) override { Object::translate(vec); }
     void rotate(float radians, const glm::vec3 &axis) override { Object::rotate(radians, axis); }
+    void updateLocation();
+    void turn(TurnDirection dir);
+    Accelerating updateSpeed(Accelerating a);
 
     void internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const override;
 
@@ -52,8 +52,6 @@ protected:
     LightTrailManager trailManager;
 
     float speed;
-    TurnDirection lastTurn;
-    Accelerating lastAccelerate;
 };
 
 #endif

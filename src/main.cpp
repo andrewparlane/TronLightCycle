@@ -347,19 +347,18 @@ int main(void)
 
         // deal with keyboard input =====================================
 
+        TurnDirection turnDirection = NO_TURN;
+        Accelerating accelerating = SPEED_NORMAL;
+
         // bike turning right
         if (glfwGetKey(window, GLFW_KEY_RIGHT ))
         {
-            bike.turn(TURN_RIGHT);
+            turnDirection = TURN_RIGHT;
         }
         // bike turning left
         else if (glfwGetKey(window, GLFW_KEY_LEFT ))
         {
-            bike.turn(TURN_LEFT);
-        }
-        else
-        {
-            bike.turn(NO_TURN);
+            turnDirection = TURN_LEFT;
         }
 
         // Light trail toggle
@@ -416,22 +415,15 @@ int main(void)
         // bike speed using up and down arrow keys
         if (glfwGetKey(window, GLFW_KEY_UP))
         {
-            bike.updateSpeed(SPEED_ACCELERATE);
+            accelerating = SPEED_ACCELERATE;
         }
         else if (glfwGetKey(window, GLFW_KEY_DOWN))
         {
-            bike.updateSpeed(SPEED_BRAKE);
-        }
-        else
-        {
-            bike.updateSpeed(SPEED_NORMAL);
+            accelerating = SPEED_BRAKE;
         }
 
-        // bike always moving forwards ========================================
-        if (!stop)
-        {
-            bike.updateLocation();
-        }
+        // update the bike and light trails
+        bike.update(turnDirection, accelerating, stop);
 
         // update camera location =============================================
         // transform origin of bike to world co-ords.
@@ -468,7 +460,6 @@ int main(void)
         glEnable(GL_DEPTH_TEST);
 
         // draw bike
-        bike.updateLightTrail();
         bike.drawAll();
 
         // draw arena
