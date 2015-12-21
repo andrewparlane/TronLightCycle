@@ -35,7 +35,7 @@ void LightTrail::createObject(glm::vec3 currentLocation, float currentAngleRads)
     md.vertices.push_back(glm::vec3(currentLocation.x, 0.0f,             currentLocation.z));    // bottom furthest
     md.vertices.push_back(glm::vec3(currentLocation.x, lightTrailHeight, currentLocation.z));    // top furthest
 
-    glm::vec3 normal = glm::normalize(glm::vec3(glm::vec4(1,0,0,1) * glm::rotate(-currentAngleRads, glm::vec3(0,1,0))));
+    glm::vec3 normal = glm::normalize(glm::vec3(glm::vec4(1,0,0,1) * glm::rotate(currentAngleRads, glm::vec3(0,-1,0))));
     md.normals.push_back(normal);
     md.normals.push_back(normal);
     md.normals.push_back(normal);
@@ -112,7 +112,7 @@ void LightTrail::turn(float currentAngleRads, bool justStarted)
     // wall is alwasy verticle, we know which way the bike is facing
     // so normal is 90 degrees (rotated around y) from bike direction
     // and since the bike is orientated along Z, we can just rotate a unit vector along x by bikeAngle
-    glm::vec3 newNormal = glm::normalize(glm::vec3(glm::vec4(1,0,0,1) * glm::rotate(-currentAngleRads, glm::vec3(0,1,0))));
+    glm::vec3 newNormal = glm::normalize(glm::vec3(glm::vec4(1,0,0,1) * glm::rotate(currentAngleRads, glm::vec3(0,-1,0))));
 
     // if we just started turning we don't want the past long wall
     // to look curved, ie. don't average normals for the corner vertex

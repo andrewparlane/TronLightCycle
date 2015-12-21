@@ -55,9 +55,9 @@ void Bike::turn(TurnDirection dir)
         return;
     }
 
-    float angleRads = glm::radians((dir == TURN_RIGHT) ? -ANGLE_OF_TURNS : ANGLE_OF_TURNS);
+    float angleRads = glm::radians((dir == TURN_RIGHT) ? ANGLE_OF_TURNS : -ANGLE_OF_TURNS);
     bikeAngleAroundYRads += angleRads;
-    rotate(angleRads, glm::vec3(0,1,0));
+    rotate(angleRads, glm::vec3(0,-1,0));
 }
 
 void Bike::updateSpeed(Accelerating a)
