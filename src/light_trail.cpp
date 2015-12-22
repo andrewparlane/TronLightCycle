@@ -297,7 +297,11 @@ void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, fl
         case STATE_SPIRAL_IN_LEFT:
         case STATE_SPIRAL_IN_RIGHT:
         {
-            uptr = std::make_unique<LightTrailSegmentSpiral>(glm::vec2(currentLocation.x, currentLocation.z), speed, currentAngleRads);
+            TurnDirection td = (state == STATE_SPIRAL_OUT_LEFT ||
+                                state == STATE_SPIRAL_IN_LEFT) ? TURN_LEFT : TURN_RIGHT;
+            Accelerating accel = (state == STATE_SPIRAL_OUT_LEFT ||
+                                  state == STATE_SPIRAL_OUT_RIGHT) ? SPEED_ACCELERATE : SPEED_BRAKE;
+            uptr = std::make_unique<LightTrailSegmentSpiral>(glm::vec2(currentLocation.x, currentLocation.z), speed, currentAngleRads, td, accel);
             break;
         }
     }
@@ -368,7 +372,7 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
     else
     {
         // update current path segment
-        pathSegments.back()->update(glm::vec2(currentLocation.x, currentLocation.z));
+        pathSegments.back()->update(glm::vec2(currentLocation.x, currentLocation.z), currentAngleRads);
     }
 
     lightTrailObjData->updateMesh(lightTrailMeshData);

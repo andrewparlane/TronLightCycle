@@ -196,10 +196,11 @@ void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
     // returns what actually happened.
     // ie. if you were at max speed and no longer held the accelerate button
     // you'd be deaccelerating (braking)
+    float oldSpeed = speed;
     Accelerating actualAccelerating = updateSpeed(accelerating);
 
     // update the light trail before we change angle or location
-    trailManager.update(turning, actualAccelerating, speed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+    trailManager.update(turning, actualAccelerating, oldSpeed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
 
     // update angle
     turn(turning);
