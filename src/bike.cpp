@@ -2,10 +2,7 @@
 
 #include <set>
 
-#define SPEED_DEFAULT       0.4f
-#define SPEED_SLOWEST       0.2f
-#define SPEED_FASTEST       0.6f
-#define SPEED_GRANULARITY   0.005f
+#define RATE_OF_ACCELERATE      0.005f
 
 Bike::Bike(std::shared_ptr<const ObjData3D> _objData, 
            std::shared_ptr<World> _world, 
@@ -14,7 +11,7 @@ Bike::Bike(std::shared_ptr<const ObjData3D> _objData,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trailManager(_world, _shader, _defaultColour), speed(SPEED_DEFAULT)
+      trailManager(_world, _shader, _defaultColour), speed(BIKE_SPEED_DEFAULT)
 {
     initialiseBikeParts();
 }
@@ -65,44 +62,44 @@ Accelerating Bike::updateSpeed(Accelerating a)
         case SPEED_NORMAL:
         {
             // not accelerating or braking, move back towards default
-            if (speed > SPEED_DEFAULT + 0.0049f)
+            if (speed > BIKE_SPEED_DEFAULT + 0.0049f)
             {
-                speed -= SPEED_GRANULARITY;
+                speed -= RATE_OF_ACCELERATE;
                 actualAction = SPEED_BRAKE;
             }
-            else if (speed < SPEED_DEFAULT - 0.0049f)
+            else if (speed < BIKE_SPEED_DEFAULT - 0.0049f)
             {
-                speed += SPEED_GRANULARITY;
+                speed += RATE_OF_ACCELERATE;
                 actualAction = SPEED_ACCELERATE;
             }
             else
             {
-                speed = SPEED_DEFAULT;
+                speed = BIKE_SPEED_DEFAULT;
             }
             break;
         }
         case SPEED_ACCELERATE:
         {
-            if (speed < SPEED_FASTEST)
+            if (speed < BIKE_SPEED_FASTEST)
             {
                 actualAction = SPEED_ACCELERATE;
-                speed += SPEED_GRANULARITY;
-                if (speed > SPEED_FASTEST)
+                speed += RATE_OF_ACCELERATE;
+                if (speed > BIKE_SPEED_FASTEST)
                 {
-                    speed = SPEED_FASTEST;
+                    speed = BIKE_SPEED_FASTEST;
                 }
             }
             break;
         }
         case SPEED_BRAKE:
         {
-            if (speed > SPEED_SLOWEST)
+            if (speed > BIKE_SPEED_SLOWEST)
             {
                 actualAction = SPEED_BRAKE;
-                speed -= SPEED_GRANULARITY;
-                if (speed < SPEED_SLOWEST)
+                speed -= RATE_OF_ACCELERATE;
+                if (speed < BIKE_SPEED_SLOWEST)
                 {
-                    speed = SPEED_SLOWEST;
+                    speed = BIKE_SPEED_SLOWEST;
                 }
             }
             break;
@@ -113,7 +110,7 @@ Accelerating Bike::updateSpeed(Accelerating a)
 
 float Bike::getSpeedPercent() const
 {
-    float percent = (speed - SPEED_SLOWEST) / (SPEED_FASTEST - SPEED_SLOWEST);
+    float percent = (speed - BIKE_SPEED_SLOWEST) / (BIKE_SPEED_FASTEST - BIKE_SPEED_SLOWEST);
 
     if (percent > 1.0f)
     {
