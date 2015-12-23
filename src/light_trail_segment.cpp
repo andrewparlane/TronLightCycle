@@ -2,10 +2,17 @@
 
 #include <glm/gtc/constants.hpp>
 
+#define DEBUG_MESH_DATA_HEIGHT 5.0f
+
+#define DEBUG_LTS_STRAIGHT_COLOUR   glm::vec3(1.0f, 0.0f, 0.0f)
+#define DEBUG_LTS_CIRCLE_COLOUR     glm::vec3(0.0f, 1.0f, 0.0f)
+#define DEBUG_LTS_SPIRAL_COLOUR     glm::vec3(0.0f, 0.0f, 1.0f)
+
 #define EPSILON         0.05f
 #define CIRCLE_EPSILON  0.6f
 
-LightTrailSegment::LightTrailSegment()
+LightTrailSegment::LightTrailSegment(std::shared_ptr<World> _world, std::shared_ptr<const Shader> _shader)
+    : world(_world), shader(_shader)
 {
 }
 
@@ -13,11 +20,47 @@ LightTrailSegment::~LightTrailSegment()
 {
 }
 
+void LightTrailSegment::drawDebugMesh() const
+{
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    if (debugObj)
+    {
+        debugObj->drawAll();
+    }
+#endif
+}
+
 // STRAIGHT ===================================================================
 
-LightTrailSegmentStraight::LightTrailSegmentStraight(const glm::vec2 &_start)
-    : LightTrailSegment(), start(_start), end(_start)
+LightTrailSegmentStraight::LightTrailSegmentStraight(const glm::vec2 &_start, float currentAngleRads, std::shared_ptr<World> _world, std::shared_ptr<const Shader> _shader)
+    : LightTrailSegment(_world, _shader), start(_start), end(_start)
 {
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    debugMeshData.name = "LTS_STRAIGHT";
+    debugMeshData.hasTexture = false;
+
+    debugMeshData.vertices.push_back(glm::vec3(start.x, 0, start.y));
+    debugMeshData.vertices.push_back(glm::vec3(start.x, DEBUG_MESH_DATA_HEIGHT, start.y));
+    debugMeshData.vertices.push_back(glm::vec3(end.x,   DEBUG_MESH_DATA_HEIGHT, end.y));
+    debugMeshData.vertices.push_back(glm::vec3(end.x,   0, end.y));
+
+    glm::vec3 normal = glm::normalize(glm::vec3(glm::vec4(1,0,0,1) * glm::rotate(currentAngleRads, glm::vec3(0,-1,0))));
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+
+    debugMeshData.indices.push_back(0); debugMeshData.indices.push_back(1); debugMeshData.indices.push_back(2);
+    debugMeshData.indices.push_back(0); debugMeshData.indices.push_back(2); debugMeshData.indices.push_back(3);
+
+    debugObjData = std::make_shared<ObjData3D>();
+    if (!debugObjData->addMesh(debugMeshData))
+    {
+        // fali
+        printf("Failed to create light trail segment straight obj data\n");
+    }
+    debugObj = std::make_unique<Object>(debugObjData, world, shader, glm::mat4(1.0f), DEBUG_LTS_STRAIGHT_COLOUR);
+#endif
 }
 
 LightTrailSegmentStraight::~LightTrailSegmentStraight()
@@ -42,15 +85,61 @@ bool LightTrailSegmentStraight::checkSelfCollision() const
 void LightTrailSegmentStraight::update(const glm::vec2 &currentLocation, float currentAngleRads)
 {
     end = currentLocation;
+
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    debugMeshData.vertices.pop_back();
+    debugMeshData.vertices.pop_back();
+    debugMeshData.vertices.push_back(glm::vec3(end.x,   DEBUG_MESH_DATA_HEIGHT, end.y));
+    debugMeshData.vertices.push_back(glm::vec3(end.x,   0, end.y));
+
+    debugObjData->updateMesh(debugMeshData);
+    debugObjData->updateBuffers();
+#endif
 }
 
 // CIRCLE =====================================================================
 
-LightTrailSegmentCircle::LightTrailSegmentCircle(const glm::vec2 &_centre, float _radius, float _startAngleRads, TurnDirection _turnDirection)
-    : LightTrailSegment(), centre(_centre), radius(_radius),
+LightTrailSegmentCircle::LightTrailSegmentCircle(const glm::vec2 &_centre, float _radius, float _startAngleRads, TurnDirection _turnDirection, std::shared_ptr<World> _world, std::shared_ptr<const Shader> _shader)
+    : LightTrailSegment(_world, _shader),
+      centre(_centre), radius(_radius),
       startAngleRads(_startAngleRads), stopAngleRads(_startAngleRads),
       turnDirection(_turnDirection)
 {
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    debugMeshData.name = "LTS_CIRCLE";
+    debugMeshData.hasTexture = false;
+
+    glm::vec2 tmp(sin(startAngleRads), -cos(startAngleRads));
+    glm::vec2 point = (radius * tmp) + centre;
+
+    debugMeshData.vertices.push_back(glm::vec3(point.x, 0, point.y));
+    debugMeshData.vertices.push_back(glm::vec3(point.x, DEBUG_MESH_DATA_HEIGHT, point.y));
+    debugMeshData.vertices.push_back(glm::vec3(point.x, 0, point.y));
+    debugMeshData.vertices.push_back(glm::vec3(point.x, DEBUG_MESH_DATA_HEIGHT, point.y));
+
+    glm::vec3 normal = glm::normalize(glm::vec3(tmp.x, 0, tmp.y));
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+
+    unsigned int numVertices = debugMeshData.vertices.size();
+    debugMeshData.indices.push_back(numVertices - 4);
+    debugMeshData.indices.push_back(numVertices - 3);
+    debugMeshData.indices.push_back(numVertices - 1);
+
+    debugMeshData.indices.push_back(numVertices - 4);
+    debugMeshData.indices.push_back(numVertices - 1);
+    debugMeshData.indices.push_back(numVertices - 2);
+
+    debugObjData = std::make_shared<ObjData3D>();
+    if (!debugObjData->addMesh(debugMeshData))
+    {
+        // fali
+        printf("Failed to create light trail segment circle obj data\n");
+    }
+    debugObj = std::make_unique<Object>(debugObjData, world, shader, glm::mat4(1.0f), DEBUG_LTS_CIRCLE_COLOUR);
+#endif
 }
 
 LightTrailSegmentCircle::~LightTrailSegmentCircle()
@@ -71,6 +160,30 @@ void LightTrailSegmentCircle::update(const glm::vec2 &currentLocation, float cur
     {
         stopAngleRads = 2*glm::pi<float>() - stopAngleRads;
     }
+
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    glm::vec2 tmp(sin(stopAngleRads), -cos(stopAngleRads));
+    glm::vec2 point = (radius * tmp) + centre;
+
+    debugMeshData.vertices.push_back(glm::vec3(point.x, 0, point.y));
+    debugMeshData.vertices.push_back(glm::vec3(point.x, DEBUG_MESH_DATA_HEIGHT, point.y));
+
+    glm::vec3 normal = glm::normalize(glm::vec3(tmp.x, 0, tmp.y));
+    debugMeshData.normals.push_back(normal);
+    debugMeshData.normals.push_back(normal);
+
+    unsigned int numVertices = debugMeshData.vertices.size();
+    debugMeshData.indices.push_back(numVertices - 4);
+    debugMeshData.indices.push_back(numVertices - 3);
+    debugMeshData.indices.push_back(numVertices - 1);
+
+    debugMeshData.indices.push_back(numVertices - 4);
+    debugMeshData.indices.push_back(numVertices - 1);
+    debugMeshData.indices.push_back(numVertices - 2);
+
+    debugObjData->updateMesh(debugMeshData);
+    debugObjData->updateBuffers();
+#endif
 }
 
 bool LightTrailSegmentCircle::collides(const glm::vec2 &location) const
@@ -168,10 +281,14 @@ bool LightTrailSegmentCircle::checkSelfCollision() const
 
 // SPIRAL =====================================================================
 
-LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, float _startSpeed, float _startAngleRads, TurnDirection _turnDirection, Accelerating _accelerating)
-    : LightTrailSegment(), startSpeed(_startSpeed), startAngleRads(_startAngleRads),
+LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, float _startSpeed, float _startAngleRads, TurnDirection _turnDirection, Accelerating _accelerating, std::shared_ptr<World> _world, std::shared_ptr<const Shader> _shader)
+    : LightTrailSegment(_world, _shader),
+      startSpeed(_startSpeed), startAngleRads(_startAngleRads),
       endAngleRads(_startAngleRads), startPoint(_startPoint),
       turnDirection(_turnDirection), accelerating(_accelerating)
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+      , debugLastTDrawn(0)
+#endif
 {
     // cache all spiral co-ords indexed by angle from start position
     // with -ve Z being 0 radians
@@ -193,6 +310,10 @@ LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, f
     // spiral that are at most 0.6 units apart. Therefore half values of T
     // shouldn't be further than 0.3 unites apart
 
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    glm::vec2 lastPoint;
+    bool first = true;
+#endif
     for (float T = 0.5f; T < (maxT + 0.6f); T+=0.5f)
     {
         glm::vec2 point = calculateSpiralCoOrdsForT(T);
@@ -206,7 +327,46 @@ LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, f
 
         // stick it in the cache
         cache.insert(SpiralCacheMapValue(angleRads, std::pair<float, glm::vec2>(T, point)));
+
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+        debugMeshData.vertices.push_back(glm::vec3(point.x, 0, point.y));
+        debugMeshData.vertices.push_back(glm::vec3(point.x, DEBUG_MESH_DATA_HEIGHT, point.y));
+
+        glm::vec2 difference;
+        if (first)
+        {
+            first = false;
+            difference = point - startPoint;
+        }
+        else
+        {
+            difference = point - lastPoint;
+        }
+        glm::vec3 normal = glm::cross(glm::normalize(glm::vec3(difference.x, 0, difference.y)),
+                                      glm::vec3(0,1,0));
+        debugMeshData.normals.push_back(normal);
+        debugMeshData.normals.push_back(normal);
+
+        lastPoint = point;
+#endif
     }
+
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    debugMeshData.name = "LTS_SPIRAL";
+    debugMeshData.hasTexture = false;
+
+    // need something in the indices buffer
+    // bit of a nasty hack, but it'll work
+    debugMeshData.indices.push_back(0); debugMeshData.indices.push_back(0); debugMeshData.indices.push_back(0);
+
+    debugObjData = std::make_shared<ObjData3D>();
+    if (!debugObjData->addMesh(debugMeshData))
+    {
+        // fali
+        printf("Failed to create light trail segment spiral obj data\n");
+    }
+    debugObj = std::make_unique<Object>(debugObjData, world, shader, glm::mat4(1.0f), DEBUG_LTS_SPIRAL_COLOUR);
+#endif
 }
 
 LightTrailSegmentSpiral::~LightTrailSegmentSpiral()
@@ -331,4 +491,48 @@ bool LightTrailSegmentSpiral::checkSelfCollision() const
 void LightTrailSegmentSpiral::update(const glm::vec2 &currentLocation, float currentAngleRads)
 {
     endAngleRads = currentAngleRads;
+
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    bool anythingChanged = false;
+
+    // CT+Theta = currentAngleRads
+    float C = (turnDirection == TURN_RIGHT) ? glm::radians(ANGLE_OF_TURNS) : -glm::radians(ANGLE_OF_TURNS);
+    float T = (currentAngleRads - startAngleRads) / C;
+
+    // we have debugMeshData for 1/2 values of T, 0.5, 1, 1.5, ...
+    float t;
+    for (t = debugLastTDrawn + 0.5f; t <= T; t+=0.5f)
+    {
+        // vertices 0,1 are for T = 0.5
+        //          2,3 are for T = 1
+        // etc...
+
+        // so we need to draw a face that ends with vertices defined by t
+        // and starts with those defined by t-0.5
+
+        if (t < 0.9f)
+        {
+            // t is 0.5f ie. there is no vertices defined by t-0.5
+            continue;
+        }
+
+        unsigned short startVertexNum = (unsigned short)round((t - 1.0f)*4.0f);
+        debugMeshData.indices.push_back(startVertexNum + 0);
+        debugMeshData.indices.push_back(startVertexNum + 1);
+        debugMeshData.indices.push_back(startVertexNum + 3);
+
+        debugMeshData.indices.push_back(startVertexNum + 0);
+        debugMeshData.indices.push_back(startVertexNum + 3);
+        debugMeshData.indices.push_back(startVertexNum + 2);
+
+        anythingChanged = 1;
+    }
+    debugLastTDrawn = t-0.5f;
+
+    if (anythingChanged)
+    {
+        debugObjData->updateMesh(debugMeshData);
+        debugObjData->updateBuffers();
+    }
+#endif
 }

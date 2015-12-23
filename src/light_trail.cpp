@@ -1,5 +1,7 @@
 #include "light_trail.hpp"
 
+#include <algorithm>
+
 static const float lightTrailHeight = 3.8f;
 
 LightTrail::LightTrail(std::shared_ptr<World> _world,
@@ -233,7 +235,7 @@ void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, fl
     {
         case STATE_STRAIGHT:
         {
-            uptr = std::make_unique<LightTrailSegmentStraight>(glm::vec2(currentLocation.x, currentLocation.z));
+            uptr = std::make_unique<LightTrailSegmentStraight>(glm::vec2(currentLocation.x, currentLocation.z), currentAngleRads, world, shader);
             break;
         }
         case STATE_CIRCLE_LEFT:
@@ -289,7 +291,9 @@ void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, fl
             uptr = std::make_unique<LightTrailSegmentCircle>(glm::vec2(centre.x, centre.z),
                                                              radius,
                                                              startAngle, 
-                                                             (state == STATE_CIRCLE_RIGHT) ? TURN_RIGHT : TURN_LEFT);
+                                                             (state == STATE_CIRCLE_RIGHT) ? TURN_RIGHT : TURN_LEFT,
+                                                             world,
+                                                             shader);
             break;
         }
         case STATE_SPIRAL_OUT_LEFT:
@@ -301,7 +305,7 @@ void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, fl
                                 state == STATE_SPIRAL_IN_LEFT) ? TURN_LEFT : TURN_RIGHT;
             Accelerating accel = (state == STATE_SPIRAL_OUT_LEFT ||
                                   state == STATE_SPIRAL_OUT_RIGHT) ? SPEED_ACCELERATE : SPEED_BRAKE;
-            uptr = std::make_unique<LightTrailSegmentSpiral>(glm::vec2(currentLocation.x, currentLocation.z), speed, currentAngleRads, td, accel);
+            uptr = std::make_unique<LightTrailSegmentSpiral>(glm::vec2(currentLocation.x, currentLocation.z), speed, currentAngleRads, td, accel, world, shader);
             break;
         }
     }
@@ -398,4 +402,21 @@ bool LightTrail::checkSelfCollision() const
         return pathSegments.back()->checkSelfCollision();
     }
     return false;
+}
+
+void LightTrail::draw() const
+{
+#ifndef DEBUG_HIDE_NORMAL_LIGHT_TRAIL
+    if (lightTrailObj)
+    {
+        lightTrailObj->drawAll();
+    }
+#endif
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    std::for_each(pathSegments.begin(), pathSegments.end(),
+                  [](const std::unique_ptr<LightTrailSegment> &segment)
+    {
+        segment->drawDebugMesh();
+    });
+#endif
 }

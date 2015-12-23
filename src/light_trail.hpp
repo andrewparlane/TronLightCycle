@@ -32,7 +32,7 @@ public:
     bool collides(const glm::vec2 &location) const;
     bool checkSelfCollision() const;
 
-    void draw() const { if (lightTrailObj) lightTrailObj->drawAll(); }
+    void draw() const;
 
 protected:
     enum State
