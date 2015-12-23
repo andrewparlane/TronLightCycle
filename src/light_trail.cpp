@@ -57,8 +57,7 @@ void LightTrail::createObject(glm::vec3 currentLocation, float currentAngleRads)
         // fali
         printf("Failed to create light trail obj data\n");
     }
-    lightTrailObj = std::make_unique<Object>(lightTrailObjData, world, shader, glm::mat4(1.0f));
-    lightTrailObj->setDefaultColour(colour);
+    lightTrailObj = std::make_unique<Object>(lightTrailObjData, world, shader, glm::mat4(1.0f), colour);
 }
 
 LightTrail::State LightTrail::calculateState(TurnDirection turning, Accelerating accelerating) const
