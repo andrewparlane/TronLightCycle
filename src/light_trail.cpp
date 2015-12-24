@@ -367,15 +367,13 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
     // calculate new state
     State newState = calculateState(turning, accelerating);
 
+    // update current path segment
+    pathSegments.back()->update(glm::vec2(currentLocation.x, currentLocation.z), currentAngleRads);
+
     if (state != newState)
     {
         state = newState;
         createNewPathSegment(speed, currentLocation, currentAngleRads);
-    }
-    else
-    {
-        // update current path segment
-        pathSegments.back()->update(glm::vec2(currentLocation.x, currentLocation.z), currentAngleRads);
     }
 
     lightTrailObjData->updateMesh(lightTrailMeshData);
