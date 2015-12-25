@@ -9,8 +9,20 @@
 
 //#define DEBUG
 #ifdef DEBUG
+
+// When you toggle a light trail off, don't fade away
+// useful for debugging collisions
 //#define DEBUG_STOP_TRAILS_FADING
-#define DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+
+// Show the light trail segments in different colours per segment
+// red = straight, green = circle, blue = spiral
+// this draws them based on the stored data not on the bike position
+// useful for making sure the segments match the light trail
+//#define DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+
+// don't show the light trail. Only really useful in combination with
+// DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS to simplify what you are seeing
+// note you can still crash into the light trail
 //#define DEBUG_HIDE_NORMAL_LIGHT_TRAIL
 #endif
 
