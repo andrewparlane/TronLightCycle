@@ -316,6 +316,7 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
     // are we stopping? if so fade down until we are dead
     if (stopping)
     {
+#ifndef DEBUG_STOP_TRAILS_FADING
         bool changedSomething = false;
         for (auto &v : lightTrailMeshData.vertices)
         {
@@ -333,6 +334,7 @@ void LightTrail::update(TurnDirection turning, Accelerating accelerating, float 
         // nothing more to do, as we are stopping
         lightTrailObjData->updateMesh(lightTrailMeshData);
         lightTrailObjData->updateBuffers();
+#endif
         return;
     }
 

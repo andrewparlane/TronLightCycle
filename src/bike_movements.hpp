@@ -9,6 +9,7 @@
 
 //#define DEBUG
 #ifdef DEBUG
+//#define DEBUG_STOP_TRAILS_FADING
 #define DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
 //#define DEBUG_HIDE_NORMAL_LIGHT_TRAIL
 #endif
