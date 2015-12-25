@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <limits.h>
 
 #include <GL/glew.h>
 
@@ -278,6 +279,9 @@ int main(void)
 
     // create debug text object
     Text text(shader2D);
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    Text activeSegmentText(shader2D);
+#endif
 
     // create speed bar
     Shape2D speedBar(shader2D, glm::vec3(1.0f, 1.0f, 1.0f));
@@ -319,6 +323,10 @@ int main(void)
 #ifdef DEBUG
     bool f5KeyPressed = false;          // quick save
     bool f9KeyPressed = false;          // quick load
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    bool qKeyPressed = false;           // decrement active segment ID
+    bool wKeyPressed = false;           // increment active segment ID
+#endif
 #endif
 
     // misc
@@ -331,6 +339,11 @@ int main(void)
     float savedCameraRotationDegrees;
     bool savedCameraRotating;
     bool savedStop;
+#endif
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    unsigned int activeSegmentId = 0;
+    unsigned int lastActiveSegmentId = UINT_MAX;
+    unsigned int lastNumSegments = 0;
 #endif
     do
     {
@@ -486,6 +499,44 @@ int main(void)
                 stop = savedStop;
             }
         }
+
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+        // change active segment ID
+        if (glfwGetKey(window, GLFW_KEY_Q ))
+        {
+            qKeyPressed = 1;
+        }
+        if (qKeyPressed && !glfwGetKey(window, GLFW_KEY_Q ))
+        {
+            qKeyPressed = 0;
+            if (activeSegmentId != 0)
+            {
+                activeSegmentId--;
+            }
+            else
+            {
+                activeSegmentId = LightTrailSegment::getNumSegments();
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_W ))
+        {
+            wKeyPressed = 1;
+        }
+        if (wKeyPressed && !glfwGetKey(window, GLFW_KEY_W ))
+        {
+            wKeyPressed = 0;
+            if (activeSegmentId == LightTrailSegment::getNumSegments())
+            {
+                activeSegmentId = 0;
+            }
+            else
+            {
+                activeSegmentId++;
+            }
+        }
+#endif
+
 #endif
 
         // update the bike and light trails
@@ -576,6 +627,35 @@ int main(void)
             text.addText2D(textBuff, 10, 530, 26, defaultFont);
         }
         text.drawAll();
+
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+        if (activeSegmentId != lastActiveSegmentId ||
+            LightTrailSegment::getNumSegments() != lastNumSegments)
+        {
+            lastNumSegments = LightTrailSegment::getNumSegments();
+            if (activeSegmentId != lastActiveSegmentId)
+            {
+                LightTrailSegment::setActiveSegmentID(activeSegmentId);
+                lastActiveSegmentId = activeSegmentId;
+            }
+
+            activeSegmentText.deleteAllObjData();
+
+            char textBuff[32];
+            char activeString[16];
+            if (activeSegmentId != 0)
+            {
+                snprintf(activeString, 16, "%u", activeSegmentId);
+            }
+            else
+            {
+                snprintf(activeString, 16, "ALL");
+            }
+            snprintf(textBuff, 32, "Segments: %u Active [%s]", LightTrailSegment::getNumSegments(), activeString);
+            activeSegmentText.addText2D(textBuff, 10, 500, 26, defaultFont);
+        }
+        activeSegmentText.drawAll();
+#endif
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);

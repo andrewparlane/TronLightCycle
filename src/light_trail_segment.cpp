@@ -11,9 +11,17 @@
 #define EPSILON         0.05f
 #define CIRCLE_EPSILON  0.6f
 
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+unsigned int LightTrailSegment::totalSegments = 0;
+unsigned int LightTrailSegment::activeSegmentID = 0;
+#endif
+
 LightTrailSegment::LightTrailSegment(std::shared_ptr<World> _world, std::shared_ptr<const Shader> _shader)
     : world(_world), shader(_shader)
 {
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    segmentID = ++totalSegments;
+#endif
 }
 
 LightTrailSegment::~LightTrailSegment()
@@ -25,7 +33,13 @@ void LightTrailSegment::drawDebugMesh() const
 #ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
     if (debugObj)
     {
-        debugObj->drawAll();
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+        if (activeSegmentID == 0 ||
+            activeSegmentID == segmentID)
+#endif
+        {
+            debugObj->drawAll();
+        }
     }
 #endif
 }
@@ -69,6 +83,14 @@ LightTrailSegmentStraight::~LightTrailSegmentStraight()
 
 bool LightTrailSegmentStraight::collides(const glm::vec2 &location) const
 {
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    if (activeSegmentID != 0 &&
+        activeSegmentID != segmentID)
+    {
+        return false;
+    }
+#endif
+
     // distance(a,p) + distance(b,p) == distance(a,b)
     float dist = abs(glm::distance(location, start) + 
                      glm::distance(location, end) -
@@ -188,6 +210,14 @@ void LightTrailSegmentCircle::update(const glm::vec2 &currentLocation, float cur
 
 bool LightTrailSegmentCircle::collides(const glm::vec2 &location) const
 {
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    if (activeSegmentID != 0 &&
+        activeSegmentID != segmentID)
+    {
+        return false;
+    }
+#endif
+
     // first am I a distance of radius away from the centre
     float dist = abs(glm::distance(location, centre) - radius);
     if (dist > CIRCLE_EPSILON)
@@ -243,6 +273,14 @@ bool LightTrailSegmentCircle::collides(const glm::vec2 &location) const
 
 bool LightTrailSegmentCircle::checkSelfCollision() const
 {
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    if (activeSegmentID != 0 &&
+        activeSegmentID != segmentID)
+    {
+        return false;
+    }
+#endif
+
     // calculate angle of current arch
     float theta;
 
@@ -408,6 +446,14 @@ glm::vec2 LightTrailSegmentSpiral::calculateSpiralCoOrdsForT(float T) const
 
 bool LightTrailSegmentSpiral::collides(const glm::vec2 &location) const
 {
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    if (activeSegmentID != 0 &&
+        activeSegmentID != segmentID)
+    {
+        return false;
+    }
+#endif
+
     // current angle from start point with -VE Z being 0 radians
     float currentAngleRads = glm::acos(glm::dot(glm::vec2(0,-1), glm::normalize(location - startPoint)));
     if (location.x < startPoint.x)

@@ -24,6 +24,12 @@
 // DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS to simplify what you are seeing
 // note you can still crash into the light trail
 //#define DEBUG_HIDE_NORMAL_LIGHT_TRAIL
+
+#if defined(DEBUG_STOP_TRAILS_FADING) && defined(DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS)
+// Allow activating only one segment, the rest won't be shown
+// and you can't collide with them. Useful for debugging collisions
+//#define DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+#endif
 #endif
 
 enum TurnDirection

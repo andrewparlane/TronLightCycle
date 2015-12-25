@@ -22,6 +22,11 @@ public:
 
     void drawDebugMesh() const;
 
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    static unsigned int getNumSegments() { return totalSegments; }
+    static void setActiveSegmentID(unsigned int id) { activeSegmentID = id; }
+#endif
+
 protected:
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;
@@ -30,6 +35,12 @@ protected:
     MeshData<glm::vec3> debugMeshData;
     std::shared_ptr<ObjData3D> debugObjData;
     std::unique_ptr<Object> debugObj;
+#endif
+
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+    static unsigned int totalSegments;
+    static unsigned int activeSegmentID;
+    unsigned int segmentID;
 #endif
 };
 
