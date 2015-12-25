@@ -547,7 +547,7 @@ void LightTrailSegmentSpiral::update(const glm::vec2 &currentLocation, float cur
 
     // we have debugMeshData for 1/2 values of T, 0.5, 1, 1.5, ...
     float t;
-    for (t = debugLastTDrawn + 0.5f; t <= T; t+=0.5f)
+    for (t = debugLastTDrawn + 0.5f; (t+0.1f) <= T; t+=0.5f)
     {
         // vertices 0,1 are for T = 0.5
         //          2,3 are for T = 1
@@ -562,7 +562,12 @@ void LightTrailSegmentSpiral::update(const glm::vec2 &currentLocation, float cur
             continue;
         }
 
-        unsigned short startVertexNum = (unsigned short)round((t - 1.0f)*4.0f);
+        unsigned int startVertexNum = (unsigned int)round((t - 1.0f)*4.0f);
+        if (startVertexNum + 3 >= debugMeshData.vertices.size())
+        {
+            // not enough vertices?
+            break;
+        }
         debugMeshData.indices.push_back(startVertexNum + 0);
         debugMeshData.indices.push_back(startVertexNum + 1);
         debugMeshData.indices.push_back(startVertexNum + 3);
