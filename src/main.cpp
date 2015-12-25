@@ -303,8 +303,9 @@ int main(void)
     unsigned int displayedMaxPossibleFrameRate = 0;
 
     // frame rate limiting
-    const double frameRateLimit = 60.0;
-    const double minTimeBetweenFrames = 1.0/frameRateLimit;
+    const double maxFrameRatelimit = 60.0;
+    double frameRateLimit = maxFrameRatelimit;
+    double minTimeBetweenFrames = 1.0/frameRateLimit;
     double lastFrameStartTime = glfwGetTime();
 
     // camera rotation
@@ -404,6 +405,17 @@ int main(void)
             }
         }
 
+        // bike speed using up and down arrow keys
+        if (glfwGetKey(window, GLFW_KEY_UP))
+        {
+            accelerating = SPEED_ACCELERATE;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_DOWN))
+        {
+            accelerating = SPEED_BRAKE;
+        }
+
+#ifdef DEBUG
         // Stop moving the bike for debug purposes
         if (glfwGetKey(window, GLFW_KEY_S ))
         {
@@ -415,15 +427,26 @@ int main(void)
             stop = !stop;
         }
 
-        // bike speed using up and down arrow keys
-        if (glfwGetKey(window, GLFW_KEY_UP))
+        // change frame rate for debug purposes
+        if (glfwGetKey(window, GLFW_KEY_EQUAL))
         {
-            accelerating = SPEED_ACCELERATE;
+            frameRateLimit++;
+            if (frameRateLimit > maxFrameRatelimit)
+            {
+                frameRateLimit = maxFrameRatelimit;
+            }
+            minTimeBetweenFrames = 1.0/frameRateLimit;
         }
-        else if (glfwGetKey(window, GLFW_KEY_DOWN))
+        else if (glfwGetKey(window, GLFW_KEY_MINUS))
         {
-            accelerating = SPEED_BRAKE;
+            frameRateLimit--;
+            if (frameRateLimit < 1)
+            {
+                frameRateLimit = 1;
+            }
+            minTimeBetweenFrames = 1.0/frameRateLimit;
         }
+#endif
 
         // update the bike and light trails
         bike.update(turnDirection, accelerating, stop);

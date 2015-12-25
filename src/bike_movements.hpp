@@ -7,8 +7,11 @@
 #define BIKE_SPEED_SLOWEST  0.2f
 #define BIKE_SPEED_FASTEST  0.6f
 
-//#define DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+//#define DEBUG
+#ifdef DEBUG
+#define DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
 //#define DEBUG_HIDE_NORMAL_LIGHT_TRAIL
+#endif
 
 enum TurnDirection
 {
