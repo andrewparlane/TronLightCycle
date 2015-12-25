@@ -25,6 +25,11 @@ public:
 
     bool checkSelfCollision() const { return trailManager.checkSelfCollision(); }
 
+#ifdef DEBUG
+    void saveBikeState();
+    void restoreBikeState();
+#endif
+
 protected:
     // overrides as protected, as we shouldn't use these, we should use updateLocation() and turn()
     void translate(const glm::vec3 &vec) override { Object::translate(vec); }
@@ -56,6 +61,13 @@ protected:
     LightTrailManager trailManager;
 
     float speed;
+
+#ifdef DEBUG
+    bool bikeStateSaved;
+    float savedBikeAngleAroundYRads;
+    float savedSpeed;
+    glm::mat4 savedModelMatrix;
+#endif
 };
 
 #endif

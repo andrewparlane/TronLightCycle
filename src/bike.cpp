@@ -13,6 +13,10 @@ Bike::Bike(std::shared_ptr<const ObjData3D> _objData,
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
       trailManager(_world, _shader, _defaultColour), speed(BIKE_SPEED_DEFAULT)
 {
+#ifdef DEBUG
+    bikeStateSaved = false;
+#endif
+
     initialiseBikeParts();
 }
 
@@ -335,3 +339,25 @@ void Bike::initialiseBikeParts()
         i++;
     }
 }
+
+#ifdef DEBUG
+bool bikeStateSaved;
+
+void Bike::saveBikeState()
+{
+    bikeStateSaved = true;
+    savedBikeAngleAroundYRads = bikeAngleAroundYRads;
+    savedSpeed = speed;
+    savedModelMatrix = modelMatrix;
+}
+
+void Bike::restoreBikeState()
+{
+    if (bikeStateSaved)
+    {
+        bikeAngleAroundYRads = savedBikeAngleAroundYRads;
+        speed = savedSpeed;
+        modelMatrix = savedModelMatrix;
+    }
+}
+#endif

@@ -316,13 +316,22 @@ int main(void)
     bool cKeyPressed = false;           // camera rotation
     bool sKeyPressed = false;           // stop moving the bike
     bool spaceKeyPressed = false;       // toggle light trail
+#ifdef DEBUG
+    bool f5KeyPressed = false;          // quick save
+    bool f9KeyPressed = false;          // quick load
+#endif
 
     // misc
     float lastSpeed = 0.0f;
 
     // debug stuff
-    // stop moving the bike with the 's' key
-    bool stop = false;
+    bool stop = false;                          // stop moving the bike with the 's' key
+#ifdef DEBUG
+    bool stateIsSaved = false;
+    float savedCameraRotationDegrees;
+    bool savedCameraRotating;
+    bool savedStop;
+#endif
     do
     {
         // frame rate limiting =====================================================
@@ -445,6 +454,37 @@ int main(void)
                 frameRateLimit = 1;
             }
             minTimeBetweenFrames = 1.0/frameRateLimit;
+        }
+
+        // quick save and quick load of bike position
+        // TODO: expand to cover light trails too
+        if (glfwGetKey(window, GLFW_KEY_F5 ))
+        {
+            f5KeyPressed = 1;
+        }
+        if (f5KeyPressed && !glfwGetKey(window, GLFW_KEY_F5 ))
+        {
+            f5KeyPressed = 0;
+            bike.saveBikeState();
+            stateIsSaved = true;
+            savedCameraRotationDegrees = cameraRotationDegrees;
+            savedCameraRotating = cameraRotating;
+            savedStop = stop;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F9 ))
+        {
+            f9KeyPressed = 1;
+        }
+        if (f9KeyPressed && !glfwGetKey(window, GLFW_KEY_F9 ))
+        {
+            f9KeyPressed = 0;
+            bike.restoreBikeState();
+            if (stateIsSaved)
+            {
+                cameraRotationDegrees = savedCameraRotationDegrees;
+                cameraRotating = savedCameraRotating;
+                stop = savedStop;
+            }
         }
 #endif
 
