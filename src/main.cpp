@@ -620,10 +620,10 @@ int main(void)
             char textBuff[32];
             text.deleteAllObjData();
 
-            snprintf(textBuff, 32, "FR (Actual): %d\n", frameRate);
+            snprintf(textBuff, 32, "FR (Actual): %d", frameRate);
             text.addText2D(textBuff, 10, 560, 26, defaultFont);
 
-            snprintf(textBuff, 32, "      (MAX): %d\n", displayedMaxPossibleFrameRate);
+            snprintf(textBuff, 32, "      (MAX): %d", displayedMaxPossibleFrameRate);
             text.addText2D(textBuff, 10, 530, 26, defaultFont);
         }
         text.drawAll();
