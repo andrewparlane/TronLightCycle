@@ -97,8 +97,8 @@ protected:
     TurnDirection turnDirection;
     Accelerating accelerating;
 
-    // angle of point to startPoint -> pair of T, point on spiral
-    typedef std::map<float,std::pair<float, glm::vec2>> SpiralCacheMap;
+    // T -> point on spiral
+    typedef std::map<float, glm::vec2> SpiralCacheMap;
     typedef SpiralCacheMap::value_type SpiralCacheMapValue;
     SpiralCacheMap cache;
 

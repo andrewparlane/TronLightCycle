@@ -352,19 +352,20 @@ LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, f
     glm::vec2 lastPoint;
     bool first = true;
 #endif
+
+    // stick in T=0 into the cache
+    cache.insert(SpiralCacheMapValue(0.0f, startPoint));
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+    debugMeshData.vertices.push_back(glm::vec3(startPoint.x, 0, startPoint.y));
+    debugMeshData.vertices.push_back(glm::vec3(startPoint.x, DEBUG_MESH_DATA_HEIGHT, startPoint.y));
+#endif
+
     for (float T = 0.5f; T < (maxT + 0.6f); T+=0.5f)
     {
         glm::vec2 point = calculateSpiralCoOrdsForT(T);
 
-        // now calculate angle to start point
-        float angleRads = glm::acos(glm::dot(glm::vec2(0,-1), glm::normalize(point - startPoint)));
-        if (point.x < startPoint.x)
-        {
-            angleRads = 2*glm::pi<float>() - angleRads;
-        }
-
         // stick it in the cache
-        cache.insert(SpiralCacheMapValue(angleRads, std::pair<float, glm::vec2>(T, point)));
+        cache.insert(SpiralCacheMapValue(T, point));
 
 #ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
         debugMeshData.vertices.push_back(glm::vec3(point.x, 0, point.y));
@@ -373,7 +374,6 @@ LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, f
         glm::vec2 difference;
         if (first)
         {
-            first = false;
             difference = point - startPoint;
         }
         else
@@ -382,6 +382,13 @@ LightTrailSegmentSpiral::LightTrailSegmentSpiral(const glm::vec2 &_startPoint, f
         }
         glm::vec3 normal = glm::cross(glm::normalize(glm::vec3(difference.x, 0, difference.y)),
                                       glm::vec3(0,1,0));
+        if (first)
+        {
+            // need to push two more normals for vertex T=0
+            debugMeshData.normals.push_back(normal);
+            debugMeshData.normals.push_back(normal);
+            first = false;
+        }
         debugMeshData.normals.push_back(normal);
         debugMeshData.normals.push_back(normal);
 
@@ -454,54 +461,8 @@ bool LightTrailSegmentSpiral::collides(const glm::vec2 &location) const
     }
 #endif
 
-    // current angle from start point with -VE Z being 0 radians
-    float currentAngleRads = glm::acos(glm::dot(glm::vec2(0,-1), glm::normalize(location - startPoint)));
-    if (location.x < startPoint.x)
-    {
-        currentAngleRads = 2*glm::pi<float>() - currentAngleRads;
-    }
-
-    // find if a suitably close value is in my cache
-    auto itLow = cache.lower_bound(currentAngleRads);   // find first key >= currentAngleRads
-
-    // work out whether currentAngleRads is closer to the item in the cache
-    // that is >= it or < it
-    auto &nearest = itLow;
-    if (itLow == cache.end())
-    {
-        nearest = --itLow;
-    }
-    else if (itLow == cache.begin())
-    {
-        nearest = itLow;
-    }
-    else
-    {
-        auto &firstGreaterOrEqual = itLow;
-        auto &firstLessThan = --itLow;
-
-        if (abs(currentAngleRads - firstLessThan->first) <
-            abs(currentAngleRads - firstGreaterOrEqual->first))
-        {
-            nearest = firstLessThan;
-        }
-        else
-        {
-            nearest = firstGreaterOrEqual;
-        }
-    }
-
-    // now check if nearest is near enough
-    if (abs(currentAngleRads - nearest->first) > glm::radians(1.5f))
-    {
-        // too far
-        return false;
-    }
-
-    // we are in the max range of this spiral,
-    // however the spiral doesn't need to be that big
-    // check we are in range
-    // endAngleRads = CT+Theta, where T is the last T of the spiral
+    // check all points in the cache (up to where the bike got to).
+    // and see if we are in range of any of them.
     float turnAngleRads = glm::radians(ANGLE_OF_TURNS);
     if (turnDirection == TURN_LEFT)
     {
@@ -509,23 +470,21 @@ bool LightTrailSegmentSpiral::collides(const glm::vec2 &location) const
     }
 
     float lastT = (endAngleRads - startAngleRads) / turnAngleRads;
-    if (nearest->second.first > lastT)
+
+    for (auto &it : cache)
     {
-        // not in range
-        return false;
+        if (it.first > (lastT + 0.1f))
+        {
+            break;
+        }
+        float distToPoint = abs(glm::distance(location, it.second));
+        if (distToPoint < CIRCLE_EPSILON)
+        {
+            return true;
+        }
     }
 
-    // get the point on the spiral that is
-    // nearest.first radians from the start point.
-    // Then we can see if the bike is near that point
-    float dist = glm::distance(location, nearest->second.second);
-
-    if (dist > CIRCLE_EPSILON)
-    {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 bool LightTrailSegmentSpiral::checkSelfCollision() const
@@ -556,13 +515,13 @@ void LightTrailSegmentSpiral::update(const glm::vec2 &currentLocation, float cur
         // so we need to draw a face that ends with vertices defined by t
         // and starts with those defined by t-0.5
 
-        if (t < 0.9f)
+        if (t < 0.4f)
         {
             // t is 0.5f ie. there is no vertices defined by t-0.5
             continue;
         }
 
-        unsigned int startVertexNum = (unsigned int)round((t - 1.0f)*4.0f);
+        unsigned int startVertexNum = (unsigned int)round((t - 0.5f)*4.0f);
         if (startVertexNum + 3 >= debugMeshData.vertices.size())
         {
             // not enough vertices?
