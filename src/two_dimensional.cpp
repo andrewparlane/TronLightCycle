@@ -95,15 +95,14 @@ Text::~Text()
 {
 }
 
-void Text::addText2D(const char * text, int x, int y, int size, unsigned int textureID)
+void Text::addText2D(const std::string &text, int x, int y, int size, unsigned int textureID)
 {
-    unsigned int length = strlen(text);
-
     MeshData<glm::vec2> md;
     md.name = "text" + std::to_string(numTextStrings++);
     md.hasTexture = true;
     md.textureID = textureID;
-    for ( unsigned int i=0 ; i<length ; i++ )
+    unsigned int i = 0;
+    for (auto character : text)
     {
         glm::vec2 vertex_up_left    = glm::vec2( x+i*size     , y+size );
         glm::vec2 vertex_up_right   = glm::vec2( x+i*size+size, y+size );
@@ -115,7 +114,6 @@ void Text::addText2D(const char * text, int x, int y, int size, unsigned int tex
         md.vertices.push_back(vertex_up_right  );
         md.vertices.push_back(vertex_down_right);
 
-        char character = text[i];
         float uv_x = (character%16)/16.0f;
         float uv_y = (character/16)/16.0f;
 
@@ -135,6 +133,8 @@ void Text::addText2D(const char * text, int x, int y, int size, unsigned int tex
         md.indices.push_back((i*4)+1);
         md.indices.push_back((i*4)+2);
         md.indices.push_back((i*4)+3);
+
+        i++;
     }
 
     objData.addMesh(md);

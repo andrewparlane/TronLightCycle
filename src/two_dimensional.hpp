@@ -28,7 +28,7 @@ public:
     Text(std::shared_ptr<const Shader> _shader);
     ~Text();
 
-    void addText2D(const char *text, int x, int y, int size, unsigned int textureID);
+    void addText2D(const std::string &text, int x, int y, int size, unsigned int textureID);
 
 protected:
     unsigned int numTextStrings;
