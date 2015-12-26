@@ -7,7 +7,7 @@
 class Object2D
 {
 public:
-    Object2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour = glm::vec3(1.0f,1.0f,1.0f));
+    Object2D(std::shared_ptr<const Shader> _shader);
     ~Object2D();
 
     void deleteObjData(const std::string &name) { objData.deleteMesh(name); }
@@ -37,7 +37,7 @@ protected:
 class Shape2D : public Object2D
 {
 public:
-    Shape2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour);
+    Shape2D(std::shared_ptr<const Shader> _shader);
     ~Shape2D();
 
     void addLine(glm::vec2 start, glm::vec2 end, glm::vec3 startColour, glm::vec3 endColour, float thickness);

@@ -11,7 +11,7 @@
 
 #include "two_dimensional.hpp"
 
-Object2D::Object2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour)
+Object2D::Object2D(std::shared_ptr<const Shader> _shader)
     : shader(_shader)
 {
 }
@@ -140,8 +140,8 @@ void Text::addText2D(const char * text, int x, int y, int size, unsigned int tex
     objData.addMesh(md);
 }
 
-Shape2D::Shape2D(std::shared_ptr<const Shader> _shader, glm::vec3 _defaultColour)
-    : Object2D(_shader, _defaultColour), numRects(0)
+Shape2D::Shape2D(std::shared_ptr<const Shader> _shader)
+    : Object2D(_shader), numRects(0)
 {
 }
 
