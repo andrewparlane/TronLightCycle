@@ -173,7 +173,7 @@ int main(void)
 
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(800, 600, "Playground", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "Tron", NULL, NULL);
     if (window == NULL) {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         glfwTerminate();
