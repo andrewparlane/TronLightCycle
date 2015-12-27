@@ -17,7 +17,37 @@ Credit to:
         handlebar and foot pedal texture
 
 TODO:
-    UV map everything
-    Update loadAssImp to support multiple meshes
-    support multiple lights
-    support strip lights (connected to body of bike)?
+    loading bar
+        need to mod assimp
+            check out my changes to ObjFileImporter::InternalReadFile
+            need to add progress to ObjFileParser parser(m_Buffer, modelName, pIOHandler);
+            see if can contribute via GIT?
+    sort out lighting, everything is too dark
+        support multiple lights
+        support strip lights (connected to body of bike)?
+            look into defered shading?
+            render to texture
+            apply blur
+            ...
+    add support for collisions effects
+        ie big splosion - think michael bay.
+    Tidy up
+        shader class, use some sort of map rather than individual vars
+        texture manager
+            create texture class
+            pass shared ptrs around
+            textureManager creates new texture unless it's already cached
+        tweak keyboard input to use callbacks
+            receive character press rather than key press, so different layouts work
+            add mouse scroll wheel event for zooming in or out
+    sort out scales, maybe make bike smaller? or floor bigger?
+    add boundary and buildings etc...
+    make floor reflective
+    add second floor with basic drops and ramps
+    make top floor semi transparent
+    work out how to distribute a binary to people
+    add demo mode
+        bike drives itself
+        camera follows set path too
+        or can override and move camera
+    make bike lean on turns
