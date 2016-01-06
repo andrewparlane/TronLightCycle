@@ -14,9 +14,11 @@
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
+#include <assimp/ProgressHandler.hpp>
 
-ObjLoader::ObjLoader(const std::string &objFilePath, const std::string &_textureMapPath)
-    : ObjData3D(), objPath(objFilePath), textureMapPath(_textureMapPath)
+ObjLoader::ObjLoader(const std::string &objFilePath, const std::string &_textureMapPath, ProgressBar *_progressBar, ProgressBar::ProgressType _progressType)
+    : ObjData3D(), objPath(objFilePath), textureMapPath(_textureMapPath),
+      progressBar(_progressBar), progressType(_progressType)
 {
 }
 
@@ -79,10 +81,38 @@ bool ObjLoader::loadTextureMap()
     return false;
 }
 
+class MyProgressHandler : public Assimp::ProgressHandler
+{
+public:
+    MyProgressHandler(ProgressBar *_progressBar, ProgressBar::ProgressType _progressType)
+        : Assimp::ProgressHandler(),
+          progressBar(_progressBar), progressType(_progressType)
+    {
+    }
+
+    ~MyProgressHandler() {}
+
+    bool Update(float percentage=-1.0f) override
+    {
+        if (progressBar)
+        {
+            progressBar->update(progressType, percentage);
+        }
+        return true;
+    }
+
+protected:
+    ProgressBar *progressBar;
+    ProgressBar::ProgressType progressType;
+};
+
 bool ObjLoader::loadObj()
 {
     Assimp::Importer importer;
 
+    // note don't delete this, ownership is taken by ASSIMP
+    MyProgressHandler *progressHandler = new MyProgressHandler(progressBar, progressType);
+    importer.SetProgressHandler(progressHandler);
     const aiScene* scene = importer.ReadFile(objPath, aiProcess_JoinIdenticalVertices /*| aiProcess_SortByPType*/);
     if (!scene) {
         fprintf(stderr, importer.GetErrorString());

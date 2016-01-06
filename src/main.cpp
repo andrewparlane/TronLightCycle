@@ -6,7 +6,6 @@
 #include <GL/glew.h>
 
 #include <glfw3.h>
-GLFWwindow* window;
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,6 +18,7 @@ GLFWwindow* window;
 #include <bike.hpp>
 #include <bike_movements.hpp>
 #include <two_dimensional.hpp>
+#include <progress_bar.hpp>
 
 #include <opengl_tutorials_org/texture.hpp>
 
@@ -173,7 +173,7 @@ int main(void)
 
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(800, 600, "Tron", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Tron", NULL, NULL);
     if (window == NULL) {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         glfwTerminate();
@@ -195,16 +195,29 @@ int main(void)
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-    std::shared_ptr<const Shader> mainShader;
-    mainShader.reset(setupMainShader());
-    if (!mainShader)
+    std::shared_ptr<const Shader> shader2D;
+    shader2D.reset(setup2DShader());
+    if (!shader2D)
     {
         system("pause");
         return -1;
     }
-    std::shared_ptr<const Shader> shader2D;
-    shader2D.reset(setup2DShader());
-    if (!shader2D)
+
+    // load default font
+    unsigned int defaultFont = loadDDS(std::string("textures/compressed/Holstein.DDS"));
+    if (defaultFont == 0)
+    {
+        printf("Couldn't loadDDS font texture\n");
+        system("pause");
+        return false;
+    }
+
+    // create progress bar
+    ProgressBar progressBar({{ProgressBar::PROGRESS_TYPE_LOAD_BIKE,100}}, window, shader2D, defaultFont);
+
+    std::shared_ptr<const Shader> mainShader;
+    mainShader.reset(setupMainShader());
+    if (!mainShader)
     {
         system("pause");
         return -1;
@@ -232,7 +245,7 @@ int main(void)
 
     
 
-    std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex"));
+    std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
     if (!bikeLoader->loadTextureMap() ||
         !bikeLoader->loadObj())
     {
@@ -267,15 +280,6 @@ int main(void)
         return -1;
     }
     Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
-
-    // load default font
-    unsigned int defaultFont = loadDDS(std::string("textures/compressed/Holstein.DDS"));
-    if (defaultFont == 0)
-    {
-        printf("Couldn't loadDDS font texture\n");
-        system("pause");
-        return false;
-    }
 
     // create debug text object
     Text text(shader2D);

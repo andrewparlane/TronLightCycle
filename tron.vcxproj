@@ -130,6 +130,7 @@
     <ClCompile Include="src\object_data.cpp" />
     <ClCompile Include="src\objloader.cpp" />
     <ClCompile Include="src\opengl_tutorials_org\texture.cpp" />
+    <ClCompile Include="src\progress_bar.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\two_dimensional.cpp" />
     <ClCompile Include="src\world.cpp" />
