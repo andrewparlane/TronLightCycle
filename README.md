@@ -4,6 +4,7 @@ Tron light cycle game / demo
 Requires these libraries:
     GLFW (v3.1.2)
     ASSIMP (v3.2)
+        configure to not make shared libs, and not build exporter
     GLM (v0.9.7.2)
     GLEW (v1.13.0)
 
