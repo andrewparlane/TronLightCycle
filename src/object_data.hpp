@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include <texture.hpp>
+
 #include <glm/glm.hpp>
 
 #include <GL/glew.h>
@@ -18,8 +20,8 @@ template<typename T> struct MeshData
     std::vector<glm::vec3> colours;
 
     std::string name;
-    std::string texturePath;        // only one of texturePath
-    unsigned int textureID;         // and textureID are used
+    std::string texturePath;            // only one of texturePath
+    std::shared_ptr<Texture> texture;   // and texture are used
     bool hasTexture;
 
     bool needsUpdate;
@@ -35,17 +37,12 @@ template<typename T> struct Mesh
         glDeleteBuffers(1, &colourBuffer);
         if (hasTexture)
         {
-            if (ownTexture)
-            {
-                glDeleteTextures(1, &texture);
-            }
             glDeleteBuffers(1, &uvBuffer);
         }
     }
 
     std::string name;
     bool hasTexture;
-    bool ownTexture;
 
     T firstVertex; // needed for use with seperators
 
@@ -54,7 +51,7 @@ template<typename T> struct Mesh
     GLuint normalBuffer;
     GLuint indiceBuffer;
     GLuint colourBuffer;
-    GLuint texture;
+    std::shared_ptr<Texture> texture;
     unsigned int numIndices;
 };
 

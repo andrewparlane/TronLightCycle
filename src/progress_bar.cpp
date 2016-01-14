@@ -5,7 +5,7 @@
 #define PROGRESS_BAR_START_Y 280.0f
 #define PROGRESS_BAR_END_Y   320.0f
 
-ProgressBar::ProgressBar(std::map<ProgressType, unsigned int> _weights, GLFWwindow* _window, std::shared_ptr<const Shader> _shader, unsigned int _font)
+ProgressBar::ProgressBar(std::map<ProgressType, unsigned int> _weights, GLFWwindow* _window, std::shared_ptr<const Shader> _shader, std::shared_ptr<Texture> _font)
     : weights(_weights), window(_window), shader(_shader), font(_font),
       progressBar(shader), progressText(shader), lastTotalPercent(0.0f)
 {

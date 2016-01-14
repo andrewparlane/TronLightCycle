@@ -1,8 +1,11 @@
 #ifndef __TWO_DIMENSIONAL_HPP
 #define __TWO_DIMENSIONAL_HPP
 
+#include <memory>
+
 #include <object.hpp>
 #include <shader.hpp>
+#include <texture.hpp>
 
 class Object2D
 {
@@ -28,7 +31,7 @@ public:
     Text(std::shared_ptr<const Shader> _shader);
     ~Text();
 
-    void addText2D(const std::string &text, int x, int y, int size, unsigned int textureID);
+    void addText2D(const std::string &text, int x, int y, int size, std::shared_ptr<Texture> texture);
 
 protected:
     unsigned int numTextStrings;

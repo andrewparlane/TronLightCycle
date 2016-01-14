@@ -1,7 +1,22 @@
-#ifndef TEXTURE_HPP
-#define TEXTURE_HPP
+#ifndef __TEXTURE_HPP
+#define __TEXTURE_HPP
 
-// Load a .DDS file using GLFW's own loader
-GLuint loadDDS(const std::string &imagepath);
+#include <string>
+
+#include <GL/glew.h>
+
+class Texture
+{
+public:
+    Texture(const std::string &imagepath);
+    ~Texture();
+
+    bool loadDDS();
+    void bind(GLuint textureSamplerID) const;
+
+protected:
+    std::string path;
+    GLuint textureID;
+};
 
 #endif

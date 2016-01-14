@@ -38,9 +38,7 @@ void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
 
         glUniform1f(fragmentIsTextureID, 1.0f);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mesh->texture);
-        glUniform1i(textureSamplerID, 0);
+        mesh->texture->bind(textureSamplerID);
     }
     else
     {
@@ -95,12 +93,12 @@ Text::~Text()
 {
 }
 
-void Text::addText2D(const std::string &text, int x, int y, int size, unsigned int textureID)
+void Text::addText2D(const std::string &text, int x, int y, int size, std::shared_ptr<Texture> texture)
 {
     MeshData<glm::vec2> md;
     md.name = "text" + std::to_string(numTextStrings++);
     md.hasTexture = true;
-    md.textureID = textureID;
+    md.texture = texture;
     unsigned int i = 0;
     for (auto character : text)
     {

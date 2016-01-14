@@ -204,8 +204,8 @@ int main(void)
     }
 
     // load default font
-    unsigned int defaultFont = loadDDS(std::string("textures/compressed/Holstein.DDS"));
-    if (defaultFont == 0)
+    std::shared_ptr<Texture> defaultFont = std::make_shared<Texture>(std::string("textures/compressed/Holstein.DDS"));
+    if (!defaultFont->loadDDS())
     {
         printf("Couldn't loadDDS font texture\n");
         system("pause");
@@ -676,8 +676,6 @@ int main(void)
 
 
     // Cleanup
-    // delete default font
-    glDeleteTextures(1, &defaultFont);
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
 

@@ -3,6 +3,7 @@
 
 #include "two_dimensional.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 
 #include <map>
 #include <string>
@@ -23,7 +24,7 @@ public:
     };
 
     // takes a map with key ProgressType and value progress weight
-    ProgressBar(std::map<ProgressType,unsigned int> _weights, GLFWwindow* _window, std::shared_ptr<const Shader> _shader, unsigned int _font);
+    ProgressBar(std::map<ProgressType,unsigned int> _weights, GLFWwindow* _window, std::shared_ptr<const Shader> _shader, std::shared_ptr<Texture> _font);
     ~ProgressBar();
 
     void setText(const std::string &text);
@@ -34,7 +35,7 @@ protected:
 
     GLFWwindow* window;
     std::shared_ptr<const Shader> shader;
-    unsigned int font;
+    std::shared_ptr<Texture> font;
 
     Shape2D progressBar;
     Text progressText;

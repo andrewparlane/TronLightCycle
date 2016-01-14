@@ -35,9 +35,7 @@ void Object::drawMesh(const std::shared_ptr<Mesh<glm::vec3>> &mesh) const
     {
         glEnableVertexAttribArray(vertexTextureUVID);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mesh->texture);
-        glUniform1i(textureSamplerID, 0);
+        mesh->texture->bind(textureSamplerID);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer);
