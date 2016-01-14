@@ -13,6 +13,8 @@
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
+std::map<std::string, std::shared_ptr<Texture>> Texture::textureCache;
+
 Texture::Texture(const std::string &imagePath)
     : path(imagePath), textureID(-1)
 {
@@ -113,4 +115,21 @@ void Texture::bind(GLuint textureSamplerID) const
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
     glUniform1i(textureSamplerID, 0);
+}
+
+std::shared_ptr<Texture> Texture::getOrCreate(const std::string &imagePath)
+{
+    auto &it = textureCache.find(imagePath);
+    if (it != textureCache.end())
+    {
+        return it->second;
+    }
+
+    std::shared_ptr<Texture> tmp(new Texture(imagePath));
+    if (tmp->loadDDS())
+    {
+        textureCache.insert(std::make_pair(imagePath, tmp));
+    }
+
+    return tmp;
 }

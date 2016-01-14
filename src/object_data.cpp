@@ -112,8 +112,7 @@ template<typename T> bool ObjData<T>::createBuffers(MeshData<T> &md)
     {
         if (md.texturePath.size())
         {
-            newMesh->texture.reset(new Texture(std::string("textures/compressed/") + md.texturePath));
-            newMesh->texture->loadDDS();
+            newMesh->texture = Texture::getOrCreate(std::string("textures/compressed/") + md.texturePath);
         }
         else
         {

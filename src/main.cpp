@@ -204,8 +204,8 @@ int main(void)
     }
 
     // load default font
-    std::shared_ptr<Texture> defaultFont = std::make_shared<Texture>(std::string("textures/compressed/Holstein.DDS"));
-    if (!defaultFont->loadDDS())
+    std::shared_ptr<Texture> defaultFont = Texture::getOrCreate(std::string("textures/compressed/Holstein.DDS"));
+    if (!defaultFont)
     {
         printf("Couldn't loadDDS font texture\n");
         system("pause");
