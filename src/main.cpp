@@ -20,7 +20,7 @@
 #include <two_dimensional.hpp>
 #include <progress_bar.hpp>
 
-#include <opengl_tutorials_org/texture.hpp>
+#include <texture.hpp>
 
 #define SPEED_BAR_START_X 602.0f
 #define SPEED_BAR_END_X 778.0f

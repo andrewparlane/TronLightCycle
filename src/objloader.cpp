@@ -8,7 +8,7 @@
 
 #include "objloader.hpp"
 
-#include <opengl_tutorials_org/texture.hpp>
+#include <texture.hpp>
 
 // Include AssImp
 #include <assimp/Importer.hpp>      // C++ importer interface

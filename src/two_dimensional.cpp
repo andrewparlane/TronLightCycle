@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "shader.hpp"
-#include "opengl_tutorials_org/texture.hpp"
+#include "texture.hpp"
 
 #include "two_dimensional.hpp"
 
