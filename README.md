@@ -30,8 +30,6 @@ TODO:
                 deal with shitty debug build performance?
                 etc..?
     loading bar
-        need to mod assimp
-            waiting on pull request
         add support for multiple actions
     Effects / Prettiness
         sort out lighting, everything is too dark
@@ -49,11 +47,6 @@ TODO:
         make top floor semi transparent
         make bike lean on turns
     Tidy up
-        shader class, use some sort of map rather than individual vars
-        texture manager
-            create texture class
-            pass shared ptrs around
-            textureManager creates new texture unless it's already cached
         tweak keyboard input to use callbacks
             receive character press rather than key press, so different layouts work
             add mouse scroll wheel event for zooming in or out
