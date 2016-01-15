@@ -11,6 +11,7 @@ public:
     Bike(std::shared_ptr<const ObjData3D> _objData, 
         std::shared_ptr<World> _world, 
         std::shared_ptr<const Shader> _shader,
+        std::shared_ptr<const Shader> _explodeShader,
         const glm::mat4 &modelMat,
         const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
     ~Bike();
@@ -24,6 +25,8 @@ public:
     const LightTrailManager &getTrailManager() const { return trailManager; }
 
     bool checkSelfCollision() const { return trailManager.checkSelfCollision(); }
+
+    void setExploding();
 
 #ifdef DEBUG
     void saveBikeState();
@@ -61,6 +64,10 @@ protected:
     LightTrailManager trailManager;
 
     float speed;
+
+    std::shared_ptr<const Shader> explodeShader;
+    float explodeLevel;
+    bool exploding;
 
 #ifdef DEBUG
     bool bikeStateSaved;

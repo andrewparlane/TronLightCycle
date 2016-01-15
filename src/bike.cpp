@@ -7,11 +7,13 @@
 Bike::Bike(std::shared_ptr<const ObjData3D> _objData, 
            std::shared_ptr<World> _world, 
            std::shared_ptr<const Shader> _shader,
+           std::shared_ptr<const Shader> _explodeShader,
            const glm::mat4 &modelMat,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trailManager(_world, _shader, _defaultColour), speed(BIKE_SPEED_DEFAULT)
+      trailManager(_world, _shader, _defaultColour), speed(BIKE_SPEED_DEFAULT),
+      explodeShader(_explodeShader), explodeLevel(0.0f), exploding(false)
 {
 #ifdef DEBUG
     bikeStateSaved = false;
@@ -128,69 +130,103 @@ float Bike::getSpeedPercent() const
     return percent;
 }
 
+void Bike::setExploding()
+{
+    exploding = true;
+    trailManager.turnOff();
+    switchShader(explodeShader);
+}
+
 void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const
 {
-    glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
-                     glm::rotate(wheelAngle, frontTyreAxis.axis) *      // 2nd rotate around origin
-                     glm::translate(-frontTyreAxis.point);              // 1st translate axis to origin
+    GLuint explodeID = shader->getUniformID(SHADER_UNIFORM_EXPLODE);
 
-    glm::mat4 btmm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(backTyreAxis.point) *               // 3rd translate back to initial point
-                     glm::rotate(wheelAngle, backTyreAxis.axis) *       // 2nd rotate around origin
-                     glm::translate(-backTyreAxis.point);               // 1st translate axis to origin
-
-    glm::mat4 remm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(rightEngineAxis.point) *            // 3rd translate back to initial point
-                     glm::rotate(-engineAngle, rightEngineAxis.axis) *   // 2nd rotate around origin
-                     glm::translate(-rightEngineAxis.point);            // 1st translate axis to origin
-
-    glm::mat4 lemm = modelMatrix *                                      // finally apply overal model transformation
-                     glm::translate(leftEngineAxis.point) *             // 3rd translate back to initial point
-                     glm::rotate(engineAngle, leftEngineAxis.axis) *   // 2nd rotate around origin
-                     glm::translate(-leftEngineAxis.point);             // 1st translate axis to origin
-
-    // front tyre
-    world->sendMVP(shader, ftmm);
-    for (auto it : frontTyreMeshIndexes)
+    // only draw the bike if not fully exploded
+    if (explodeLevel < 1.0f)
     {
-        drawMesh(meshes[it]);
-    }
+        glm::mat4 ftmm = modelMatrix *                                      // finally apply overal model transformation
+                         glm::translate(frontTyreAxis.point) *              // 3rd translate back to initial point
+                         glm::rotate(wheelAngle, frontTyreAxis.axis) *      // 2nd rotate around origin
+                         glm::translate(-frontTyreAxis.point);              // 1st translate axis to origin
 
-    // back tyre
-    world->sendMVP(shader, btmm);
-    for (auto it : backTyreMeshIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
+        glm::mat4 btmm = modelMatrix *                                      // finally apply overal model transformation
+                         glm::translate(backTyreAxis.point) *               // 3rd translate back to initial point
+                         glm::rotate(wheelAngle, backTyreAxis.axis) *       // 2nd rotate around origin
+                         glm::translate(-backTyreAxis.point);               // 1st translate axis to origin
 
-    // left engine
-    world->sendMVP(shader, lemm);
-    for (auto it : leftEngineIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
+        glm::mat4 remm = modelMatrix *                                      // finally apply overal model transformation
+                         glm::translate(rightEngineAxis.point) *            // 3rd translate back to initial point
+                         glm::rotate(-engineAngle, rightEngineAxis.axis) *   // 2nd rotate around origin
+                         glm::translate(-rightEngineAxis.point);            // 1st translate axis to origin
 
-    // right engine
-    world->sendMVP(shader, remm);
-    for (auto it : rightengineIndexes)
-    {
-        drawMesh(meshes[it]);
-    }
+        glm::mat4 lemm = modelMatrix *                                      // finally apply overal model transformation
+                         glm::translate(leftEngineAxis.point) *             // 3rd translate back to initial point
+                         glm::rotate(engineAngle, leftEngineAxis.axis) *   // 2nd rotate around origin
+                         glm::translate(-leftEngineAxis.point);             // 1st translate axis to origin
 
-    // everything else
-    world->sendMVP(shader, modelMatrix);
-    for (auto it : remainderIndexes)
-    {
-        drawMesh(meshes[it]);
+        // set explode
+        if (explodeID >= 0)
+        {
+            glUniform1f(explodeID, explodeLevel);
+        }
+
+        // front tyre
+        world->sendMVP(shader, ftmm);
+        for (auto it : frontTyreMeshIndexes)
+        {
+            drawMesh(meshes[it]);
+        }
+
+        // back tyre
+        world->sendMVP(shader, btmm);
+        for (auto it : backTyreMeshIndexes)
+        {
+            drawMesh(meshes[it]);
+        }
+
+        // left engine
+        world->sendMVP(shader, lemm);
+        for (auto it : leftEngineIndexes)
+        {
+            drawMesh(meshes[it]);
+        }
+
+        // right engine
+        world->sendMVP(shader, remm);
+        for (auto it : rightengineIndexes)
+        {
+            drawMesh(meshes[it]);
+        }
+
+        // everything else
+        world->sendMVP(shader, modelMatrix);
+        for (auto it : remainderIndexes)
+        {
+            drawMesh(meshes[it]);
+        }
     }
 
     // light trail
+    if (explodeID >= 0)
+    {
+        glUniform1f(explodeID, 0.0f);
+    }
     trailManager.drawAll();
 }
 
 void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
 {
+    if (exploding)
+    {
+        if (explodeLevel < 1.0f)
+        {
+            explodeLevel += 1.0f/30.0f;
+        }
+        // fade light trail
+        trailManager.update(NO_TURN, SPEED_NORMAL, 0.0f, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+        return;
+    }
+
     if (stop)
     {
         return;

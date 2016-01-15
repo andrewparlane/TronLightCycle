@@ -295,7 +295,7 @@ int main(void)
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -bike_lowest, 0.0f));
 
     // Load bike
-    Bike bike(bikeLoader, world, mainShader, bike_model, tronBlue);
+    Bike bike(bikeLoader, world, mainShader, explodeShader, bike_model, tronBlue);
 
     // create arena
     std::shared_ptr<ObjData3D> arenaObjData(createArena());
@@ -582,9 +582,8 @@ int main(void)
         if (tm.collides(glm::vec2(bikeFrontLocation.x, bikeFrontLocation.z)) ||
             bike.checkSelfCollision())
         {
-            // TODO indicate collision occured
-            stop = true;
-            cameraRotating = true;
+            bike.setExploding();
+            //cameraRotating = true;
         }
 
         // update camera location =============================================
