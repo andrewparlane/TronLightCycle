@@ -28,10 +28,10 @@
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
-Shader *setupMainShader()
+Shader *setupMainShader(const std::string *geometryShader = NULL)
 {
     // first init main shader
-    Shader *mainShader = new Shader("shaders/main.vs", "shaders/main.fs");
+    Shader *mainShader = new Shader("shaders/main.vs", "shaders/main.fs", geometryShader);
     if (!mainShader->compile())
     {
         printf("Failed to compile main shader\n");
@@ -65,6 +65,24 @@ Shader *setupMainShader()
     }
 
     return mainShader;
+}
+
+Shader *setupExplodeShader()
+{
+    // first init main shader
+    std::string gsPath = "shaders/explode.gs";
+    Shader *explodeShader = setupMainShader(&gsPath);
+    if (explodeShader)
+    {
+        if (!explodeShader->addUniformID("explode", SHADER_UNIFORM_EXPLODE))
+        {
+            printf("Error adding explode shader IDs\n");
+            delete explodeShader;
+            return NULL;
+        }
+    }
+
+    return explodeShader;
 }
 
 Shader *setup2DShader()
@@ -218,6 +236,14 @@ int main(void)
     std::shared_ptr<const Shader> mainShader;
     mainShader.reset(setupMainShader());
     if (!mainShader)
+    {
+        system("pause");
+        return -1;
+    }
+
+    std::shared_ptr<const Shader> explodeShader;
+    explodeShader.reset(setupExplodeShader());
+    if (!explodeShader)
     {
         system("pause");
         return -1;
