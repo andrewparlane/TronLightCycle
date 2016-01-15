@@ -1,11 +1,14 @@
 #version 330
 
 // input data
-in vec2 fragmentTextureUV;
-in vec3 position_World;
-in vec3 normal_Camera;
-in vec3 lightDirection_Camera;
-in vec3 eyeDirection_Camera;
+in Data
+{
+    vec2 fragmentTextureUV;
+    vec3 position_World;
+    vec3 normal_Camera;
+    vec3 lightDirection_Camera;
+    vec3 eyeDirection_Camera;
+};
 
 // const input per mesh
 uniform float fragmentIsTexture;

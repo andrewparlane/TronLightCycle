@@ -11,11 +11,14 @@ uniform mat4 MVP;                   // model -> homogenous
 uniform vec3 lightPosition_World;
 
 // output to fragment shader
-out vec2 fragmentTextureUV;
-out vec3 position_World;
-out vec3 normal_Camera;
-out vec3 lightDirection_Camera;
-out vec3 eyeDirection_Camera;
+out Data
+{
+    vec2 fragmentTextureUV;
+    vec3 position_World;
+    vec3 normal_Camera;
+    vec3 lightDirection_Camera;
+    vec3 eyeDirection_Camera;
+};
 
 void main()
 {
