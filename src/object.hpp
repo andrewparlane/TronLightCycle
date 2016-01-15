@@ -31,6 +31,8 @@ public:
     void setDefaultColour(const glm::vec3 &col) { defaultColour = col; }
     const glm::vec3 &getDefaultColour() { return defaultColour; }
 
+    void switchShader(std::shared_ptr<const Shader> newShader) { shader = newShader; }
+
 protected:
 
     virtual void internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &meshes) const;
