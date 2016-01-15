@@ -52,8 +52,10 @@ public:
     void useShader() const;
 
 protected:
+    bool compileShader(const std::string &path, GLuint &shaderID) const;
+
     std::string vertexFilePath;
-    std::string fragrmentFilePath;
+    std::string fragmentFilePath;
     GLuint programID;
 
     GLuint uniformIDs[SHADER_NUM_UNIFORM_IDS];
