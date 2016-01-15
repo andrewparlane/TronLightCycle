@@ -10,7 +10,7 @@ uniform mat4 ViewMatrix;            // world -> camera transform
 uniform mat4 MVP;                   // model -> homogenous
 uniform vec3 lightPosition_World;
 
-// output to fragment shader
+// output to fragment / geometry shader
 out Data
 {
     vec2 fragmentTextureUV;
