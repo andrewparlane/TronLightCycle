@@ -28,6 +28,17 @@ void LightTrailManager::toggle()
         trails.push_back(std::make_unique<LightTrail>(world, shader, colour, lastTurning, lastAccelerating));
     }
 }
+
+void LightTrailManager::turnOff()
+{
+    if (state == STATE_ON)
+    {
+        // we are on, so start stopping now
+        state = STATE_STOPPING;
+        trails.back()->stop();
+    }
+    // else we are already stopping or stopped, nothing to do.
+}
     
 void LightTrailManager::update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads)
 {

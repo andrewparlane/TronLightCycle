@@ -20,6 +20,7 @@ public:
     
     // turn on or off the light trail
     void toggle();
+    void turnOff();
     
     void update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads);
     
