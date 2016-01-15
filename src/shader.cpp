@@ -7,9 +7,11 @@
 #include <fstream>
 #include <algorithm>
 
-Shader::Shader(const std::string &vertexShaderPath, 
-               const std::string &fragmentShaderPath)
-    : vertexFilePath(vertexShaderPath), 
+Shader::Shader(const std::string &vertexShaderPath,
+               const std::string &fragmentShaderPath,
+               const std::string *geometryShaderPath)
+    : vertexFilePath(vertexShaderPath),
+      geometryFilePath(geometryShaderPath),
       fragmentFilePath(fragmentShaderPath),
       programID(0)
 {
@@ -91,6 +93,12 @@ bool Shader::compile()
 
     compileShader(vertexFilePath, VertexShaderID);
     compileShader(fragmentFilePath, FragmentShaderID);
+
+    if (geometryFilePath)
+    {
+        GLuint GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+        compileShader(*geometryFilePath, GeometryShaderID);
+    }
 
     // Link the program
     printf("Linking program\n");

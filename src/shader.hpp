@@ -38,7 +38,7 @@ enum ShaderAttribID
 class Shader
 {
 public:
-    Shader(const std::string &vertexShaderPath, const std::string &fragmentShaderPath);
+    Shader(const std::string &vertexShaderPath, const std::string &geometryShaderPath, const std::string *fragmentShaderPath = NULL);
     ~Shader();
 
     bool compile();
@@ -54,8 +54,9 @@ public:
 protected:
     bool compileShader(const std::string &path, GLuint &shaderID) const;
 
-    std::string vertexFilePath;
-    std::string fragmentFilePath;
+    const std::string vertexFilePath;
+    const std::string fragmentFilePath;
+    const std::string *geometryFilePath;
     GLuint programID;
 
     GLuint uniformIDs[SHADER_NUM_UNIFORM_IDS];
