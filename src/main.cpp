@@ -31,7 +31,7 @@ const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 Shader *setupMainShader()
 {
     // first init main shader
-    Shader *mainShader = new Shader("shaders/mainVertexShader.vertexshader", "shaders/mainFragmentShader.fragmentshader");
+    Shader *mainShader = new Shader("shaders/main.vs", "shaders/main.fs");
     if (!mainShader->compile())
     {
         printf("Failed to compile main shader\n");
@@ -70,7 +70,7 @@ Shader *setupMainShader()
 Shader *setup2DShader()
 {
     // initialise text shader
-    Shader *shader2D = new Shader( "shaders/2DVertexShader.vertexshader", "shaders/2DFragmentShader.fragmentshader" );
+    Shader *shader2D = new Shader( "shaders/2D.vs", "shaders/2D.fs");
     if (!shader2D->compile())
     {
         printf("Failed to compile 2D shader\n");
