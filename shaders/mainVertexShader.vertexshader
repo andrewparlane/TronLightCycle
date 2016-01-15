@@ -1,8 +1,8 @@
-#version 120
+#version 330
 // Input vertex data, different for all executions of this shader.
-attribute vec3 vertexPosition_Model;
-attribute vec3 vertexNormal_Model;
-attribute vec2 vertexTextureUV;
+in vec3 vertexPosition_Model;
+in vec3 vertexNormal_Model;
+in vec2 vertexTextureUV;
 
 // input data that is constant for whole mesh
 uniform mat4 ModelMatrix;           // model -> world transform
@@ -11,17 +11,17 @@ uniform mat4 MVP;                   // model -> homogenous
 uniform vec3 lightPosition_World;
 
 // output to fragment shader
-varying vec2 fragmentTextureUV;
-varying vec3 position_World;
-varying vec3 normal_Camera;
-varying vec3 lightDirection_Camera;
-varying vec3 eyeDirection_Camera;
+out vec2 fragmentTextureUV;
+out vec3 position_World;
+out vec3 normal_Camera;
+out vec3 lightDirection_Camera;
+out vec3 eyeDirection_Camera;
 
 void main()
 {
     // vertex position in homogenous co-ords
     gl_Position = MVP * vec4(vertexPosition_Model, 1.0);
-    
+
     // get the vertex position in world space and pass to fragment shader
     position_World = (ModelMatrix * vec4(vertexPosition_Model, 1.0)).xyz;
     
