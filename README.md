@@ -39,8 +39,6 @@ TODO:
                 render to texture
                 apply blur
                 ...
-        add support for collisions effects
-            ie big splosion - think michael bay.
         sort out scales, maybe make bike smaller? or floor bigger?
         add boundary and buildings etc...
         make floor reflective
@@ -52,12 +50,19 @@ TODO:
             add mouse scroll wheel event for zooming in or out
     Features
         limit speed up and braking power
+        add reset key so don't have to restart app each time.
+        do something after a collision
+            grey out screen with restart overlay?
         add second floor with basic drops and ramps
         add demo mode
             bike drives itself
             camera follows set path too
             or can override and move camera
         work out how to distribute a binary to people
+        Create build system
+            use cmake
+            test on linux?
+            auto aquire dependencies?
         multi-player
             local or remote?
         add menu
