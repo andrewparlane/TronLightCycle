@@ -203,6 +203,55 @@ ObjData3D *createArena()
     return arenaObjData;
 }
 
+ObjData3D *createLamp()
+{
+    ObjData3D *objData = new ObjData3D();
+    MeshData<glm::vec3> md;
+    md.name = "lamp";
+    md.hasTexture = false;
+
+    md.vertices.push_back(glm::vec3(-1.0f, -1.0f,  1.0f));  // front bottom left
+    md.vertices.push_back(glm::vec3(-1.0f,  1.0f,  1.0f));  // front top left
+    md.vertices.push_back(glm::vec3( 1.0f,  1.0f,  1.0f));  // front top right
+    md.vertices.push_back(glm::vec3( 1.0f, -1.0f,  1.0f));  // front bottom right
+
+    md.vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));  // back bottom left
+    md.vertices.push_back(glm::vec3(-1.0f,  1.0f, -1.0f));  // back top left
+    md.vertices.push_back(glm::vec3( 1.0f,  1.0f, -1.0f));  // back top right
+    md.vertices.push_back(glm::vec3( 1.0f, -1.0f, -1.0f));  // back bottom right
+
+    // front
+    md.indices.push_back(0); md.indices.push_back(1); md.indices.push_back(3);
+    md.indices.push_back(1); md.indices.push_back(2); md.indices.push_back(3);
+
+    // left
+    md.indices.push_back(4); md.indices.push_back(5); md.indices.push_back(0);
+    md.indices.push_back(5); md.indices.push_back(1); md.indices.push_back(0);
+
+    // right
+    md.indices.push_back(3); md.indices.push_back(2); md.indices.push_back(7);
+    md.indices.push_back(2); md.indices.push_back(6); md.indices.push_back(7);
+
+    // back
+    md.indices.push_back(7); md.indices.push_back(6); md.indices.push_back(4);
+    md.indices.push_back(6); md.indices.push_back(5); md.indices.push_back(4);
+
+    // bottom
+    md.indices.push_back(4); md.indices.push_back(0); md.indices.push_back(7);
+    md.indices.push_back(0); md.indices.push_back(3); md.indices.push_back(7);
+
+    // top
+    md.indices.push_back(1); md.indices.push_back(5); md.indices.push_back(2);
+    md.indices.push_back(5); md.indices.push_back(6); md.indices.push_back(2);
+
+    if (!objData->addMesh(md))
+    {
+        delete objData;
+        objData = NULL;
+    }
+    return objData;
+}
+
 int main(void)
 {
     // Initialise GLFW
@@ -301,12 +350,20 @@ int main(void)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
     // lighting
-    world->setLight(glm::vec3(0, 2, 4),             // position
-                    glm::vec3(0.6f, 0.6f, 1.0f),    // colour
-                    50.0f,                          // power
-                    glm::vec3(0.6f, 0.6f, 0.6f));   // ambient
+    std::shared_ptr<ObjData3D> lampObjData(createLamp());
+    if (!lampObjData)
+    {
+        printf("Failed to create lamp obj data\n");
+        system("pause");
+        return -1;
+    }
 
-    
+    glm::mat4 lamp_model = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
+    world->setLamp(lampObjData, lampShader, lamp_model,
+                   glm::vec3(0, 20, 4),             // position
+                   glm::vec3(0.6f, 0.6f, 1.0f),     // colour
+                   500.0f,                          // power
+                   glm::vec3(0.6f, 0.6f, 0.6f));    // ambient
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
     if (!bikeLoader->loadTextureMap() ||
@@ -662,6 +719,9 @@ int main(void)
 
         // draw arena
         arena.drawAll();
+
+        // draw lamps
+        world->drawLamps();
 
         // Draw 2D objects in order they are listed =================================
         glDisable(GL_DEPTH_TEST);

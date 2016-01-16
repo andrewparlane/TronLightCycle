@@ -4,20 +4,12 @@
 
 #include <GL/glew.h>
 
-World::World() : lightPower(0)
+World::World()
 {
 }
 
 World::~World()
 {
-}
-
-void World::setLight(const glm::vec3 &position, const glm::vec3 &colour, float power, const glm::vec3 &ambient)
-{
-    lightPos = position;
-    lightColour = colour;
-    lightPower = power;
-    lightAmbient = ambient;
 }
 
 void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const
@@ -29,12 +21,4 @@ void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model
     // also send model and view matrix for lightinng stuff
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_MODEL_MATRIX), 1, GL_FALSE, &model[0][0]);
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_VIEW_MATRIX), 1, GL_FALSE, &viewMatrix[0][0]);
-}
-
-void World::sendLight(std::shared_ptr<const Shader> shader) const
-{
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), 1, &lightPos[0]);
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), 1, &lightColour[0]);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_POWER), lightPower);
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR), 1, &lightAmbient[0]);
 }
