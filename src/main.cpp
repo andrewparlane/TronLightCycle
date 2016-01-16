@@ -85,6 +85,35 @@ Shader *setupExplodeShader()
     return explodeShader;
 }
 
+Shader *setupLampShader()
+{
+    // first init main shader
+    Shader *shader = new Shader("shaders/lamp.vs", "shaders/lamp.fs");
+    if (!shader->compile())
+    {
+        printf("Failed to compile lamp shader\n");
+        delete shader;
+        return NULL;
+    }
+    else
+    {
+        // Get main shader parameters
+        if (// vertex params (variable)
+            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
+            // vertex params (static)
+            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
+            // fragment params
+            !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
+        {
+            printf("Error adding lamp shader IDs\n");
+            delete shader;
+            return NULL;
+        }
+    }
+
+    return shader;
+}
+
 Shader *setup2DShader()
 {
     // initialise text shader
@@ -244,6 +273,14 @@ int main(void)
     std::shared_ptr<const Shader> explodeShader;
     explodeShader.reset(setupExplodeShader());
     if (!explodeShader)
+    {
+        system("pause");
+        return -1;
+    }
+
+    std::shared_ptr<const Shader> lampShader;
+    lampShader.reset(setupLampShader());
+    if (!lampShader)
     {
         system("pause");
         return -1;
