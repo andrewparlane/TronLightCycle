@@ -4,14 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-Lamp::Lamp(std::shared_ptr<const ObjData3D> _objData,
-           std::shared_ptr<const Shader> _shader,
-           const glm::mat4 &modelMatWithoutTransform,
-           const glm::vec3 &_position, const glm::vec3 &_colour,
-           float _ambient, float _diffuse, float _specular)
+Lamp::Lamp(std::shared_ptr<const ObjData3D> _objData, std::shared_ptr<const Shader> _shader,
+           const glm::mat4 &modelMatWithoutTransform, const glm::vec3 &_position, float _radius,
+           const glm::vec3 &_colour, float _ambient, float _diffuse, float _specular)
     : objData(_objData), shader(_shader),
       modelMatrix(glm::translate(_position) * modelMatWithoutTransform),
-      colour(_colour), position(_position),
+      colour(_colour), position(_position), radius(_radius),
       ambient(_ambient), diffuse(_diffuse), specular(_specular)
 {
 }
@@ -51,6 +49,7 @@ void Lamp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) 
 void Lamp::sendLamp(std::shared_ptr<const Shader> shader) const
 {
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), 1, &position[0]);
+    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_RADIUS), radius);
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), 1, &colour[0]);
     glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), ambient);
     glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR), diffuse);

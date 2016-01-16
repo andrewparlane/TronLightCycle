@@ -1,5 +1,7 @@
 #version 330
 
+#define LIGHT_INTENSITY_CUT_OFF     0.01f
+
 // input data
 in Data
 {
@@ -16,6 +18,7 @@ struct Light
     float ambient;
     float diffuse;
     float specular;
+    float radius;
 };
 
 // const input per mesh
@@ -40,7 +43,8 @@ void main()
 
     // calculate how the light attenuates as we get further away
     float distance = length(lightPosition_World - position_World);
-    float attenuation = 1.0f / (1.0f + (0.045f * distance) + (0.0075f * pow(distance, 2)));
+    float attenuation = 1.0f / pow(1.0f + (distance / light.radius), 2);
+    attenuation = (attenuation - LIGHT_INTENSITY_CUT_OFF) / (1.0f - LIGHT_INTENSITY_CUT_OFF);
 
     // calculate the ambient component
     vec3 ambientLighting = materialColour * light.colour * light.ambient;
