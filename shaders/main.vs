@@ -8,7 +8,7 @@ in vec2 vertexTextureUV;
 uniform mat4 ModelMatrix;           // model -> world transform
 uniform mat4 ViewMatrix;            // world -> camera transform
 uniform mat4 MVP;                   // model -> homogenous
-uniform vec3 lightPosition_World;
+uniform vec3 lightPosition_World;   // note also in vertex shader, must be changed together
 
 // output to fragment / geometry shader
 out Data

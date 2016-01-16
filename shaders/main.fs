@@ -22,7 +22,7 @@ struct Light
 uniform float fragmentIsTexture;
 uniform sampler2D textureSampler;
 uniform vec3 fragmentColour;
-uniform vec3 lightPosition_World;
+uniform vec3 lightPosition_World;   // note also in vertex shader, must be changed together
 uniform Light light;
 
 void main()
