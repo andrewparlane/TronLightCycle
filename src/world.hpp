@@ -24,9 +24,9 @@ public:
 
     void setLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
                  const glm::mat4 &modelMatWithoutTransform, const glm::vec3 &position,
-                 const glm::vec3 &colour, float power, const glm::vec3 &ambient)
+                 const glm::vec3 &colour, float ambient, float diffuse, float specular)
     {
-        lamp = std::make_unique<Lamp>(objData, shader, modelMatWithoutTransform, position, colour, power, ambient);
+        lamp = std::make_unique<Lamp>(objData, shader, modelMatWithoutTransform, position, colour, ambient, diffuse, specular);
     }
 
     void sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const;

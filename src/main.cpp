@@ -51,9 +51,10 @@ Shader *setupMainShader(const std::string *geometryShader = NULL)
             !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
             !mainShader->addUniformID("lightPosition_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
             // fragment params
-            !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
-            !mainShader->addUniformID("lightPower", SHADER_UNIFORM_LIGHT_POWER) ||
-            !mainShader->addUniformID("lightAmbientColour", SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR) ||
+            !mainShader->addUniformID("light.colour", SHADER_UNIFORM_LIGHT_COLOUR) ||
+            !mainShader->addUniformID("light.ambient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
+            !mainShader->addUniformID("light.diffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
+            !mainShader->addUniformID("light.specular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
             !mainShader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
             !mainShader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
             !mainShader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
@@ -362,8 +363,9 @@ int main(void)
     world->setLamp(lampObjData, lampShader, lamp_model,
                    glm::vec3(0, 20, 4),             // position
                    glm::vec3(0.6f, 0.6f, 1.0f),     // colour
-                   500.0f,                          // power
-                   glm::vec3(0.6f, 0.6f, 0.6f));    // ambient
+                   2.0f,                            // ambient
+                   10.0f,                            // diffuse
+                   10.0f);                           // specular
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
     if (!bikeLoader->loadTextureMap() ||

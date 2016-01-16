@@ -7,12 +7,12 @@
 Lamp::Lamp(std::shared_ptr<const ObjData3D> _objData,
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMatWithoutTransform,
-           const glm::vec3 &_position,
-           const glm::vec3 &_colour,
-           float _power,
-           const glm::vec3 &_ambient)
-    : objData(_objData), shader(_shader), modelMatrix(glm::translate(_position) * modelMatWithoutTransform),
-      colour(_colour), position(_position), power(_power), ambient(_ambient)
+           const glm::vec3 &_position, const glm::vec3 &_colour,
+           float _ambient, float _diffuse, float _specular)
+    : objData(_objData), shader(_shader),
+      modelMatrix(glm::translate(_position) * modelMatWithoutTransform),
+      colour(_colour), position(_position),
+      ambient(_ambient), diffuse(_diffuse), specular(_specular)
 {
 }
 
@@ -52,6 +52,7 @@ void Lamp::sendLamp(std::shared_ptr<const Shader> shader) const
 {
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), 1, &position[0]);
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), 1, &colour[0]);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_POWER), power);
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_COLOUR), 1, &ambient[0]);
+    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), ambient);
+    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR), diffuse);
+    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR), specular);
 }

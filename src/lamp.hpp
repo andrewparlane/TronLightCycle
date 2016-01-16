@@ -12,10 +12,8 @@ public:
     Lamp(std::shared_ptr<const ObjData3D> _objData,
          std::shared_ptr<const Shader> _shader,
          const glm::mat4 &modelMatWithoutTransform,
-         const glm::vec3 &_position,
-         const glm::vec3 &_colour,
-         float _power,
-         const glm::vec3 &_ambient);
+         const glm::vec3 &_position, const glm::vec3 &_colour,
+         float _ambient, float _diffuse, float _specular);
     ~Lamp();
 
     void draw(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) const;
@@ -29,8 +27,9 @@ protected:
 
     glm::vec3 position;
     glm::vec3 colour;
-    float power;
-    glm::vec3 ambient;
+    float ambient;
+    float diffuse;
+    float specular;
 };
 
 #endif
