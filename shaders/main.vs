@@ -37,9 +37,7 @@ void main()
     lightDirection_Camera = lightPosition_Camera - position_Camera;
     
     // get the normal vector in camera space and pass to the fragment shader
-    // note: if the model matrix scales the model, then this dosen't work
-    //       TODO
-    normal_Camera = (ViewMatrix * ModelMatrix * vec4(vertexNormal_Model, 0.0f)).xyz;
+    normal_Camera = mat3(transpose(inverse(ViewMatrix * ModelMatrix))) * vertexNormal_Model;
     
     // get a vector from the vertex to the camera in camera space.
     // in camera space, the camera is located at 0,0,0
