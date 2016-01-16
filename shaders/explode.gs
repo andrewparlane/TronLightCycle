@@ -6,8 +6,8 @@ in Data
 {
     vec2 fragmentTextureUV;
     vec3 position_World;
+    vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 lightDirection_Camera;
     vec3 eyeDirection_Camera;
 } vertex_in[];
 
@@ -17,8 +17,8 @@ out Data
 {
     vec2 fragmentTextureUV;
     vec3 position_World;
+    vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 lightDirection_Camera;
     vec3 eyeDirection_Camera;
 } geometry_out;
 
@@ -48,8 +48,8 @@ void main()
     {
         geometry_out.fragmentTextureUV       = vertex_in[i].fragmentTextureUV;
         geometry_out.position_World          = vertex_in[i].position_World;
+        geometry_out.vertexPosition_Camera   = vertex_in[i].vertexPosition_Camera;
         geometry_out.normal_Camera           = vertex_in[i].normal_Camera;
-        geometry_out.lightDirection_Camera   = vertex_in[i].lightDirection_Camera;
         geometry_out.eyeDirection_Camera     = vertex_in[i].eyeDirection_Camera;
 
         gl_Position = ((newPosition_Homogeneous[i] - newCentre_Homogeneous) * scaleFactor) + newCentre_Homogeneous;

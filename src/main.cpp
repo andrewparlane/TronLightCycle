@@ -49,8 +49,8 @@ Shader *setupMainShader(const std::string *geometryShader = NULL)
             !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
             !mainShader->addUniformID("ModelMatrix", SHADER_UNIFORM_MODEL_MATRIX) ||
             !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
-            !mainShader->addUniformID("lightPosition_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
             // fragment params
+            !mainShader->addUniformID("light.position_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
             !mainShader->addUniformID("light.radius", SHADER_UNIFORM_LIGHT_RADIUS) ||
             !mainShader->addUniformID("light.colour", SHADER_UNIFORM_LIGHT_COLOUR) ||
             !mainShader->addUniformID("light.ambient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||

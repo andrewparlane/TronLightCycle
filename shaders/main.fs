@@ -7,13 +7,14 @@ in Data
 {
     vec2 fragmentTextureUV;
     vec3 position_World;
+    vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 lightDirection_Camera;
     vec3 eyeDirection_Camera;
 };
 
 struct Light
 {
+    vec3 position_World;
     vec3 colour;
     float ambient;
     float diffuse;
@@ -22,10 +23,10 @@ struct Light
 };
 
 // const input per mesh
+uniform mat4 ViewMatrix;            // world -> camera transform - note also in fragment shader, must be changed together
 uniform float fragmentIsTexture;
 uniform sampler2D textureSampler;
 uniform vec3 fragmentColour;
-uniform vec3 lightPosition_World;   // note also in vertex shader, must be changed together
 uniform Light light;
 
 void main()
@@ -35,6 +36,11 @@ void main()
                                     texture(textureSampler, fragmentTextureUV) :
                                     vec4(fragmentColour, 1));
 
+    // get the vector of the light source from the vertex in camera space
+    // note: vertex -> light source, seems the wrong way round but makes the maths easier
+    vec3 lightPosition_Camera = (ViewMatrix * vec4(light.position_World, 1.0)).xyz;
+    vec3 lightDirection_Camera = lightPosition_Camera - vertexPosition_Camera;
+
     // normalize the normal and the light direction vectors
     // since we want to use their dot product to get the cos of the angle between them
     vec3 n = normalize(normal_Camera);
@@ -42,7 +48,7 @@ void main()
     vec3 e = normalize(eyeDirection_Camera);
 
     // calculate how the light attenuates as we get further away
-    float distance = length(lightPosition_World - position_World);
+    float distance = length(light.position_World - position_World);
     float attenuation = 1.0f / pow(1.0f + (distance / light.radius), 2);
     attenuation = (attenuation - LIGHT_INTENSITY_CUT_OFF) / (1.0f - LIGHT_INTENSITY_CUT_OFF);
 

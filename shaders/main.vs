@@ -6,17 +6,16 @@ in vec2 vertexTextureUV;
 
 // input data that is constant for whole mesh
 uniform mat4 ModelMatrix;           // model -> world transform
-uniform mat4 ViewMatrix;            // world -> camera transform
+uniform mat4 ViewMatrix;            // world -> camera transform - note also in fragment shader, must be changed together
 uniform mat4 MVP;                   // model -> homogenous
-uniform vec3 lightPosition_World;   // note also in vertex shader, must be changed together
 
 // output to fragment / geometry shader
 out Data
 {
     vec2 fragmentTextureUV;
     vec3 position_World;
+    vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 lightDirection_Camera;
     vec3 eyeDirection_Camera;
 };
 
@@ -29,19 +28,14 @@ void main()
     position_World = (ModelMatrix * vec4(vertexPosition_Model, 1.0)).xyz;
     
     // get the vertex position in camera space
-    vec3 position_Camera = (ViewMatrix * vec4(position_World, 1.0)).xyz;
-    
-    // get the vector of the light source from the vertex in camera space
-    // note: vertex -> light source, seems the wrong way round but makes the maths easier
-    vec3 lightPosition_Camera = (ViewMatrix * vec4(lightPosition_World, 1.0)).xyz;
-    lightDirection_Camera = lightPosition_Camera - position_Camera;
-    
+    vertexPosition_Camera = (ViewMatrix * vec4(position_World, 1.0)).xyz;
+
     // get the normal vector in camera space and pass to the fragment shader
     normal_Camera = mat3(transpose(inverse(ViewMatrix * ModelMatrix))) * vertexNormal_Model;
     
     // get a vector from the vertex to the camera in camera space.
     // in camera space, the camera is located at 0,0,0
-    eyeDirection_Camera = vec3(0,0,0) - position_Camera;
+    eyeDirection_Camera = vec3(0,0,0) - vertexPosition_Camera;
     
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;
