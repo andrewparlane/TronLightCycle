@@ -12,7 +12,7 @@ in Data
 };
 
 // const input per mesh
-uniform mat4 ViewMatrix;            // world -> camera transform - note also in fragment shader, must be changed together
+uniform mat4 ViewMatrix;            // world -> camera transform
 uniform float fragmentIsTexture;
 uniform sampler2D textureSampler;
 uniform vec3 fragmentColour;

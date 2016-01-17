@@ -51,7 +51,7 @@ Shader *setupMainShader(const std::string *geometryShader = NULL)
             !mainShader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
             // vertex params (static)
             !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
-            !mainShader->addUniformID("ModelMatrix", SHADER_UNIFORM_MODEL_MATRIX) ||
+            !mainShader->addUniformID("MV", SHADER_UNIFORM_MODEL_VIEW_MATRIX) ||
             !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
             // fragment params
             !mainShader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
