@@ -14,8 +14,8 @@
 class Object
 {
 public:
-    Object(std::shared_ptr<const ObjData3D> _objData, 
-           std::shared_ptr<World> _world, 
+    Object(std::shared_ptr<const ObjData3D> _objData,
+           std::shared_ptr<World> _world,
            std::shared_ptr<const Shader> _shader,
            const glm::mat4 &modelMat,
            const glm::vec3 &_defaultColour = glm::vec3(0,0,0));
@@ -47,5 +47,5 @@ protected:
 
     glm::vec3 defaultColour;
 };
-    
+
 #endif

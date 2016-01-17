@@ -1,6 +1,6 @@
 #include "light_trail_manager.hpp"
 
-LightTrailManager::LightTrailManager(std::shared_ptr<World> _world, 
+LightTrailManager::LightTrailManager(std::shared_ptr<World> _world,
                                      std::shared_ptr<const Shader> _shader,
                                      glm::vec3 _colour)
     : world(_world), shader(_shader), colour(_colour),
@@ -24,7 +24,7 @@ void LightTrailManager::toggle()
     {
         // we are either stopped or stopping.
         // deosn't matter create new light trail
-        state = STATE_ON;        
+        state = STATE_ON;
         trails.push_back(std::make_unique<LightTrail>(world, shader, colour, lastTurning, lastAccelerating));
     }
 }
@@ -39,7 +39,7 @@ void LightTrailManager::turnOff()
     }
     // else we are already stopping or stopped, nothing to do.
 }
-    
+
 void LightTrailManager::update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads)
 {
     lastTurning = turning;
@@ -50,7 +50,7 @@ void LightTrailManager::update(TurnDirection turning, Accelerating accelerating,
         {
             trail->update(turning, accelerating, speed, currentLocation, currentAngleRads);
         });
-    
+
     // lets see if we can delete any
     // we can delete if they are stopped,
     //  and have finished fading down

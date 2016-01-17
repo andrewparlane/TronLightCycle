@@ -199,7 +199,7 @@ void ObjData2D::calculateBoundingBox()
     // axis increas to the right, up, towards us
     float rightMost = -FLT_MAX;
     float highest = -FLT_MAX;
-    
+
     float lowest = FLT_MAX;
     float leftMost = FLT_MAX;
 

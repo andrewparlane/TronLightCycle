@@ -3,12 +3,12 @@
 #include <world.hpp>
 #include <shader.hpp>
 
-Object::Object(std::shared_ptr<const ObjData3D> _objData, 
+Object::Object(std::shared_ptr<const ObjData3D> _objData,
                std::shared_ptr<World> _world,
                std::shared_ptr<const Shader> _shader,
                const glm::mat4 &modelMat,
                const glm::vec3 &_defaultColour)
-    : objData(_objData), 
+    : objData(_objData),
       world(_world),
       shader(_shader),
       modelMatrix(modelMat),

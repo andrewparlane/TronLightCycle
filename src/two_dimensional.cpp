@@ -81,10 +81,10 @@ void Object2D::drawAll() const
     {
         drawMesh(it);
     }
-	glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 }
 
-Text::Text(std::shared_ptr<const Shader> _shader) 
+Text::Text(std::shared_ptr<const Shader> _shader)
     : Object2D(_shader), numTextStrings(0)
 {
 }

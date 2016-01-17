@@ -13,7 +13,7 @@
 class LightTrail
 {
 public:
-    LightTrail(std::shared_ptr<World> _world, 
+    LightTrail(std::shared_ptr<World> _world,
                std::shared_ptr<const Shader> _shader,
                glm::vec3 _colour,
                TurnDirection turning,

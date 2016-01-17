@@ -27,7 +27,7 @@ void main()
 
     // get the normal vector in camera space and pass to the fragment shader
     normal_Camera = normalize(normalMV * vertexNormal_Model);
-    
+
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;
 }

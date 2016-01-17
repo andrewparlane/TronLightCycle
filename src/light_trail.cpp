@@ -289,7 +289,7 @@ void LightTrail::createNewPathSegment(float speed, glm::vec3 currentLocation, fl
 
             uptr = std::make_unique<LightTrailSegmentCircle>(glm::vec2(centre.x, centre.z),
                                                              radius,
-                                                             startAngle, 
+                                                             startAngle,
                                                              (state == STATE_CIRCLE_RIGHT) ? TURN_RIGHT : TURN_LEFT,
                                                              world,
                                                              shader);

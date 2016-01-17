@@ -773,7 +773,7 @@ int main(void)
         world->setCamera(glm::lookAt(cameraPosition,       // where the camera is in world co-ordinates
                                      cameraDirection,      // target (direction = target - location)
                                      glm::vec3(0, 1, 0)));  // which way is up
-        
+
         // if the camera is rotating around the bike, then update the angle
         if (cameraRotating)
         {

@@ -8,8 +8,8 @@
 class Bike : public Object
 {
 public:
-    Bike(std::shared_ptr<const ObjData3D> _objData, 
-        std::shared_ptr<World> _world, 
+    Bike(std::shared_ptr<const ObjData3D> _objData,
+        std::shared_ptr<World> _world,
         std::shared_ptr<const Shader> _shader,
         std::shared_ptr<const Shader> _explodeShader,
         const glm::mat4 &modelMat,

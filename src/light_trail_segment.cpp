@@ -92,7 +92,7 @@ bool LightTrailSegmentStraight::collides(const glm::vec2 &location) const
 #endif
 
     // distance(a,p) + distance(b,p) == distance(a,b)
-    float dist = abs(glm::distance(location, start) + 
+    float dist = abs(glm::distance(location, start) +
                      glm::distance(location, end) -
                      glm::distance(end, start));
     return (dist < EPSILON);

@@ -123,7 +123,7 @@ bool ObjLoader::loadObj()
     // and seperators, but most should be actually there to render
     meshes.empty();
     meshes.reserve(scene->mNumMeshes);
-    
+
     // not sure how many axis to reserve, so don't reserve any
     axis.empty();
 
@@ -239,6 +239,6 @@ bool ObjLoader::loadObj()
     // clean up the ASSIMP importer
     importer.FreeScene();
 
-	// The "scene" pointer will be deleted automatically by "importer"
+    // The "scene" pointer will be deleted automatically by "importer"
     return true;
 }

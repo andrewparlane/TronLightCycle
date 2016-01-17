@@ -13,17 +13,17 @@
 class LightTrailManager
 {
 public:
-    LightTrailManager(std::shared_ptr<World> _world, 
+    LightTrailManager(std::shared_ptr<World> _world,
                       std::shared_ptr<const Shader> _shader,
                       glm::vec3 _colour);
     ~LightTrailManager();
-    
+
     // turn on or off the light trail
     void toggle();
     void turnOff();
-    
+
     void update(TurnDirection turning, Accelerating accelerating, float speed, glm::vec3 currentLocation, float currentAngleRads);
-    
+
     bool collides(const glm::vec2 &location) const;
     bool checkSelfCollision() const;
 
@@ -41,11 +41,11 @@ protected:
     std::shared_ptr<World> world;
     std::shared_ptr<const Shader> shader;
     glm::vec3 colour;
-    
+
     State state;
-    
+
     std::vector<std::unique_ptr<LightTrail>> trails;
-    
+
     TurnDirection lastTurning;
     Accelerating lastAccelerating;
 };
