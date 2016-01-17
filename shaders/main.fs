@@ -7,7 +7,7 @@
 in Data
 {
     vec2 fragmentTextureUV;
-    vec3 position_World;
+    vec3 vertexPosition_World;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
     vec3 eyeDirection_Camera;
@@ -44,7 +44,7 @@ vec3 calculatePointLight(int idx, vec3 materialColour)
     vec3 e = normalize(eyeDirection_Camera);
 
     // calculate how the light attenuates as we get further away
-    float distance = length(lightPosition_World[idx] - position_World);
+    float distance = length(lightPosition_World[idx] - vertexPosition_World);
     float attenuation = 1.0f / pow(1.0f + (distance / lightRadius[idx]), 2);
     attenuation = (attenuation - LIGHT_INTENSITY_CUT_OFF) / (1.0f - LIGHT_INTENSITY_CUT_OFF);
     if (attenuation <= 0.0f)
