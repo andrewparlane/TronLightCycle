@@ -22,7 +22,7 @@ public:
     void translateCamera(const glm::vec3 &vec) { viewMatrix *= glm::translate(vec); }
     void rotateCamera(float radians, const glm::vec3 &axis) { viewMatrix *= glm::rotate(radians, axis); }
 
-    void setProjection(const glm::mat4 &projection) { projectionMatrix = projection; }
+    void setProjection(const glm::mat4 &projection) { projectionMatrix = projection; inverseProjectionMatrix = glm::inverse(projection); }
 
     bool addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
                  const glm::mat4 &modelMatWithoutTransform, const glm::vec3 &position,
@@ -35,6 +35,7 @@ public:
 protected:
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
+    glm::mat4 inverseProjectionMatrix;
 
     std::vector<std::unique_ptr<Lamp>> lamps;
 };

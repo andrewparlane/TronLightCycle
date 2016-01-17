@@ -81,7 +81,8 @@ Shader *setupExplodeShader()
     Shader *explodeShader = setupMainShader(&gsPath);
     if (explodeShader)
     {
-        if (!explodeShader->addUniformID("explode", SHADER_UNIFORM_EXPLODE))
+        if (!explodeShader->addUniformID("explode", SHADER_UNIFORM_EXPLODE) ||
+            !explodeShader->addUniformID("inverseProjectionMatrix", SHADER_UNIFORM_INVERSE_PROJECTION_MATRIX))
         {
             printf("Error adding explode shader IDs\n");
             delete explodeShader;

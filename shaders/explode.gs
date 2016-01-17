@@ -10,6 +10,7 @@ in Data
 } vertex_in[];
 
 uniform float explode;
+uniform mat4 inverseProjectionMatrix;   // homogenous -> camera
 
 out Data
 {
@@ -43,7 +44,7 @@ void main()
     for(i = 0;i < gl_in.length();i++)
     {
         geometry_out.fragmentTextureUV       = vertex_in[i].fragmentTextureUV;
-        geometry_out.vertexPosition_Camera   = vertex_in[i].vertexPosition_Camera;
+        geometry_out.vertexPosition_Camera   = /*vertex_in[i].vertexPosition_Camera;*/ vec3(inverseProjectionMatrix * newCentre_Homogeneous[i]);
         geometry_out.normal_Camera           = vertex_in[i].normal_Camera;
 
         gl_Position = ((newPosition_Homogeneous[i] - newCentre_Homogeneous) * scaleFactor) + newCentre_Homogeneous;

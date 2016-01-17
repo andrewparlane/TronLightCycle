@@ -26,6 +26,13 @@ void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model
 
     // and normalMV
     glUniformMatrix3fv(shader->getUniformID(SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX), 1, GL_FALSE, &normalMV[0][0]);
+
+    // and the inverse of the projection matrix (if needed)
+    GLuint inversePID = shader->getUniformID(SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX);
+    if (inversePID >= 0)
+    {
+        glUniformMatrix4fv(inversePID, 1, GL_FALSE, &inverseProjectionMatrix[0][0]);
+    }
 }
 
 bool World::addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
