@@ -9,7 +9,6 @@ in Data
     vec2 fragmentTextureUV;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 eyeDirection_Camera;
 };
 
 // const input per mesh
@@ -35,6 +34,10 @@ vec3 calculatePointLight(int idx, vec3 materialColour)
     // note: vertex -> light source, seems the wrong way round but makes the maths easier
     vec3 lightPosition_Camera = (ViewMatrix * vec4(lightPosition_World[idx], 1.0)).xyz;
     vec3 lightDirection_Camera = lightPosition_Camera - vertexPosition_Camera;
+
+    // get a vector from the vertex to the camera in camera space.
+    // in camera space, the camera is located at 0,0,0
+    vec3 eyeDirection_Camera = vec3(0,0,0) - vertexPosition_Camera;
 
     // normalize the normal and the light direction vectors
     // since we want to use their dot product to get the cos of the angle between them

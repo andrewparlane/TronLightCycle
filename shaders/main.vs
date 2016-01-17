@@ -15,7 +15,6 @@ out Data
     vec2 fragmentTextureUV;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 eyeDirection_Camera;
 };
 
 void main()
@@ -31,10 +30,6 @@ void main()
 
     // get the normal vector in camera space and pass to the fragment shader
     normal_Camera = mat3(transpose(inverse(ViewMatrix * ModelMatrix))) * vertexNormal_Model;
-    
-    // get a vector from the vertex to the camera in camera space.
-    // in camera space, the camera is located at 0,0,0
-    eyeDirection_Camera = vec3(0,0,0) - vertexPosition_Camera;
     
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;

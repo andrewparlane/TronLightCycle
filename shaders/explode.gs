@@ -7,7 +7,6 @@ in Data
     vec2 fragmentTextureUV;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 eyeDirection_Camera;
 } vertex_in[];
 
 uniform float explode;
@@ -17,7 +16,6 @@ out Data
     vec2 fragmentTextureUV;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
-    vec3 eyeDirection_Camera;
 } geometry_out;
 
 vec3 GetNormal()
@@ -47,7 +45,6 @@ void main()
         geometry_out.fragmentTextureUV       = vertex_in[i].fragmentTextureUV;
         geometry_out.vertexPosition_Camera   = vertex_in[i].vertexPosition_Camera;
         geometry_out.normal_Camera           = vertex_in[i].normal_Camera;
-        geometry_out.eyeDirection_Camera     = vertex_in[i].eyeDirection_Camera;
 
         gl_Position = ((newPosition_Homogeneous[i] - newCentre_Homogeneous) * scaleFactor) + newCentre_Homogeneous;
         EmitVertex();
