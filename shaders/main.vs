@@ -13,7 +13,6 @@ uniform mat4 MVP;                   // model -> homogenous
 out Data
 {
     vec2 fragmentTextureUV;
-    vec3 vertexPosition_World;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
     vec3 eyeDirection_Camera;
@@ -25,7 +24,7 @@ void main()
     gl_Position = MVP * vec4(vertexPosition_Model, 1.0);
 
     // get the vertex position in world space and pass to fragment shader
-    vertexPosition_World = (ModelMatrix * vec4(vertexPosition_Model, 1.0)).xyz;
+    vec3 vertexPosition_World = (ModelMatrix * vec4(vertexPosition_Model, 1.0)).xyz;
     
     // get the vertex position in camera space
     vertexPosition_Camera = (ViewMatrix * vec4(vertexPosition_World, 1.0)).xyz;

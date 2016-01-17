@@ -5,7 +5,6 @@ layout (triangle_strip, max_vertices = 3) out;
 in Data
 {
     vec2 fragmentTextureUV;
-    vec3 vertexPosition_World;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
     vec3 eyeDirection_Camera;
@@ -16,7 +15,6 @@ uniform float explode;
 out Data
 {
     vec2 fragmentTextureUV;
-    vec3 vertexPosition_World;
     vec3 vertexPosition_Camera;
     vec3 normal_Camera;
     vec3 eyeDirection_Camera;
@@ -47,7 +45,6 @@ void main()
     for(i = 0;i < gl_in.length();i++)
     {
         geometry_out.fragmentTextureUV       = vertex_in[i].fragmentTextureUV;
-        geometry_out.vertexPosition_World    = vertex_in[i].vertexPosition_World;
         geometry_out.vertexPosition_Camera   = vertex_in[i].vertexPosition_Camera;
         geometry_out.normal_Camera           = vertex_in[i].normal_Camera;
         geometry_out.eyeDirection_Camera     = vertex_in[i].eyeDirection_Camera;
