@@ -5,11 +5,11 @@
 #include <vector>
 #include <memory>
 
-#include <texture.hpp>
-
 #include <glm/glm.hpp>
 
 #include <GL/glew.h>
+
+class Texture;
 
 template<typename T> struct MeshData
 {

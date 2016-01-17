@@ -1,7 +1,8 @@
-#include <object.hpp>
-
-#include <world.hpp>
-#include <shader.hpp>
+#include "object.hpp"
+#include "object_data.hpp"
+#include "world.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
 
 Object::Object(std::shared_ptr<const ObjData3D> _objData,
                std::shared_ptr<World> _world,

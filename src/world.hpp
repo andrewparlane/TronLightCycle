@@ -1,9 +1,6 @@
 #ifndef __WORLD_HPP
 #define __WORLD_HPP
 
-#include <shader.hpp>
-#include <lamp.hpp>
-
 #include <memory>
 #include <vector>
 #include <algorithm>
@@ -11,6 +8,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+
+class Shader;
+class Lamp;
+class ObjData3D;
 
 class World
 {
@@ -30,7 +31,7 @@ public:
 
     void sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const;
     void sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const;
-    void drawLamps() { std::for_each(lamps.begin(), lamps.end(), [this](const std::unique_ptr<Lamp> &lamp){ lamp->draw(projectionMatrix, viewMatrix); }); };
+    void drawLamps() const;
 
 protected:
     glm::mat4 viewMatrix;

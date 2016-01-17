@@ -1,9 +1,9 @@
+#include "texture.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-
-#include <texture.hpp>
 
 #include <GL/glew.h>
 

@@ -1,14 +1,18 @@
 #ifndef __LIGHT_TRAIL_HPP
 #define __LIGHT_TRAIL_HPP
 
-#include "object_data.hpp"
-#include "object.hpp"
-#include "world.hpp"
-#include "shader.hpp"
 #include "bike_movements.hpp"
-#include "light_trail_segment.hpp"
+#include "object_data.hpp"
 
 #include <memory>
+#include <vector>
+
+#include <glm/glm.hpp>
+
+class World;
+class Shader;
+class Object;
+class LightTrailSegment;
 
 class LightTrail
 {

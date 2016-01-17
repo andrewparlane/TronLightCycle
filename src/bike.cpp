@@ -1,4 +1,7 @@
-#include <bike.hpp>
+#include "bike.hpp"
+#include "shader.hpp"
+#include "world.hpp"
+#include "light_trail_manager.hpp"
 
 #include <set>
 
@@ -12,8 +15,9 @@ Bike::Bike(std::shared_ptr<const ObjData3D> _objData,
            const glm::vec3 &_defaultColour)
     : Object(_objData, _world, _shader, modelMat, _defaultColour),
       bikeAngleAroundYRads(0.0f), wheelAngle(0.0f), engineAngle(0.0f),
-      trailManager(_world, _shader, _defaultColour), speed(BIKE_SPEED_DEFAULT),
-      explodeShader(_explodeShader), explodeLevel(0.0f), exploding(false)
+      trailManager(std::make_shared<LightTrailManager>(_world, _shader, _defaultColour)),
+      speed(BIKE_SPEED_DEFAULT), explodeShader(_explodeShader),
+      explodeLevel(0.0f), exploding(false)
 {
 #ifdef DEBUG
     bikeStateSaved = false;
@@ -130,10 +134,20 @@ float Bike::getSpeedPercent() const
     return percent;
 }
 
+void Bike::toggleLightTrail()
+{
+    trailManager->toggle();
+}
+
+bool Bike::checkSelfCollision() const
+{
+    return trailManager->checkSelfCollision();
+}
+
 void Bike::setExploding()
 {
     exploding = true;
-    trailManager.turnOff();
+    trailManager->turnOff();
     switchShader(explodeShader);
 }
 
@@ -211,7 +225,7 @@ void Bike::internalDrawAll(const std::vector<std::shared_ptr<Mesh<glm::vec3>>> &
     {
         glUniform1f(explodeID, 0.0f);
     }
-    trailManager.drawAll();
+    trailManager->drawAll();
 }
 
 void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
@@ -223,7 +237,7 @@ void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
             explodeLevel += 1.0f/30.0f;
         }
         // fade light trail
-        trailManager.update(NO_TURN, SPEED_NORMAL, 0.0f, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+        trailManager->update(NO_TURN, SPEED_NORMAL, 0.0f, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
         return;
     }
 
@@ -240,7 +254,7 @@ void Bike::update(TurnDirection turning, Accelerating accelerating, bool stop)
     Accelerating actualAccelerating = updateSpeed(accelerating);
 
     // update the light trail before we change angle or location
-    trailManager.update(turning, actualAccelerating, oldSpeed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
+    trailManager->update(turning, actualAccelerating, oldSpeed, applyModelMatrx(glm::vec3(0.0f)), bikeAngleAroundYRads);
 
     // update angle
     turn(turning);

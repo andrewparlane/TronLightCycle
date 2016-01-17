@@ -1,15 +1,15 @@
 #ifndef OBJLOADER_H
 #define OBJLOADER_H
 
+#include "object_data.hpp"
+#include "progress_bar.hpp"
+
 #include <vector>
 #include <cstring>
 
 #include <glm/glm.hpp>
 
 #include <GL/glew.h>
-
-#include <object_data.hpp>
-#include <progress_bar.hpp>
 
 class ObjLoader : public ObjData3D
 {

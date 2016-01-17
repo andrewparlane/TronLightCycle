@@ -1,4 +1,6 @@
-#include <world.hpp>
+#include "world.hpp"
+#include "shader.hpp"
+#include "lamp.hpp"
 
 #include <string.h>
 
@@ -74,4 +76,13 @@ void World::sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const
     glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR), MAX_NUM_LAMPS, specularBuffer);
 
     glUniform1i(shader->getUniformID(SHADER_UNIFORM_NUM_LIGHTS), numLamps);
+}
+
+void World::drawLamps() const
+{
+    std::for_each(lamps.begin(), lamps.end(),
+                  [this](const std::unique_ptr<Lamp> &lamp)
+    {
+        lamp->draw(projectionMatrix, viewMatrix);
+    });
 }

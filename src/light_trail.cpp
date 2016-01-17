@@ -1,6 +1,10 @@
 #include "light_trail.hpp"
+#include "light_trail_segment.hpp"
+#include "object.hpp"
 
 #include <algorithm>
+
+#include <glm/gtx/transform.hpp>
 
 static const float lightTrailHeight = 3.8f;
 

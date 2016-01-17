@@ -2,10 +2,14 @@
 #define __TWO_DIMENSIONAL_HPP
 
 #include <memory>
+#include <string>
 
-#include <object.hpp>
-#include <shader.hpp>
-#include <texture.hpp>
+#include <glm/glm.hpp>
+
+class Shader;
+class ObjData2D;
+class Texture;
+template<typename T> struct Mesh;
 
 class Object2D
 {
@@ -13,14 +17,14 @@ public:
     Object2D(std::shared_ptr<const Shader> _shader);
     ~Object2D();
 
-    void deleteObjData(const std::string &name) { objData.deleteMesh(name); }
-    void deleteAllObjData() { objData.deleteAll(); }
+    void deleteObjData(const std::string &name);
+    void deleteAllObjData();
 
     void drawAll() const;
 
 protected:
     void drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const;
-    ObjData2D objData;
+    std::unique_ptr<ObjData2D> objData;
 
     std::shared_ptr<const Shader> shader;
 };

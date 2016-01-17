@@ -2,13 +2,17 @@
 #define __LIGHT_TRAIL_SEGMENT_HPP
 
 #include "bike_movements.hpp"
-#include "object_data.hpp"
-#include "object.hpp"
 
 #include <glm/glm.hpp>
 
 #include <map>
 #include <memory>
+
+class World;
+class Shader;
+class ObjData3D;
+class Object;
+template <typename T> struct MeshData;
 
 class LightTrailSegment
 {

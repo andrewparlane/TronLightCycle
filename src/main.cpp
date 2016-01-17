@@ -1,3 +1,14 @@
+#include "objloader.hpp"
+#include "object.hpp"
+#include "world.hpp"
+#include "shader.hpp"
+#include "bike.hpp"
+#include "bike_movements.hpp"
+#include "two_dimensional.hpp"
+#include "progress_bar.hpp"
+#include "texture.hpp"
+#include "light_trail_manager.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -10,17 +21,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-
-#include <objloader.hpp>
-#include <object.hpp>
-#include <world.hpp>
-#include <shader.hpp>
-#include <bike.hpp>
-#include <bike_movements.hpp>
-#include <two_dimensional.hpp>
-#include <progress_bar.hpp>
-
-#include <texture.hpp>
 
 #define SPEED_BAR_START_X 602.0f
 #define SPEED_BAR_END_X 778.0f
@@ -741,8 +741,8 @@ int main(void)
         // transform co-ords of front of bike to world co-ords.
         glm::vec3 bikeFrontLocation = bike.applyModelMatrx(glm::vec3(0,0,bike_most_forward));
 
-        const LightTrailManager &tm = bike.getTrailManager();
-        if (tm.collides(glm::vec2(bikeFrontLocation.x, bikeFrontLocation.z)) ||
+        std::shared_ptr<const LightTrailManager> tm = bike.getTrailManager();
+        if (tm->collides(glm::vec2(bikeFrontLocation.x, bikeFrontLocation.z)) ||
             bike.checkSelfCollision())
         {
             bike.setExploding();

@@ -1,6 +1,5 @@
-#include <object_data.hpp>
-
-#include <texture.hpp>
+#include "object_data.hpp"
+#include "texture.hpp"
 
 template class ObjData<glm::vec2>;
 template class ObjData<glm::vec3>;

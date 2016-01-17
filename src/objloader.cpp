@@ -1,3 +1,6 @@
+#include "objloader.hpp"
+#include "texture.hpp"
+
 #include <vector>
 #include <stdio.h>
 #include <string>
@@ -5,10 +8,6 @@
 #include <utility>
 
 #include <glm/glm.hpp>
-
-#include "objloader.hpp"
-
-#include <texture.hpp>
 
 // Include AssImp
 #include <assimp/Importer.hpp>      // C++ importer interface

@@ -1,3 +1,8 @@
+#include "two_dimensional.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
+#include "object_data.hpp"
+
 #include <vector>
 #include <cstring>
 
@@ -6,18 +11,23 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "shader.hpp"
-#include "texture.hpp"
-
-#include "two_dimensional.hpp"
-
 Object2D::Object2D(std::shared_ptr<const Shader> _shader)
-    : shader(_shader)
+    : objData(std::make_unique<ObjData2D>()), shader(_shader)
 {
 }
 
 Object2D::~Object2D()
 {
+}
+
+void Object2D::deleteObjData(const std::string &name)
+{
+    objData->deleteMesh(name);
+}
+
+void Object2D::deleteAllObjData()
+{
+    objData->deleteAll();
 }
 
 void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
@@ -69,7 +79,7 @@ void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
 
 void Object2D::drawAll() const
 {
-    const std::vector<std::shared_ptr<Mesh<glm::vec2>>> &meshes = objData.getMeshes();
+    const std::vector<std::shared_ptr<Mesh<glm::vec2>>> &meshes = objData->getMeshes();
 
     // bind shader
     shader->useShader();
@@ -135,7 +145,7 @@ void Text::addText2D(const std::string &text, int x, int y, int size, std::share
         i++;
     }
 
-    objData.addMesh(md);
+    objData->addMesh(md);
 }
 
 Shape2D::Shape2D(std::shared_ptr<const Shader> _shader)
@@ -194,5 +204,5 @@ void Shape2D::addRect(glm::vec2 tl, glm::vec2 tr, glm::vec2 br, glm::vec2 bl, gl
     md.indices.push_back(2);
     md.indices.push_back(3);
 
-    objData.addMesh(md);
+    objData->addMesh(md);
 }

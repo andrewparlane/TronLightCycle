@@ -2,8 +2,12 @@
 #define __BIKE_HPP
 
 #include "object.hpp"
-#include "light_trail_manager.hpp"
+#include "object_data.hpp"
 #include "bike_movements.hpp"
+
+class LightTrailManager;
+class World;
+class Shader;
 
 class Bike : public Object
 {
@@ -20,11 +24,11 @@ public:
 
     float getSpeedPercent() const;
 
-    void toggleLightTrail() { trailManager.toggle(); }
+    void toggleLightTrail();
 
-    const LightTrailManager &getTrailManager() const { return trailManager; }
+    std::shared_ptr<const LightTrailManager> getTrailManager() const { return trailManager; }
 
-    bool checkSelfCollision() const { return trailManager.checkSelfCollision(); }
+    bool checkSelfCollision() const;
 
     void setExploding();
 
@@ -61,7 +65,7 @@ protected:
     MeshAxis leftEngineAxis;
 
     // note light trails are in world co-ords
-    LightTrailManager trailManager;
+    std::shared_ptr<LightTrailManager> trailManager;
 
     float speed;
 

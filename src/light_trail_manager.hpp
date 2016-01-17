@@ -1,14 +1,17 @@
 #ifndef __LIGHT_TRAIL_MANAGER_HPP
 #define __LIGHT_TRAIL_MANAGER_HPP
 
-#include "world.hpp"
-#include "shader.hpp"
-#include "light_trail.hpp"
 #include "bike_movements.hpp"
 
 #include <vector>
 #include <memory>
 #include <algorithm>
+
+#include <glm/glm.hpp>
+
+class World;
+class Shader;
+class LightTrail;
 
 class LightTrailManager
 {
@@ -28,7 +31,7 @@ public:
     bool checkSelfCollision() const;
 
     // draw all the light trails
-    void drawAll() const { std::for_each( trails.begin(), trails.end(), [](const std::unique_ptr<LightTrail> &trail){ trail->draw(); }); };
+    void drawAll() const;
 
 protected:
     enum State

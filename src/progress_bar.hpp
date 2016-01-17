@@ -1,15 +1,15 @@
 #ifndef __PROGRESS_BAR_HPP
 #define __PROGRESS_BAR_HPP
 
-#include "two_dimensional.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
-
 #include <map>
 #include <string>
 #include <memory>
 
-#include <glfw3.h>
+struct GLFWwindow;
+class Texture;
+class Shader;
+class Shape2D;
+class Text;
 
 class ProgressBar
 {
@@ -37,8 +37,8 @@ protected:
     std::shared_ptr<const Shader> shader;
     std::shared_ptr<Texture> font;
 
-    Shape2D progressBar;
-    Text progressText;
+    std::unique_ptr<Shape2D> progressBar;
+    std::unique_ptr<Text> progressText;
 
     float lastTotalPercent;
 };

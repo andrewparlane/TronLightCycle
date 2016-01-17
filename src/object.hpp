@@ -2,14 +2,16 @@
 #define __OBJECT_HPP
 
 #include <memory>
-
-#include <object_data.hpp>
-#include <shader.hpp>
-#include <world.hpp>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+
+class ObjData3D;
+class World;
+class Shader;
+template<typename T> struct Mesh;
 
 class Object
 {

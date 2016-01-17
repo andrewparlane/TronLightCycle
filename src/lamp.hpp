@@ -1,12 +1,16 @@
 #ifndef __LAMP_HPP
 #define __LAMP_HPP
 
-#include "shader.hpp"
-#include "object_data.hpp"
-
 #include <memory>
+#include <vector>
+
+#include <glm/glm.hpp>
 
 #define MAX_NUM_LAMPS 20    // Note: must synce with shaders/main.fs
+
+class Shader;
+class ObjData3D;
+template<typename T> struct Mesh;
 
 class Lamp
 {

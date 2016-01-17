@@ -1,4 +1,5 @@
 #include "light_trail_manager.hpp"
+#include "light_trail.hpp"
 
 LightTrailManager::LightTrailManager(std::shared_ptr<World> _world,
                                      std::shared_ptr<const Shader> _shader,
@@ -81,4 +82,13 @@ bool LightTrailManager::checkSelfCollision() const
         return trails.back()->checkSelfCollision();
     }
     return false;
+}
+
+void LightTrailManager::drawAll() const
+{
+    std::for_each(trails.begin(), trails.end(),
+                  [](const std::unique_ptr<LightTrail> &trail)
+    {
+        trail->draw();
+    });
 }
