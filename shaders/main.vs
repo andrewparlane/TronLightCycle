@@ -7,6 +7,7 @@ in vec2 vertexTextureUV;
 // input data that is constant for whole mesh
 uniform mat4 MV;                    // model -> camera
 uniform mat4 MVP;                   // model -> homogenous
+uniform mat3 normalMV;              // model -> camera (for normals) = mat3(transpose(inverse(MV)))
 
 // output to fragment / geometry shader
 out Data
@@ -25,7 +26,7 @@ void main()
     vertexPosition_Camera = (MV * vec4(vertexPosition_Model, 1.0)).xyz;
 
     // get the normal vector in camera space and pass to the fragment shader
-    normal_Camera = normalize(mat3(transpose(inverse(MV))) * vertexNormal_Model);
+    normal_Camera = normalize(normalMV * vertexNormal_Model);
     
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;

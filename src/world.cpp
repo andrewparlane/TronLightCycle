@@ -17,10 +17,15 @@ void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model
     // mvp matrix = model -> homogenous
     glm::mat4 mv = viewMatrix * model;
     glm::mat4 mvp = projectionMatrix * mv;
+    glm::mat3 normalMV = glm::mat3(glm::transpose(glm::inverse(mv)));
+
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_MVP), 1, GL_FALSE, &mvp[0][0]);
 
     // also send model view matrix for lightinng stuff
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_MODEL_VIEW_MATRIX), 1, GL_FALSE, &mv[0][0]);
+
+    // and normalMV
+    glUniformMatrix3fv(shader->getUniformID(SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX), 1, GL_FALSE, &normalMV[0][0]);
 }
 
 bool World::addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
