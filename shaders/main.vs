@@ -29,7 +29,7 @@ void main()
     vertexPosition_Camera = (ViewMatrix * vec4(vertexPosition_World, 1.0)).xyz;
 
     // get the normal vector in camera space and pass to the fragment shader
-    normal_Camera = mat3(transpose(inverse(ViewMatrix * ModelMatrix))) * vertexNormal_Model;
+    normal_Camera = normalize(mat3(transpose(inverse(ViewMatrix * ModelMatrix))) * vertexNormal_Model);
     
     // pass values to fragment shader
     fragmentTextureUV = vertexTextureUV;

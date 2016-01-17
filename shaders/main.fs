@@ -28,7 +28,7 @@ uniform float lightDiffuse[MAX_LIGHTS];
 uniform float lightSpecular[MAX_LIGHTS];
 uniform float lightRadius[MAX_LIGHTS];
 
-vec3 calculatePointLight(int idx, vec3 materialColour, vec3 n, vec3 e)
+vec3 calculatePointLight(int idx, vec3 materialColour, vec3 eyeDirection_Camera)
 {
     // get the vector of the light source from the vertex in camera space
     // note: vertex -> light source, seems the wrong way round but makes the maths easier
@@ -52,14 +52,14 @@ vec3 calculatePointLight(int idx, vec3 materialColour, vec3 n, vec3 e)
     vec3 diffuseLighting = materialColour *
                            lightColour[idx] *
                            lightDiffuse[idx] *
-                           clamp(dot(n, lightDirection_Camera), 0, 1);
+                           clamp(dot(normal_Camera, lightDirection_Camera), 0, 1);
 
     // for specular lighting the light reflects off like a mirror
     // only scattering slightly
-    vec3 r = reflect(-lightDirection_Camera,n);
+    vec3 r = reflect(-lightDirection_Camera, normal_Camera);
     vec3 specularLighting = lightColour[idx] *
                             lightSpecular[idx] *
-                            pow(clamp(dot(e, r), 0, 1), 32);    // change 32 to increase or decrease scattering angle
+                            pow(clamp(dot(eyeDirection_Camera, r), 0, 1), 32);    // change 32 to increase or decrease scattering angle
 
     return attenuation * (ambientLighting + diffuseLighting + specularLighting);
 }
@@ -73,19 +73,14 @@ void main()
 
     // get a vector from the vertex to the camera in camera space.
     // in camera space, the camera is located at 0,0,0
-    vec3 eyeDirection_Camera = -vertexPosition_Camera;
-
-    // normalize the normal and the eye direction vectors
-    // since we want to use their dot product to get the cos of the angle between them
-    vec3 n = normalize(normal_Camera);
-    vec3 e = normalize(eyeDirection_Camera);
+    vec3 eyeDirection_Camera = normalize(-vertexPosition_Camera);
 
     vec3 result = vec3(0,0,0);
 
     int i;
     for (i = 0; i < numLights; i++)
     {
-        result += calculatePointLight(i, materialColour, n, e);
+        result += calculatePointLight(i, materialColour, eyeDirection_Camera);
     }
 
     gl_FragColor = vec4(result, 1.0f);
