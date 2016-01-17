@@ -33,11 +33,12 @@ TODO:
         add support for multiple actions
     Effects / Prettiness
         sort out lighting, everything is too dark
-            support multiple lights
+            everything is now too slow, look into defered shading:
+            research HDR
+            add headlamps
+                implement spot light support
             support strip lights (connected to body of bike)?
-                look into defered shading?
-                render to texture
-                apply blur
+                research bloom
                 ...
         sort out scales, maybe make bike smaller? or floor bigger?
         add boundary and buildings etc...
