@@ -28,22 +28,12 @@ uniform float lightDiffuse[MAX_LIGHTS];
 uniform float lightSpecular[MAX_LIGHTS];
 uniform float lightRadius[MAX_LIGHTS];
 
-vec3 calculatePointLight(int idx, vec3 materialColour)
+vec3 calculatePointLight(int idx, vec3 materialColour, vec3 n, vec3 e)
 {
     // get the vector of the light source from the vertex in camera space
     // note: vertex -> light source, seems the wrong way round but makes the maths easier
     vec3 lightPosition_Camera = (ViewMatrix * vec4(lightPosition_World[idx], 1.0)).xyz;
-    vec3 lightDirection_Camera = lightPosition_Camera - vertexPosition_Camera;
-
-    // get a vector from the vertex to the camera in camera space.
-    // in camera space, the camera is located at 0,0,0
-    vec3 eyeDirection_Camera = vec3(0,0,0) - vertexPosition_Camera;
-
-    // normalize the normal and the light direction vectors
-    // since we want to use their dot product to get the cos of the angle between them
-    vec3 n = normalize(normal_Camera);
-    vec3 l = normalize(lightDirection_Camera);
-    vec3 e = normalize(eyeDirection_Camera);
+    vec3 lightDirection_Camera = normalize(lightPosition_Camera - vertexPosition_Camera);
 
     // calculate how the light attenuates as we get further away
     float distance = length(lightPosition_Camera - vertexPosition_Camera);
@@ -62,11 +52,11 @@ vec3 calculatePointLight(int idx, vec3 materialColour)
     vec3 diffuseLighting = materialColour *
                            lightColour[idx] *
                            lightDiffuse[idx] *
-                           clamp(dot(n, l), 0, 1);
+                           clamp(dot(n, lightDirection_Camera), 0, 1);
 
     // for specular lighting the light reflects off like a mirror
     // only scattering slightly
-    vec3 r = reflect(-l,n);
+    vec3 r = reflect(-lightDirection_Camera,n);
     vec3 specularLighting = lightColour[idx] *
                             lightSpecular[idx] *
                             pow(clamp(dot(e, r), 0, 1), 32);    // change 32 to increase or decrease scattering angle
@@ -81,12 +71,21 @@ void main()
                                     texture(textureSampler, fragmentTextureUV) :
                                     vec4(fragmentColour, 1));
 
+    // get a vector from the vertex to the camera in camera space.
+    // in camera space, the camera is located at 0,0,0
+    vec3 eyeDirection_Camera = -vertexPosition_Camera;
+
+    // normalize the normal and the eye direction vectors
+    // since we want to use their dot product to get the cos of the angle between them
+    vec3 n = normalize(normal_Camera);
+    vec3 e = normalize(eyeDirection_Camera);
+
     vec3 result = vec3(0,0,0);
 
     int i;
     for (i = 0; i < numLights; i++)
     {
-        result += calculatePointLight(i, materialColour);
+        result += calculatePointLight(i, materialColour, n, e);
     }
 
     gl_FragColor = vec4(result, 1.0f);
