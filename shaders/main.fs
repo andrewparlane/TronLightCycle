@@ -12,7 +12,6 @@ in Data
 };
 
 // const input per mesh
-uniform mat4 ViewMatrix;            // world -> camera transform
 uniform float fragmentIsTexture;
 uniform sampler2D textureSampler;
 uniform vec3 fragmentColour;
@@ -21,7 +20,7 @@ uniform vec3 fragmentColour;
 // note: I wanted to use an array of structs
 //       but that is difficult due to packing issues
 uniform int numLights;
-uniform vec3 lightPosition_World[MAX_LIGHTS];
+uniform vec3 lightPosition_Camera[MAX_LIGHTS];
 uniform vec3 lightColour[MAX_LIGHTS];
 uniform float lightAmbient[MAX_LIGHTS];
 uniform float lightDiffuse[MAX_LIGHTS];
@@ -32,11 +31,10 @@ vec3 calculatePointLight(int idx, vec3 materialColour, vec3 eyeDirection_Camera)
 {
     // get the vector of the light source from the vertex in camera space
     // note: vertex -> light source, seems the wrong way round but makes the maths easier
-    vec3 lightPosition_Camera = (ViewMatrix * vec4(lightPosition_World[idx], 1.0)).xyz;
-    vec3 lightDirection_Camera = normalize(lightPosition_Camera - vertexPosition_Camera);
+    vec3 lightDirection_Camera = normalize(lightPosition_Camera[idx] - vertexPosition_Camera);
 
     // calculate how the light attenuates as we get further away
-    float distance = length(lightPosition_Camera - vertexPosition_Camera);
+    float distance = length(lightPosition_Camera[idx] - vertexPosition_Camera);
     float attenuation = 1.0f / pow(1.0f + (distance / lightRadius[idx]), 2);
     attenuation = (attenuation - LIGHT_INTENSITY_CUT_OFF) / (1.0f - LIGHT_INTENSITY_CUT_OFF);
     if (attenuation <= 0.0f)

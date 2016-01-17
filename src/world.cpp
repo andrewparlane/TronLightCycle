@@ -19,9 +19,8 @@ void World::sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model
     glm::mat4 mvp = projectionMatrix * mv;
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_MVP), 1, GL_FALSE, &mvp[0][0]);
 
-    // also send model and view matrix for lightinng stuff
+    // also send model view matrix for lightinng stuff
     glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_MODEL_VIEW_MATRIX), 1, GL_FALSE, &mv[0][0]);
-    glUniformMatrix4fv(shader->getUniformID(SHADER_UNIFORM_VIEW_MATRIX), 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
 bool World::addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
@@ -50,10 +49,12 @@ void World::sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const
     for (const auto &it : lamps)
     {
         it->getLampData(positionBuffer[numLamps], radiusBuffer[numLamps], colourBuffer[numLamps], ambientBuffer[numLamps], diffuseBuffer[numLamps], specularBuffer[numLamps]);
+        // transform the lamp position from world -> camera space
+        positionBuffer[numLamps] = glm::vec3(viewMatrix * glm::vec4(positionBuffer[numLamps], 1.0f));
         numLamps++;
     }
 
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), MAX_NUM_LAMPS, &positionBuffer[0][0]);
+    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_CAMERA), MAX_NUM_LAMPS, &positionBuffer[0][0]);
     glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_RADIUS), MAX_NUM_LAMPS, radiusBuffer);
     glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), MAX_NUM_LAMPS, &colourBuffer[0][0]);
     glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), MAX_NUM_LAMPS, ambientBuffer);

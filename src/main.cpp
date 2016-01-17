@@ -52,10 +52,9 @@ Shader *setupMainShader(const std::string *geometryShader = NULL)
             // vertex params (static)
             !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
             !mainShader->addUniformID("MV", SHADER_UNIFORM_MODEL_VIEW_MATRIX) ||
-            !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
             // fragment params
             !mainShader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
-            !mainShader->addUniformID("lightPosition_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
+            !mainShader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
             !mainShader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
             !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
             !mainShader->addUniformID("lightAmbient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
