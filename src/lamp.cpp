@@ -46,12 +46,12 @@ void Lamp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) 
     }
 }
 
-void Lamp::sendLamp(std::shared_ptr<const Shader> shader) const
+void Lamp::getLampData(glm::vec3 &_position, float &_radius, glm::vec3 &_colour, float &_ambient, float &_diffuse, float &_specular) const
 {
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_WORLD), 1, &position[0]);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_RADIUS), radius);
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), 1, &colour[0]);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), ambient);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR), diffuse);
-    glUniform1f(shader->getUniformID(SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR), specular);
+    _position = position;
+    _radius   = radius;
+    _colour   = colour;
+    _ambient  = ambient;
+    _diffuse  = diffuse;
+    _specular = specular;
 }

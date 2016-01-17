@@ -50,12 +50,13 @@ Shader *setupMainShader(const std::string *geometryShader = NULL)
             !mainShader->addUniformID("ModelMatrix", SHADER_UNIFORM_MODEL_MATRIX) ||
             !mainShader->addUniformID("ViewMatrix", SHADER_UNIFORM_VIEW_MATRIX) ||
             // fragment params
-            !mainShader->addUniformID("light.position_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
-            !mainShader->addUniformID("light.radius", SHADER_UNIFORM_LIGHT_RADIUS) ||
-            !mainShader->addUniformID("light.colour", SHADER_UNIFORM_LIGHT_COLOUR) ||
-            !mainShader->addUniformID("light.ambient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
-            !mainShader->addUniformID("light.diffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
-            !mainShader->addUniformID("light.specular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
+            !mainShader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
+            !mainShader->addUniformID("lightPosition_World", SHADER_UNIFORM_LIGHT_POS_WORLD) ||
+            !mainShader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
+            !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
+            !mainShader->addUniformID("lightAmbient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
+            !mainShader->addUniformID("lightDiffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
+            !mainShader->addUniformID("lightSpecular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
             !mainShader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
             !mainShader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
             !mainShader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
@@ -360,9 +361,17 @@ int main(void)
         return -1;
     }
 
-    glm::mat4 lamp_model = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
-    world->setLamp(lampObjData, lampShader, lamp_model,
-                   glm::vec3(0, 20, 4),             // position
+    glm::mat4 lamp_model_without_position = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
+    world->addLamp(lampObjData, lampShader, lamp_model_without_position,
+                   glm::vec3(0, 20, 0),             // position
+                   200.0f,                          // radius
+                   glm::vec3(0.6f, 0.6f, 1.0f),     // colour
+                   0.4f,                            // ambient
+                   0.8f,                           // diffuse
+                   1.0f);                          // specular
+
+    world->addLamp(lampObjData, lampShader, lamp_model_without_position,
+                   glm::vec3(0, 20, -100),             // position
                    200.0f,                          // radius
                    glm::vec3(0.6f, 0.6f, 1.0f),     // colour
                    0.4f,                            // ambient

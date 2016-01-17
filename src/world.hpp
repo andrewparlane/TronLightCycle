@@ -5,6 +5,8 @@
 #include <lamp.hpp>
 
 #include <memory>
+#include <vector>
+#include <algorithm>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,22 +24,19 @@ public:
 
     void setProjection(const glm::mat4 &projection) { projectionMatrix = projection; }
 
-    void setLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
+    bool addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
                  const glm::mat4 &modelMatWithoutTransform, const glm::vec3 &position,
-                 float radius, const glm::vec3 &colour, float ambient, float diffuse, float specular)
-    {
-        lamp = std::make_unique<Lamp>(objData, shader, modelMatWithoutTransform, position, radius, colour, ambient, diffuse, specular);
-    }
+                 float radius, const glm::vec3 &colour, float ambient, float diffuse, float specular);
 
     void sendMVP(std::shared_ptr<const Shader> shader, const glm::mat4 &model) const;
-    void sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const { if (lamp) lamp->sendLamp(shader); }
-    void drawLamps() { if (lamp) lamp->draw(projectionMatrix, viewMatrix); }
+    void sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const;
+    void drawLamps() { std::for_each(lamps.begin(), lamps.end(), [this](const std::unique_ptr<Lamp> &lamp){ lamp->draw(projectionMatrix, viewMatrix); }); };
 
 protected:
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
 
-    std::unique_ptr<Lamp> lamp;
+    std::vector<std::unique_ptr<Lamp>> lamps;
 };
 
 #endif

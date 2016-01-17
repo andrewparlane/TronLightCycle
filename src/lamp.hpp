@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#define MAX_NUM_LAMPS 20    // Note: must synce with shaders/main.fs
+
 class Lamp
 {
 public:
@@ -16,7 +18,7 @@ public:
 
     void draw(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) const;
 
-    void sendLamp(std::shared_ptr<const Shader> shader) const;
+    void getLampData(glm::vec3 &position, float &radius, glm::vec3 &colour, float &ambient, float &diffuse, float &specular) const;
 
 protected:
     std::shared_ptr<const ObjData3D> objData;
