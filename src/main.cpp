@@ -25,6 +25,10 @@
 #define SPEED_BAR_START_X 602.0f
 #define SPEED_BAR_END_X 778.0f
 
+#define ARENA_STRETCH_FACTOR 50
+#define ARENA_NUM_X 11
+#define ARENA_NUM_Z 11
+
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
@@ -155,36 +159,32 @@ ObjData3D *createArena()
     // we can use indexing so only need to specify unique vertices
     // we want the texture to repeat per square, so just use vertex numbers for uvs
 
-    const unsigned int STRETCH_FACTOR = 50;
-    const unsigned int NUM_X = 11;
-    const unsigned int NUM_Z = 11;
-
-    for (int x = 0; x < NUM_X; x++)
+    for (int x = 0; x < ARENA_NUM_X; x++)
     {
-        for (int z = 0; z < NUM_Z; z++)
+        for (int z = 0; z < ARENA_NUM_Z; z++)
         {
-            md.vertices.push_back(glm::vec3((x - ((NUM_X - 1.0f) / 2.0f)) * STRETCH_FACTOR,
+            md.vertices.push_back(glm::vec3((x - ((ARENA_NUM_X - 1.0f) / 2.0f)) * ARENA_STRETCH_FACTOR,
                                             0.0f,
-                                            (z - ((NUM_Z - 1.0f) / 2.0f)) * STRETCH_FACTOR));
+                                            -(z * ARENA_STRETCH_FACTOR)));
             md.normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
             md.uvs.push_back(glm::vec2(x, z));
         }
     }
 
     // now to create indices
-    // we have (NUM_X - 1) * (NUM_Z - 1) squares
+    // we have (ARENA_NUM_X - 1) * (ARENA_NUM_Z - 1) squares
     // go through each square
-    for (unsigned short x = 0; x < (NUM_X - 1); x++)
+    for (unsigned short x = 0; x < (ARENA_NUM_X - 1); x++)
     {
-        for (unsigned short z = 0; z < (NUM_Z - 1); z++)
+        for (unsigned short z = 0; z < (ARENA_NUM_Z - 1); z++)
         {
             // 1---2
             // |   |
             // 0---3
-            unsigned short corners[4] = { (x * NUM_X) + z,
-                                          (x * NUM_X) + z + 1,
-                                          ((x + 1) * NUM_X) + z + 1,
-                                          ((x + 1) * NUM_X) + z };
+            unsigned short corners[4] = { (unsigned short)((x * ARENA_NUM_X) + z),
+                                          (unsigned short)((x * ARENA_NUM_X) + z + 1),
+                                          (unsigned short)(((x + 1) * ARENA_NUM_X) + z + 1),
+                                          (unsigned short)(((x + 1) * ARENA_NUM_X) + z )};
 
             // each square consists of two triangular faces:
             // 0,1,3 and 1,2,3
@@ -203,6 +203,7 @@ ObjData3D *createArena()
         delete arenaObjData;
         arenaObjData = NULL;
     }
+
     return arenaObjData;
 }
 
@@ -253,6 +254,79 @@ ObjData3D *createLamp()
         objData = NULL;
     }
     return objData;
+}
+
+bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shader> shader)
+{
+    // lighting
+    std::shared_ptr<ObjData3D> lampObjData(createLamp());
+    if (!lampObjData)
+    {
+        printf("Failed to create lamp obj data\n");
+        return false;
+    }
+
+    const float lightRadius = 100.0f;
+    const float lightAmbient = 0.2f;
+    const float lightDiffuse = 0.5f;
+    const float lightSpecular = 1.0f;
+
+    glm::mat4 lamp_model_without_position = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
+
+    float zPosFurtherst = -((ARENA_NUM_Z - 1.0f) * ARENA_STRETCH_FACTOR);
+    for (unsigned int x = 0; x < (ARENA_NUM_X - 1.0f) / 2.0f; x++)
+    {
+        float xPos = ((x - ((ARENA_NUM_X - 1.0f) / 4.0f)) * ARENA_STRETCH_FACTOR * 2.0f) + ARENA_STRETCH_FACTOR;
+
+        if (!world->addLamp(lampObjData, shader, lamp_model_without_position,
+                            glm::vec3(xPos, 20, 0),             // position
+                            lightRadius,                        // radius
+                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
+                            lightAmbient,                       // ambient
+                            lightDiffuse,                       // diffuse
+                            lightSpecular) ||                   // specular
+            !world->addLamp(lampObjData, shader, lamp_model_without_position,
+                            glm::vec3(xPos, 20, zPosFurtherst), // position
+                            lightRadius,                        // radius
+                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
+                            lightAmbient,                       // ambient
+                            lightDiffuse,                       // diffuse
+                            lightSpecular))                     // specular
+        {
+            printf("Failed to add arena lamp\n");
+            return false;
+        }
+    }
+
+    // rotate lamp by 90 degrees and do other sides
+    lamp_model_without_position = glm::rotate(glm::radians(90.0f), glm::vec3(0,1,0)) * lamp_model_without_position;
+
+    float leftXPos = -((ARENA_NUM_X - 1.0f) / 2.0f) * ARENA_STRETCH_FACTOR;
+    float rightXPos = ((ARENA_NUM_X - 1.0f) / 2.0f) * ARENA_STRETCH_FACTOR;
+    for (unsigned int z = 0; z < (ARENA_NUM_Z - 1.0f) / 2.0f; z++)
+    {
+        float zPos = -(ARENA_STRETCH_FACTOR + (z * 2.0f * ARENA_STRETCH_FACTOR));
+
+        if (!world->addLamp(lampObjData, shader, lamp_model_without_position,
+                            glm::vec3(leftXPos, 20, zPos),      // position
+                            lightRadius,                        // radius
+                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
+                            lightAmbient,                       // ambient
+                            lightDiffuse,                       // diffuse
+                            lightSpecular) ||                   // specular
+            !world->addLamp(lampObjData, shader, lamp_model_without_position,
+                            glm::vec3(rightXPos, 20, zPos),     // position
+                            lightRadius,                        // radius
+                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
+                            lightAmbient,                       // ambient
+                            lightDiffuse,                       // diffuse
+                            lightSpecular))                     // specular
+        {
+            printf("Failed to add arena lamp\n");
+            return false;
+        }
+    }
+    return true;
 }
 
 int main(void)
@@ -352,32 +426,6 @@ int main(void)
                                  glm::vec3(0, 6, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
-    // lighting
-    std::shared_ptr<ObjData3D> lampObjData(createLamp());
-    if (!lampObjData)
-    {
-        printf("Failed to create lamp obj data\n");
-        system("pause");
-        return -1;
-    }
-
-    glm::mat4 lamp_model_without_position = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
-    world->addLamp(lampObjData, lampShader, lamp_model_without_position,
-                   glm::vec3(0, 20, 0),             // position
-                   200.0f,                          // radius
-                   glm::vec3(0.6f, 0.6f, 1.0f),     // colour
-                   0.4f,                            // ambient
-                   0.8f,                           // diffuse
-                   1.0f);                          // specular
-
-    world->addLamp(lampObjData, lampShader, lamp_model_without_position,
-                   glm::vec3(0, 20, -100),             // position
-                   200.0f,                          // radius
-                   glm::vec3(0.6f, 0.6f, 1.0f),     // colour
-                   0.4f,                            // ambient
-                   0.8f,                           // diffuse
-                   1.0f);                          // specular
-
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
     if (!bikeLoader->loadTextureMap() ||
         !bikeLoader->loadObj())
@@ -413,6 +461,13 @@ int main(void)
         return -1;
     }
     Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
+
+    if (!setupArenaLighting(world, lampShader))
+    {
+        printf("Failed to set up arena lighting\n");
+        system("pause");
+        return -1;
+    }
 
     // create debug text object
     Text text(shader2D);
