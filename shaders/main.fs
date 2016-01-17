@@ -65,9 +65,7 @@ vec3 calculatePointLight(int idx, vec3 materialColour)
     // for specular lighting the light reflects off like a mirror
     // only scattering slightly
     vec3 r = reflect(-l,n);
-    vec3 materialSpecularColour = lightColour[idx] / 4;
-    vec3 specularLighting = materialSpecularColour *
-                            lightColour[idx] *
+    vec3 specularLighting = lightColour[idx] *
                             lightSpecular[idx] *
                             pow(clamp(dot(e, r), 0, 1), 32);    // change 32 to increase or decrease scattering angle
 
