@@ -11,6 +11,8 @@ Requires these libraries:
 Credit to:
     http://www.opengl-tutorial.org/
         for tutorials and code to get me started
+    http://www.learnopengl.com/
+        for more advanced tutorials
     https://www.google.com.bo/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0CAMQjxxqFQoTCNGxz--H98gCFUHnJgodgFYC2w&url=http%3A%2F%2Fwww.darksim.com%2Fchallenge%2Fhtml%2Fapril_2003.html&psig=AFQjCNFW6bhuWnxmcfCkoLUb8fl9RQrdsg&ust=1446736342239189
         user: sky
         for tyre texture
@@ -34,6 +36,15 @@ TODO:
     Effects / Prettiness
         sort out lighting, everything is too dark
             everything is now too slow, look into defered shading:
+                added support, seems to make it even slower
+                maybe there's a problem with normals?
+                    set output of main_lighting_pass.fs to normal_Cameera
+                    why are there black bits?
+                    because we are between -1 and 1?
+                        test what -1,0,0 looks like?
+                set background colour in main_lighting_pass.fs once normals are fixed
+                continue deferred shading tutorial looking at the many lights bit
+                compare look with forward rendering, does it look the same?
             research HDR
             add headlamps
                 implement spot light support
