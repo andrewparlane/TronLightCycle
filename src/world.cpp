@@ -68,12 +68,13 @@ void World::sendLightingInfoToShader(std::shared_ptr<const Shader> shader) const
         numLamps++;
     }
 
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_CAMERA), MAX_NUM_LAMPS, &positionBuffer[0][0]);
-    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_RADIUS), MAX_NUM_LAMPS, radiusBuffer);
-    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), MAX_NUM_LAMPS, &colourBuffer[0][0]);
-    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), MAX_NUM_LAMPS, ambientBuffer);
-    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR), MAX_NUM_LAMPS, diffuseBuffer);
-    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR), MAX_NUM_LAMPS, specularBuffer);
+    // TODO use numLamps here instead
+    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_POS_CAMERA), numLamps, &positionBuffer[0][0]);
+    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_RADIUS), numLamps, radiusBuffer);
+    glUniform3fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_COLOUR), numLamps, &colourBuffer[0][0]);
+    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR), numLamps, ambientBuffer);
+    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR), numLamps, diffuseBuffer);
+    glUniform1fv(shader->getUniformID(SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR), numLamps, specularBuffer);
 
     glUniform1i(shader->getUniformID(SHADER_UNIFORM_NUM_LIGHTS), numLamps);
 }
