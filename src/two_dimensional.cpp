@@ -33,7 +33,7 @@ void Object2D::deleteAllObjData()
 void Object2D::drawMesh(const std::shared_ptr<Mesh<glm::vec2>> &mesh) const
 {
     GLuint vertexTextureUVID = shader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
-    GLuint vertexPosition_screenspaceID = shader->getAttribID(SHADER_ATTRIB_VERTEX_POS_SCREEN);
+    GLuint vertexPosition_screenspaceID = shader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
     GLuint vertexColourID = shader->getAttribID(SHADER_ATTRIB_VERTEX_COLOUR);
     GLuint textureSamplerID = shader->getUniformID(SHADER_UNIFORM_TEXTURE_SAMPLER);
     GLuint fragmentIsTextureID = shader->getUniformID(SHADER_UNIFORM_IS_TEXTURE);

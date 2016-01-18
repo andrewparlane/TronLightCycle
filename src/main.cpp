@@ -103,7 +103,7 @@ Shader *setupMainLightingPassShader()
     {
         // Get main shader parameters
         if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS_SCREEN) ||
+            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
             !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
             // fragment params
             !shader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
@@ -167,7 +167,7 @@ Shader *setup2DShader()
     else
     {
         // Get a handle for our buffers
-        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VERTEX_POS_SCREEN) ||
+        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VERTEX_POS) ||
             !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VERTEX_UV) ||
             !shader2D->addAttribID("vertexColour", SHADER_ATTRIB_VERTEX_COLOUR) ||
             !shader2D->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
@@ -937,7 +937,7 @@ int main(void)
         world->sendLightingInfoToShader(mainLightingPassShader);
 
         GLuint vertexTextureUVID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
-        GLuint vertexPosition_screenspaceID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS_SCREEN);
+        GLuint vertexPosition_screenspaceID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
         glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_GEOMETRY_TEXTURE_SAMPLER), 0);
         glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER), 1);
         glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 2);
