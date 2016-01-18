@@ -4,17 +4,12 @@
 #define MAX_LIGHTS                  20      // note: must sync with src/lamp.hp
 
 // input data
-in Data
-{
-    vec2 fragmentTextureUV;
-    vec3 vertexPosition_Camera;
-    vec3 normal_Camera;
-};
+in vec2 fragmentTextureUV;
 
 // const input per mesh
-uniform float fragmentIsTexture;
-uniform sampler2D textureSampler;
-uniform vec3 fragmentColour;
+uniform sampler2D geometryTextureSampler;
+uniform sampler2D normalTextureSampler;
+uniform sampler2D colourTextureSampler;
 
 // lights (const per mesh)
 // note: I wanted to use an array of structs
@@ -27,7 +22,7 @@ uniform float lightDiffuse[MAX_LIGHTS];
 uniform float lightSpecular[MAX_LIGHTS];
 uniform float lightRadius[MAX_LIGHTS];
 
-vec3 calculatePointLight(int idx, vec3 materialColour, vec3 eyeDirection_Camera)
+vec3 calculatePointLight(int idx, vec3 vertexPosition_Camera, vec3 normal_Camera, vec3 materialColour, vec3 eyeDirection_Camera)
 {
     // get the vector of the light source from the vertex in camera space
     // note: vertex -> light source, seems the wrong way round but makes the maths easier
@@ -64,10 +59,16 @@ vec3 calculatePointLight(int idx, vec3 materialColour, vec3 eyeDirection_Camera)
 
 void main()
 {
-    // get the colour of this point, either based on texture or input colour
-    vec3 materialColour = vec3((fragmentIsTexture > 0.5f) ?
-                                    texture(textureSampler, fragmentTextureUV) :
-                                    vec4(fragmentColour, 1));
+    vec3 vertexPosition_Camera = texture(geometryTextureSampler, fragmentTextureUV).rgb;
+    vec3 normal_Camera = texture(normalTextureSampler, fragmentTextureUV).rgb;
+    vec3 materialColour = texture(colourTextureSampler, fragmentTextureUV).rgb;
+
+    // set background colour, if normal is 0,0,0 (impossible unless there's nothing there)
+    if (normal_Camera == vec3(0.0f))
+    {
+        //gl_FragColor = vec4(0.0f, 0.0f, 0.4f, 1.0f);
+        //return;
+    }
 
     // get a vector from the vertex to the camera in camera space.
     // in camera space, the camera is located at 0,0,0
@@ -78,7 +79,7 @@ void main()
     int i;
     for (i = 0; i < numLights; i++)
     {
-        result += calculatePointLight(i, materialColour, eyeDirection_Camera);
+        result += calculatePointLight(i, vertexPosition_Camera, normal_Camera, materialColour, eyeDirection_Camera);
     }
 
     gl_FragColor = vec4(result, 1.0f);

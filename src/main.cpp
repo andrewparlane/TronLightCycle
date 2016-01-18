@@ -22,6 +22,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+#define SCR_WIDTH 800
+#define SCR_HEIGHT 600
+
 #define SPEED_BAR_START_X 602.0f
 #define SPEED_BAR_END_X 778.0f
 
@@ -32,53 +35,46 @@
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
-Shader *setupMainShader(const std::string *geometryShader = NULL)
+Shader *setupMainGeometryPassShader(const std::string *geometryShader = NULL)
 {
     // first init main shader
-    Shader *mainShader = new Shader("shaders/main.vs", "shaders/main.fs", geometryShader);
-    if (!mainShader->compile())
+    Shader *shader = new Shader("shaders/main_geometry_pass.vs", "shaders/main_geometry_pass.fs", geometryShader);
+    if (!shader->compile())
     {
         printf("Failed to compile main shader\n");
-        delete mainShader;
+        delete shader;
         return NULL;
     }
     else
     {
         // Get main shader parameters
         if (// vertex params (variable)
-            !mainShader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
-            !mainShader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VERTEX_NORMAL) ||
-            !mainShader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
+            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
+            !shader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VERTEX_NORMAL) ||
+            !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
             // vertex params (static)
-            !mainShader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
-            !mainShader->addUniformID("MV", SHADER_UNIFORM_MODEL_VIEW_MATRIX) ||
-            !mainShader->addUniformID("normalMV", SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX) ||
+            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
+            !shader->addUniformID("MV", SHADER_UNIFORM_MODEL_VIEW_MATRIX) ||
+            !shader->addUniformID("normalMV", SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX) ||
             // fragment params
-            !mainShader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
-            !mainShader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
-            !mainShader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
-            !mainShader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
-            !mainShader->addUniformID("lightAmbient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
-            !mainShader->addUniformID("lightDiffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
-            !mainShader->addUniformID("lightSpecular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
-            !mainShader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
-            !mainShader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
-            !mainShader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
+            !shader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
+            !shader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
+            !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
         {
             printf("Error adding main shader IDs\n");
-            delete mainShader;
+            delete shader;
             return NULL;
         }
     }
 
-    return mainShader;
+    return shader;
 }
 
 Shader *setupExplodeShader()
 {
     // first init main shader
-    std::string gsPath = "shaders/explode.gs";
-    Shader *explodeShader = setupMainShader(&gsPath);
+    std::string gsPath = "shaders/explode_geometry_pass.gs";
+    Shader *explodeShader = setupMainGeometryPassShader(&gsPath);
     if (explodeShader)
     {
         if (!explodeShader->addUniformID("explode", SHADER_UNIFORM_EXPLODE) ||
@@ -91,6 +87,43 @@ Shader *setupExplodeShader()
     }
 
     return explodeShader;
+}
+
+Shader *setupMainLightingPassShader()
+{
+    // first init main shader
+    Shader *shader = new Shader("shaders/main_lighting_pass.vs", "shaders/main_lighting_pass.fs");
+    if (!shader->compile())
+    {
+        printf("Failed to compile main shader\n");
+        delete shader;
+        return NULL;
+    }
+    else
+    {
+        // Get main shader parameters
+        if (// vertex params (variable)
+            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS_SCREEN) ||
+            !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
+            // fragment params
+            !shader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
+            !shader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
+            !shader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
+            !shader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
+            !shader->addUniformID("lightAmbient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
+            !shader->addUniformID("lightDiffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
+            !shader->addUniformID("lightSpecular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
+            !shader->addUniformID("geometryTextureSampler", SHADER_UNIFORM_GEOMETRY_TEXTURE_SAMPLER) ||
+            !shader->addUniformID("normalTextureSampler", SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER) ||
+            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
+        {
+            printf("Error adding main shader IDs\n");
+            delete shader;
+            return NULL;
+        }
+    }
+
+    return shader;
 }
 
 Shader *setupLampShader()
@@ -330,6 +363,80 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     return true;
 }
 
+void setupDefferedShadingFrameBuffer(GLuint &defferedShadingFrameBuffer, GLuint &deferredPositionTexture, GLuint &deferredNormalTexture, GLuint &deferredColourTexture)
+{
+    glGenFramebuffers(1, &defferedShadingFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, defferedShadingFrameBuffer);
+
+    // - Positions
+    glGenTextures(1, &deferredPositionTexture);
+    glBindTexture(GL_TEXTURE_2D, deferredPositionTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, deferredPositionTexture, 0);
+
+    // - Normals
+    glGenTextures(1, &deferredNormalTexture);
+    glBindTexture(GL_TEXTURE_2D, deferredNormalTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, deferredNormalTexture, 0);
+
+    // - Colours
+    glGenTextures(1, &deferredColourTexture);
+    glBindTexture(GL_TEXTURE_2D, deferredColourTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, deferredColourTexture, 0);
+
+    // - Depth
+    GLuint depth;
+    glGenRenderbuffers(1, &depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+
+    // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+    GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    glDrawBuffers(3, attachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        printf("Framebuffer not complete!\n");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+ObjData2D *setupdeferredShadingQuad()
+{
+    ObjData2D *objData = new ObjData2D();
+    MeshData<glm::vec2> md;
+
+    md.vertices.push_back(glm::vec2(-1.0f, -1.0f));
+    md.vertices.push_back(glm::vec2(-1.0f,  1.0f));
+    md.vertices.push_back(glm::vec2( 1.0f,  1.0f));
+    md.vertices.push_back(glm::vec2( 1.0f, -1.0f));
+
+    md.uvs.push_back(glm::vec2(0.0f, 0.0f));
+    md.uvs.push_back(glm::vec2(0.0f, 1.0f));
+    md.uvs.push_back(glm::vec2(1.0f, 1.0f));
+    md.uvs.push_back(glm::vec2(1.0f, 0.0f));
+
+    md.indices.push_back(0); md.indices.push_back(1); md.indices.push_back(2);
+    md.indices.push_back(0); md.indices.push_back(2); md.indices.push_back(3);
+
+    if (!objData->addMesh(md))
+    {
+        delete objData;
+        objData = NULL;
+    }
+    return objData;
+}
+
 int main(void)
 {
     // Initialise GLFW
@@ -347,7 +454,7 @@ int main(void)
 
 
     // Open a window and create its OpenGL context
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Tron", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Tron", NULL, NULL);
     if (window == NULL) {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         glfwTerminate();
@@ -366,8 +473,8 @@ int main(void)
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    // Dark blue background
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    // can only use black with deffered shading
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     std::shared_ptr<const Shader> shader2D;
     shader2D.reset(setup2DShader());
@@ -389,9 +496,18 @@ int main(void)
     // create progress bar
     ProgressBar progressBar({{ProgressBar::PROGRESS_TYPE_LOAD_BIKE,100}}, window, shader2D, defaultFont);
 
-    std::shared_ptr<const Shader> mainShader;
-    mainShader.reset(setupMainShader());
-    if (!mainShader)
+    // set up the rest of our shaders
+    std::shared_ptr<const Shader> mainGeometryPassShader;
+    mainGeometryPassShader.reset(setupMainGeometryPassShader());
+    if (!mainGeometryPassShader)
+    {
+        system("pause");
+        return -1;
+    }
+
+    std::shared_ptr<const Shader> mainLightingPassShader;
+    mainLightingPassShader.reset(setupMainLightingPassShader());
+    if (!mainLightingPassShader)
     {
         system("pause");
         return -1;
@@ -409,6 +525,22 @@ int main(void)
     lampShader.reset(setupLampShader());
     if (!lampShader)
     {
+        system("pause");
+        return -1;
+    }
+
+    // set up deferred shading frame buffer
+    GLuint defferedShadingFrameBuffer;
+    GLuint deferredPositionTexture;
+    GLuint deferredNormalTexture;
+    GLuint deferredColourTexture;
+    setupDefferedShadingFrameBuffer(defferedShadingFrameBuffer, deferredPositionTexture, deferredNormalTexture, deferredColourTexture);
+
+    // set up deferred shading quad
+    std::unique_ptr<ObjData2D> deferredQuad(setupdeferredShadingQuad());
+    if (!deferredQuad)
+    {
+        printf("Failed to create deferred quad obj data\n");
         system("pause");
         return -1;
     }
@@ -451,7 +583,7 @@ int main(void)
     glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -bike_lowest, 0.0f));
 
     // Load bike
-    Bike bike(bikeLoader, world, mainShader, explodeShader, bike_model, tronBlue);
+    Bike bike(bikeLoader, world, mainGeometryPassShader, explodeShader, bike_model, tronBlue);
 
     // create arena
     std::shared_ptr<ObjData3D> arenaObjData(createArena());
@@ -461,7 +593,7 @@ int main(void)
         system("pause");
         return -1;
     }
-    Object arena(arenaObjData, world, mainShader, glm::mat4(1.0f));
+    Object arena(arenaObjData, world, mainGeometryPassShader, glm::mat4(1.0f));
 
     if (!setupArenaLighting(world, lampShader))
     {
@@ -561,8 +693,6 @@ int main(void)
             timeSpentBusy = 0;
             frameCount = 0;
         }
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // deal with keyboard input =====================================
 
@@ -780,7 +910,9 @@ int main(void)
             cameraRotationDegrees += 0.4f;
         }
 
-        // Draw 3D objects draw only what's in front ================================
+        // do geometry pass for 3D objects =====================================
+        glBindFramebuffer(GL_FRAMEBUFFER, defferedShadingFrameBuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
         // draw bike
@@ -788,6 +920,55 @@ int main(void)
 
         // draw arena
         arena.drawAll();
+
+        // Do deferred lighting stage ===========================================
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        mainLightingPassShader->useShader();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, deferredPositionTexture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, deferredNormalTexture);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, deferredColourTexture);
+
+        world->sendLightingInfoToShader(mainLightingPassShader);
+
+        GLuint vertexTextureUVID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
+        GLuint vertexPosition_screenspaceID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS_SCREEN);
+        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_GEOMETRY_TEXTURE_SAMPLER), 0);
+        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER), 1);
+        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 2);
+
+        auto dfqMeshes = deferredQuad->getMeshes();
+        for (auto &it : dfqMeshes)
+        {
+            glEnableVertexAttribArray(vertexPosition_screenspaceID);
+            glEnableVertexAttribArray(vertexTextureUVID);
+
+            glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
+            glVertexAttribPointer(vertexPosition_screenspaceID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+            glBindBuffer(GL_ARRAY_BUFFER, it->uvBuffer);
+            glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
+            glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
+
+            glDisableVertexAttribArray(vertexPosition_screenspaceID);
+            glDisableVertexAttribArray(vertexTextureUVID);
+        }
+
+        // copy depth buffer from deferred frame buffer to default frame buffer =================
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, defferedShadingFrameBuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
+                          0, 0, SCR_WIDTH, SCR_HEIGHT,
+                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // draw lamps
         world->drawLamps();

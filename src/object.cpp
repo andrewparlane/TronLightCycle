@@ -88,8 +88,5 @@ void Object::drawAll() const
     // send MVP now
     world->sendMVP(shader, modelMatrix);
 
-    // send lighting
-    world->sendLightingInfoToShader(shader);
-
     internalDrawAll(meshes);
 }
