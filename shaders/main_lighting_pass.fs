@@ -66,8 +66,8 @@ void main()
     // set background colour, if normal is 0,0,0 (impossible unless there's nothing there)
     if (normal_Camera == vec3(0.0f))
     {
-        //gl_FragColor = vec4(0.0f, 0.0f, 0.4f, 1.0f);
-        //return;
+        gl_FragColor = vec4(0.0f, 0.0f, 0.4f, 1.0f);
+        return;
     }
 
     // get a vector from the vertex to the camera in camera space.

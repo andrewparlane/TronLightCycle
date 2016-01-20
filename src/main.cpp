@@ -474,6 +474,7 @@ int main(void)
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     // can only use black with deffered shading
+    // background colour is set in the lighting_pass fragment shader
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     std::shared_ptr<const Shader> shader2D;
