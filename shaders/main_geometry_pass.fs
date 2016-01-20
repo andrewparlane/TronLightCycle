@@ -21,7 +21,7 @@ layout (location = 2) out vec3 outMaterialColour;
 void main()
 {
     outVertexPosition_Camera = vertexPosition_Camera;
-    outNormal_Camera = normalize(normal_Camera);
+    outNormal_Camera = normal_Camera;
 
     // get the colour of this point, either based on texture or input colour
     outMaterialColour.rgb = vec3((fragmentIsTexture > 0.5f) ?
