@@ -12,6 +12,7 @@
 class Shader;
 class Lamp;
 class ObjData3D;
+class ObjData2D;
 
 class World
 {
@@ -25,7 +26,7 @@ public:
 
     void setProjection(const glm::mat4 &projection) { projectionMatrix = projection; inverseProjectionMatrix = glm::inverse(projection); }
 
-    bool addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const Shader> shader,
+    bool addLamp(std::shared_ptr<const ObjData3D> objData, std::shared_ptr<const ObjData2D> deferredShadingObj, std::shared_ptr<const Shader> shader,
                  const glm::mat4 &modelMatWithoutTransform, const glm::vec3 &position,
                  float radius, const glm::vec3 &colour, float ambient, float diffuse, float specular);
 

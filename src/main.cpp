@@ -106,7 +106,6 @@ Shader *setupMainLightingPassShader()
             !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
             !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
             // fragment params
-            !shader->addUniformID("numLights", SHADER_UNIFORM_NUM_LIGHTS) ||
             !shader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
             !shader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
             !shader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
@@ -290,6 +289,8 @@ ObjData3D *createLamp()
     return objData;
 }
 
+ObjData2D *setupdeferredShadingQuad();
+
 bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shader> shader)
 {
     // lighting
@@ -297,6 +298,13 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     if (!lampObjData)
     {
         printf("Failed to create lamp obj data\n");
+        return false;
+    }
+
+    std::shared_ptr<const ObjData2D> deferredShadingObj(setupdeferredShadingQuad());
+    if (!deferredShadingObj)
+    {
+        printf("Failed to create deferred quad obj data\n");
         return false;
     }
 
@@ -312,14 +320,14 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     {
         float xPos = ((x - ((ARENA_NUM_X - 1.0f) / 4.0f)) * ARENA_STRETCH_FACTOR * 2.0f) + ARENA_STRETCH_FACTOR;
 
-        if (!world->addLamp(lampObjData, shader, lamp_model_without_position,
+        if (!world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
                             glm::vec3(xPos, 20, 0),             // position
                             lightRadius,                        // radius
                             glm::vec3(0.6f, 0.6f, 1.0f),        // colour
                             lightAmbient,                       // ambient
                             lightDiffuse,                       // diffuse
                             lightSpecular) ||                   // specular
-            !world->addLamp(lampObjData, shader, lamp_model_without_position,
+            !world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
                             glm::vec3(xPos, 20, zPosFurtherst), // position
                             lightRadius,                        // radius
                             glm::vec3(0.6f, 0.6f, 1.0f),        // colour
@@ -341,14 +349,14 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     {
         float zPos = -(ARENA_STRETCH_FACTOR + (z * 2.0f * ARENA_STRETCH_FACTOR));
 
-        if (!world->addLamp(lampObjData, shader, lamp_model_without_position,
+        if (!world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
                             glm::vec3(leftXPos, 20, zPos),      // position
                             lightRadius,                        // radius
                             glm::vec3(0.6f, 0.6f, 1.0f),        // colour
                             lightAmbient,                       // ambient
                             lightDiffuse,                       // diffuse
                             lightSpecular) ||                   // specular
-            !world->addLamp(lampObjData, shader, lamp_model_without_position,
+            !world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
                             glm::vec3(rightXPos, 20, zPos),     // position
                             lightRadius,                        // radius
                             glm::vec3(0.6f, 0.6f, 1.0f),        // colour
@@ -536,15 +544,6 @@ int main(void)
     GLuint deferredNormalTexture;
     GLuint deferredColourTexture;
     setupDefferedShadingFrameBuffer(defferedShadingFrameBuffer, deferredPositionTexture, deferredNormalTexture, deferredColourTexture);
-
-    // set up deferred shading quad
-    std::unique_ptr<ObjData2D> deferredQuad(setupdeferredShadingQuad());
-    if (!deferredQuad)
-    {
-        printf("Failed to create deferred quad obj data\n");
-        system("pause");
-        return -1;
-    }
 
     // projection matrix = camera -> homogenous (3d -> 2d)
     int width, height;
@@ -925,6 +924,7 @@ int main(void)
         // Do deferred lighting stage ===========================================
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
 
         mainLightingPassShader->useShader();
 
@@ -937,31 +937,6 @@ int main(void)
 
         world->sendLightingInfoToShader(mainLightingPassShader);
 
-        GLuint vertexTextureUVID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_UV);
-        GLuint vertexPosition_screenspaceID = mainLightingPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
-        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_GEOMETRY_TEXTURE_SAMPLER), 0);
-        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER), 1);
-        glUniform1i(mainLightingPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 2);
-
-        auto dfqMeshes = deferredQuad->getMeshes();
-        for (auto &it : dfqMeshes)
-        {
-            glEnableVertexAttribArray(vertexPosition_screenspaceID);
-            glEnableVertexAttribArray(vertexTextureUVID);
-
-            glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
-            glVertexAttribPointer(vertexPosition_screenspaceID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-            glBindBuffer(GL_ARRAY_BUFFER, it->uvBuffer);
-            glVertexAttribPointer(vertexTextureUVID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
-            glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
-
-            glDisableVertexAttribArray(vertexPosition_screenspaceID);
-            glDisableVertexAttribArray(vertexTextureUVID);
-        }
-
         // copy depth buffer from deferred frame buffer to default frame buffer =================
         glBindFramebuffer(GL_READ_FRAMEBUFFER, defferedShadingFrameBuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -972,6 +947,7 @@ int main(void)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // draw lamps
+        glEnable(GL_DEPTH_TEST);
         world->drawLamps();
 
         // Draw 2D objects in order they are listed =================================
