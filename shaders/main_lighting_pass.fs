@@ -2,10 +2,8 @@
 
 #define LIGHT_INTENSITY_CUT_OFF     0.01f
 
-// input data
-in vec2 fragmentTextureUV;
-
 // const input per mesh
+uniform vec2 screenResolution;
 uniform sampler2D geometryTextureSampler;
 uniform sampler2D normalTextureSampler;
 uniform sampler2D colourTextureSampler;
@@ -51,6 +49,7 @@ vec3 calculatePointLight(vec3 vertexPosition_Camera, vec3 normal_Camera, vec3 ma
 
 void main()
 {
+    vec2 fragmentTextureUV = vec2(gl_FragCoord) / screenResolution;
     vec3 vertexPosition_Camera = texture(geometryTextureSampler, fragmentTextureUV).rgb;
     vec3 normal_Camera = texture(normalTextureSampler, fragmentTextureUV).rgb;
     vec3 materialColour = texture(colourTextureSampler, fragmentTextureUV).rgb;

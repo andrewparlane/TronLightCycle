@@ -103,9 +103,11 @@ Shader *setupMainLightingPassShader()
     {
         // Get main shader parameters
         if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
-            !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
+            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
+            // vertex params (static)
+            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
             // fragment params
+            !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
             !shader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
             !shader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
             !shader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
@@ -301,10 +303,11 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
         return false;
     }
 
-    std::shared_ptr<const ObjData2D> deferredShadingObj(setupdeferredShadingQuad());
-    if (!deferredShadingObj)
+    std::shared_ptr<ObjLoader> deferredShadingObj = std::make_shared<ObjLoader>("models/obj/sphere.obj", "");
+    if (!deferredShadingObj ||
+        !deferredShadingObj->loadObj())
     {
-        printf("Failed to create deferred quad obj data\n");
+        printf("Error loading sphere\n");
         return false;
     }
 
@@ -312,6 +315,7 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     const float lightAmbient = 0.2f;
     const float lightDiffuse = 0.5f;
     const float lightSpecular = 1.0f;
+    const float lampHeight = 20.0f;
 
     glm::mat4 lamp_model_without_position = glm::scale(glm::vec3(5.0f, 0.2f, 0.2f));
 
@@ -320,24 +324,21 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     {
         float xPos = ((x - ((ARENA_NUM_X - 1.0f) / 4.0f)) * ARENA_STRETCH_FACTOR * 2.0f) + ARENA_STRETCH_FACTOR;
 
-        if (!world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
-                            glm::vec3(xPos, 20, 0),             // position
-                            lightRadius,                        // radius
-                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
-                            lightAmbient,                       // ambient
-                            lightDiffuse,                       // diffuse
-                            lightSpecular) ||                   // specular
-            !world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
-                            glm::vec3(xPos, 20, zPosFurtherst), // position
-                            lightRadius,                        // radius
-                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
-                            lightAmbient,                       // ambient
-                            lightDiffuse,                       // diffuse
-                            lightSpecular))                     // specular
-        {
-            printf("Failed to add arena lamp\n");
-            return false;
-        }
+        world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
+                       glm::vec3(xPos, lampHeight, 0),                  // position
+                       lightRadius,                                     // radius
+                       glm::vec3(0.6f, 0.6f, 1.0f),                     // colour
+                       lightAmbient,                                    // ambient
+                       lightDiffuse,                                    // diffuse
+                       lightSpecular);                                  // specular
+
+        world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
+                       glm::vec3(xPos, lampHeight, zPosFurtherst),      // position
+                       lightRadius,                                     // radius
+                       glm::vec3(0.6f, 0.6f, 1.0f),                     // colour
+                       lightAmbient,                                    // ambient
+                       lightDiffuse,                                    // diffuse
+                       lightSpecular);                                  // specular
     }
 
     // rotate lamp by 90 degrees and do other sides
@@ -349,25 +350,24 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     {
         float zPos = -(ARENA_STRETCH_FACTOR + (z * 2.0f * ARENA_STRETCH_FACTOR));
 
-        if (!world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
-                            glm::vec3(leftXPos, 20, zPos),      // position
-                            lightRadius,                        // radius
-                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
-                            lightAmbient,                       // ambient
-                            lightDiffuse,                       // diffuse
-                            lightSpecular) ||                   // specular
-            !world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
-                            glm::vec3(rightXPos, 20, zPos),     // position
-                            lightRadius,                        // radius
-                            glm::vec3(0.6f, 0.6f, 1.0f),        // colour
-                            lightAmbient,                       // ambient
-                            lightDiffuse,                       // diffuse
-                            lightSpecular))                     // specular
-        {
-            printf("Failed to add arena lamp\n");
-            return false;
-        }
+        world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
+                       glm::vec3(leftXPos, lampHeight, zPos),   // position
+                       lightRadius,                             // radius
+                       glm::vec3(0.6f, 0.6f, 1.0f),             // colour
+                       lightAmbient,                            // ambient
+                       lightDiffuse,                            // diffuse
+                       lightSpecular);                          // specular
+
+        world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
+                       glm::vec3(rightXPos, lampHeight, zPos),  // position
+                       lightRadius,                             // radius
+                       glm::vec3(0.6f, 0.6f, 1.0f),             // colour
+                       lightAmbient,                            // ambient
+                       lightDiffuse,                            // diffuse
+                       lightSpecular);                          // specular
     }
+
+
     return true;
 }
 
@@ -912,8 +912,10 @@ int main(void)
 
         // do geometry pass for 3D objects =====================================
         glBindFramebuffer(GL_FRAMEBUFFER, defferedShadingFrameBuffer);
+        glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
 
         // draw bike
         bike.drawAll();
@@ -921,10 +923,19 @@ int main(void)
         // draw arena
         arena.drawAll();
 
+        glDepthMask(GL_FALSE);
+        glDisable(GL_DEPTH_TEST);
+
         // Do deferred lighting stage ===========================================
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDisable(GL_DEPTH_TEST);
+
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
 
         mainLightingPassShader->useShader();
 
@@ -935,7 +946,13 @@ int main(void)
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, deferredColourTexture);
 
+        // set screen resolution
+        glm::vec2 screenRes(SCR_WIDTH, SCR_HEIGHT);
+        glUniform2fv(mainLightingPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
+
         world->sendLightingInfoToShader(mainLightingPassShader);
+
+        glDisable(GL_CULL_FACE);
 
         // copy depth buffer from deferred frame buffer to default frame buffer =================
         glBindFramebuffer(GL_READ_FRAMEBUFFER, defferedShadingFrameBuffer);
