@@ -28,7 +28,7 @@
 #define SPEED_BAR_START_X 602.0f
 #define SPEED_BAR_END_X 778.0f
 
-#define ARENA_STRETCH_FACTOR 50
+#define ARENA_STRETCH_FACTOR 25
 #define ARENA_NUM_X 11
 #define ARENA_NUM_Z 11
 
@@ -311,7 +311,7 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
         return false;
     }
 
-    const float lightRadius = 100.0f;
+    const float lightRadius = 50.0f;
     const float lightAmbient = 0.2f;
     const float lightDiffuse = 0.5f;
     const float lightSpecular = 1.0f;
@@ -554,9 +554,11 @@ int main(void)
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
-    float distanceBetweenBikeAndCamera = 18.0f;
-    world->setCamera(glm::lookAt(glm::vec3(0, 8, distanceBetweenBikeAndCamera),    // where the camera is in world co-ordinates
-                                 glm::vec3(0, 6, 0),    // target (direction = target - location)
+    float distanceBetweenBikeAndCamera = 9.0f;
+    const float CAMERA_Y_POS = 4.0f;
+    const float CAMERA_Y_LOOKAT_POS = 2.0f;
+    world->setCamera(glm::lookAt(glm::vec3(0, 0, distanceBetweenBikeAndCamera),    // where the camera is in world co-ordinates
+                                 glm::vec3(0, CAMERA_Y_LOOKAT_POS, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
@@ -579,8 +581,15 @@ int main(void)
         if (bikeBB.vertices[i].z < bike_most_forward) bike_most_forward = bikeBB.vertices[i].z;
     }
 
+    // we are scaling the bike by 1/2, so update bounding box
+    // TODO add support to getBoundingBox to do this?
+    const float BIKE_SCALE_FACTOR = 0.5f;
+    bike_lowest *= BIKE_SCALE_FACTOR;
+    bike_most_forward *= BIKE_SCALE_FACTOR;
+
     // model matrix = model -> world
-    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -bike_lowest, 0.0f));
+    glm::mat4 bike_model = glm::translate(glm::vec3(0.0f, -bike_lowest, 0.0f)) *
+                           glm::scale(glm::vec3(BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR));
 
     // Load bike
     Bike bike(bikeLoader, world, mainGeometryPassShader, explodeShader, bike_model, tronBlue);
@@ -896,9 +905,9 @@ int main(void)
         //       your camera position will be scaled too
         glm::vec3 cameraPosition = bike.applyModelMatrx(cameraOffsetFromBike);
         // We want the y co-ord to be a bit above the bike
-        cameraPosition.y = 8.0f;
+        cameraPosition.y = CAMERA_Y_POS;
         // point the camera at the bike, but adjust the y so we aren't looking too much down
-        glm::vec3 cameraDirection = glm::vec3(bikeLocation.x, 6, bikeLocation.z);
+        glm::vec3 cameraDirection = glm::vec3(bikeLocation.x, CAMERA_Y_LOOKAT_POS, bikeLocation.z);
 
         world->setCamera(glm::lookAt(cameraPosition,       // where the camera is in world co-ordinates
                                      cameraDirection,      // target (direction = target - location)

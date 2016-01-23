@@ -6,7 +6,7 @@
 
 #include <glm/gtx/transform.hpp>
 
-static const float lightTrailHeight = 3.8f;
+static const float lightTrailHeight = 1.9f;
 
 LightTrail::LightTrail(std::shared_ptr<World> _world,
                        std::shared_ptr<const Shader> _shader,
