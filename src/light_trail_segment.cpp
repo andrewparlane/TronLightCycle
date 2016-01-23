@@ -127,6 +127,9 @@ LightTrailSegmentCircle::LightTrailSegmentCircle(const glm::vec2 &_centre, float
       startAngleRads(_startAngleRads), stopAngleRads(_startAngleRads),
       turnDirection(_turnDirection)
 {
+    // make stopAngleRads a little past start angle rads, so we don't coollide
+    // on first check.
+    stopAngleRads += (turnDirection == TURN_RIGHT) ? 0.001f : -0.001f;
 #ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
     debugMeshData.name = "LTS_CIRCLE";
     debugMeshData.hasTexture = false;
