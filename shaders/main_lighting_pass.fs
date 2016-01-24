@@ -54,13 +54,6 @@ void main()
     vec3 normal_Camera = texture(normalTextureSampler, fragmentTextureUV).rgb;
     vec3 materialColour = texture(colourTextureSampler, fragmentTextureUV).rgb;
 
-    // set background colour, if normal is 0,0,0 (impossible unless there's nothing there)
-    /*if (normal_Camera == vec3(0.0f))
-    {
-        gl_FragColor = vec4(0.0f, 0.0f, 0.4f, 1.0f);
-        return;
-    }*/
-
     // get a vector from the vertex to the camera in camera space.
     // in camera space, the camera is located at 0,0,0
     vec3 eyeDirection_Camera = normalize(-vertexPosition_Camera);

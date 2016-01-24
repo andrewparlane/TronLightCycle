@@ -428,10 +428,10 @@ bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geome
 
     // - Depth
     GLuint depth;
-    glGenRenderbuffers(1, &depth);
-    glBindRenderbuffer(GL_RENDERBUFFER, depth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+    glGenTextures(1, &depth);
+    glBindTexture(GL_TEXTURE_2D, depth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 
     // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
     GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -462,10 +462,10 @@ bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &light
 
     // - Depth
     GLuint depth;
-    glGenRenderbuffers(1, &depth);
-    glBindRenderbuffer(GL_RENDERBUFFER, depth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+    glGenTextures(1, &depth);
+    glBindTexture(GL_TEXTURE_2D, depth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 
     // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
     GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
@@ -716,9 +716,6 @@ int main(void)
 
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
-    // Enable blending
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // frame rate reporting
     double lastFrameCountUpdateTime = glfwGetTime();
@@ -1008,9 +1005,23 @@ int main(void)
 
         // do geometry pass for 3D objects =====================================
         glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
+
+        // enable both depth and stencil buffers for writting
+        // needed here so we can clear them in glClear below
         glDepthMask(GL_TRUE);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glStencilMask(0xFF);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
         glEnable(GL_DEPTH_TEST);
+
+        // enable the stencil test to always increment
+        // this means the stencil buffer will be non 0 for any rendered pixel
+        // leaving it 0 for only the background (non rendered pixels)
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 0, 0);
+        glStencilOp(GL_INCR, GL_INCR, GL_INCR);
+
         glDisable(GL_BLEND);
 
         // draw bike
@@ -1022,9 +1033,19 @@ int main(void)
         glDepthMask(GL_FALSE);
         glDisable(GL_DEPTH_TEST);
 
+        // copy stencil buffer from deferred frame buffer to default frame buffer =================
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, geometryPassFrameBuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lightingPassFrameBuffer);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
+                          0, 0, SCR_WIDTH, SCR_HEIGHT,
+                          GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+
         // Do deferred lighting stage ===========================================
         glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glStencilMask(0x00);
+        glStencilFunc(GL_NOTEQUAL, 0, 0xff);
 
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
@@ -1048,6 +1069,8 @@ int main(void)
 
         world->sendLightingInfoToShader(mainLightingPassShader);
 
+        glDisable(GL_BLEND);
+        glDisable(GL_STENCIL_TEST);
         glDisable(GL_CULL_FACE);
 
         // copy depth buffer from deferred frame buffer to default frame buffer =================
@@ -1061,9 +1084,11 @@ int main(void)
 
         // draw lamps
         glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
         world->drawLamps();
 
         // Draw 2D objects in order they are listed =================================
+        glDepthMask(GL_FALSE);
         glDisable(GL_DEPTH_TEST);
 
         // draw speed bar, only change the bar if the value has changed
