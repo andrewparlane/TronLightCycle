@@ -291,8 +291,6 @@ ObjData3D *createLamp()
     return objData;
 }
 
-ObjData2D *setupdeferredShadingQuad();
-
 bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shader> shader)
 {
     // lighting
@@ -419,20 +417,16 @@ void setupDefferedShadingFrameBuffer(GLuint &defferedShadingFrameBuffer, GLuint 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-ObjData2D *setupdeferredShadingQuad()
+ObjData2D *setupScreenQuad()
 {
     ObjData2D *objData = new ObjData2D();
     MeshData<glm::vec2> md;
+    md.hasTexture = false;
 
     md.vertices.push_back(glm::vec2(-1.0f, -1.0f));
     md.vertices.push_back(glm::vec2(-1.0f,  1.0f));
     md.vertices.push_back(glm::vec2( 1.0f,  1.0f));
     md.vertices.push_back(glm::vec2( 1.0f, -1.0f));
-
-    md.uvs.push_back(glm::vec2(0.0f, 0.0f));
-    md.uvs.push_back(glm::vec2(0.0f, 1.0f));
-    md.uvs.push_back(glm::vec2(1.0f, 1.0f));
-    md.uvs.push_back(glm::vec2(1.0f, 0.0f));
 
     md.indices.push_back(0); md.indices.push_back(1); md.indices.push_back(2);
     md.indices.push_back(0); md.indices.push_back(2); md.indices.push_back(3);
