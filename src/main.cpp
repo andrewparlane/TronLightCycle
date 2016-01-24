@@ -369,34 +369,34 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     return true;
 }
 
-void setupDefferedShadingFrameBuffer(GLuint &defferedShadingFrameBuffer, GLuint &deferredPositionTexture, GLuint &deferredNormalTexture, GLuint &deferredColourTexture)
+bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geometryPassPositionTexture, GLuint &geometryPassNormalTexture, GLuint &geometryPassColourTexture)
 {
-    glGenFramebuffers(1, &defferedShadingFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, defferedShadingFrameBuffer);
+    glGenFramebuffers(1, &geometryPassFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
 
     // - Positions
-    glGenTextures(1, &deferredPositionTexture);
-    glBindTexture(GL_TEXTURE_2D, deferredPositionTexture);
+    glGenTextures(1, &geometryPassPositionTexture);
+    glBindTexture(GL_TEXTURE_2D, geometryPassPositionTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, deferredPositionTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, geometryPassPositionTexture, 0);
 
     // - Normals
-    glGenTextures(1, &deferredNormalTexture);
-    glBindTexture(GL_TEXTURE_2D, deferredNormalTexture);
+    glGenTextures(1, &geometryPassNormalTexture);
+    glBindTexture(GL_TEXTURE_2D, geometryPassNormalTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, deferredNormalTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, geometryPassNormalTexture, 0);
 
     // - Colours
-    glGenTextures(1, &deferredColourTexture);
-    glBindTexture(GL_TEXTURE_2D, deferredColourTexture);
+    glGenTextures(1, &geometryPassColourTexture);
+    glBindTexture(GL_TEXTURE_2D, geometryPassColourTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, deferredColourTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, geometryPassColourTexture, 0);
 
     // - Depth
     GLuint depth;
@@ -411,10 +411,12 @@ void setupDefferedShadingFrameBuffer(GLuint &defferedShadingFrameBuffer, GLuint 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        printf("Framebuffer not complete!\n");
+        printf("Geometry pass framebuffer not complete!\n");
+        return false;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
 }
 
 ObjData2D *setupScreenQuad()
@@ -533,11 +535,15 @@ int main(void)
     }
 
     // set up deferred shading frame buffer
-    GLuint defferedShadingFrameBuffer;
-    GLuint deferredPositionTexture;
-    GLuint deferredNormalTexture;
-    GLuint deferredColourTexture;
-    setupDefferedShadingFrameBuffer(defferedShadingFrameBuffer, deferredPositionTexture, deferredNormalTexture, deferredColourTexture);
+    GLuint geometryPassFrameBuffer;
+    GLuint geometryPassPositionTexture;
+    GLuint geometryPassNormalTexture;
+    GLuint geometryPassColourTexture;
+    if (!setupGeometryPassFrameBuffer(geometryPassFrameBuffer, geometryPassPositionTexture, geometryPassNormalTexture, geometryPassColourTexture))
+    {
+        system("pause");
+        return -1;
+    }
 
     // projection matrix = camera -> homogenous (3d -> 2d)
     int width, height;
@@ -914,7 +920,7 @@ int main(void)
         }
 
         // do geometry pass for 3D objects =====================================
-        glBindFramebuffer(GL_FRAMEBUFFER, defferedShadingFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
         glDepthMask(GL_TRUE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -943,11 +949,11 @@ int main(void)
         mainLightingPassShader->useShader();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, deferredPositionTexture);
+        glBindTexture(GL_TEXTURE_2D, geometryPassPositionTexture);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, deferredNormalTexture);
+        glBindTexture(GL_TEXTURE_2D, geometryPassNormalTexture);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, deferredColourTexture);
+        glBindTexture(GL_TEXTURE_2D, geometryPassColourTexture);
 
         // set screen resolution
         glm::vec2 screenRes(SCR_WIDTH, SCR_HEIGHT);
@@ -958,7 +964,7 @@ int main(void)
         glDisable(GL_CULL_FACE);
 
         // copy depth buffer from deferred frame buffer to default frame buffer =================
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, defferedShadingFrameBuffer);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, geometryPassFrameBuffer);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
                           0, 0, SCR_WIDTH, SCR_HEIGHT,
