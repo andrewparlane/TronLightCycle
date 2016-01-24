@@ -41,7 +41,7 @@ Shader *setupMainGeometryPassShader(const std::string *geometryShader = NULL)
     Shader *shader = new Shader("shaders/main_geometry_pass.vs", "shaders/main_geometry_pass.fs", geometryShader);
     if (!shader->compile())
     {
-        printf("Failed to compile main shader\n");
+        printf("Failed to compile main geometry pass shader\n");
         delete shader;
         return NULL;
     }
@@ -61,7 +61,7 @@ Shader *setupMainGeometryPassShader(const std::string *geometryShader = NULL)
             !shader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
             !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
         {
-            printf("Error adding main shader IDs\n");
+            printf("Error adding shader IDs\n");
             delete shader;
             return NULL;
         }
@@ -95,7 +95,7 @@ Shader *setupMainLightingPassShader()
     Shader *shader = new Shader("shaders/main_lighting_pass.vs", "shaders/main_lighting_pass.fs");
     if (!shader->compile())
     {
-        printf("Failed to compile main shader\n");
+        printf("Failed to compile main lighting pass shader\n");
         delete shader;
         return NULL;
     }
@@ -118,7 +118,7 @@ Shader *setupMainLightingPassShader()
             !shader->addUniformID("normalTextureSampler", SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER) ||
             !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
         {
-            printf("Error adding main shader IDs\n");
+            printf("Error adding shader IDs\n");
             delete shader;
             return NULL;
         }
@@ -147,7 +147,7 @@ Shader *setupLampShader()
             // fragment params
             !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
         {
-            printf("Error adding lamp shader IDs\n");
+            printf("Error adding shader IDs\n");
             delete shader;
             return NULL;
         }
