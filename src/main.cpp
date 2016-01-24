@@ -397,7 +397,7 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     return true;
 }
 
-bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geometryPassPositionTexture, GLuint &geometryPassNormalTexture, GLuint &geometryPassColourTexture)
+bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geometryPassPositionTexture, GLuint &geometryPassNormalTexture, GLuint &geometryPassColourTexture, GLuint &depth)
 {
     glGenFramebuffers(1, &geometryPassFrameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
@@ -427,7 +427,6 @@ bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geome
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, geometryPassColourTexture, 0);
 
     // - Depth
-    GLuint depth;
     glGenTextures(1, &depth);
     glBindTexture(GL_TEXTURE_2D, depth);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
@@ -447,7 +446,7 @@ bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geome
     return true;
 }
 
-bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &lightingPassColourTexture)
+bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &lightingPassColourTexture, GLuint depth)
 {
     glGenFramebuffers(1, &lightingPassFrameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
@@ -461,10 +460,6 @@ bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &light
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingPassColourTexture, 0);
 
     // - Depth
-    GLuint depth;
-    glGenTextures(1, &depth);
-    glBindTexture(GL_TEXTURE_2D, depth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 
     // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
@@ -609,7 +604,8 @@ int main(void)
     GLuint geometryPassPositionTexture;
     GLuint geometryPassNormalTexture;
     GLuint geometryPassColourTexture;
-    if (!setupGeometryPassFrameBuffer(geometryPassFrameBuffer, geometryPassPositionTexture, geometryPassNormalTexture, geometryPassColourTexture))
+    GLuint sharedDepthBuffer;
+    if (!setupGeometryPassFrameBuffer(geometryPassFrameBuffer, geometryPassPositionTexture, geometryPassNormalTexture, geometryPassColourTexture, sharedDepthBuffer))
     {
         system("pause");
         return -1;
@@ -617,7 +613,7 @@ int main(void)
 
     GLuint lightingPassFrameBuffer;
     GLuint lightingPassColourTexture;
-    if (!setupLightingPassFrameBuffer(lightingPassFrameBuffer, lightingPassColourTexture))
+    if (!setupLightingPassFrameBuffer(lightingPassFrameBuffer, lightingPassColourTexture, sharedDepthBuffer))
     {
         system("pause");
         return -1;
@@ -1033,13 +1029,6 @@ int main(void)
         glDepthMask(GL_FALSE);
         glDisable(GL_DEPTH_TEST);
 
-        // copy stencil buffer from deferred frame buffer to default frame buffer =================
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, geometryPassFrameBuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lightingPassFrameBuffer);
-        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
-                          0, 0, SCR_WIDTH, SCR_HEIGHT,
-                          GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-
         // Do deferred lighting stage ===========================================
         glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -1072,13 +1061,6 @@ int main(void)
         glDisable(GL_BLEND);
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_CULL_FACE);
-
-        // copy depth buffer from deferred frame buffer to default frame buffer =================
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, geometryPassFrameBuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lightingPassFrameBuffer);
-        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
-                          0, 0, SCR_WIDTH, SCR_HEIGHT,
-                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
         glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
 
