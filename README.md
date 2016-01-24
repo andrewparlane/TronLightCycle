@@ -34,17 +34,12 @@ TODO:
     loading bar
         add support for multiple actions
     Effects / Prettiness
-        sort out lighting, everything is too dark
-            everything is now too slow, look into defered shading:
-                added support, seems to make it even slower
-                maybe there's a problem with normals?
-                    set output of main_lighting_pass.fs to normal_Cameera
-                    why are there black bits?
-                    because we are between -1 and 1?
-                        test what -1,0,0 looks like?
-                set background colour in main_lighting_pass.fs once normals are fixed
-                continue deferred shading tutorial looking at the many lights bit
-                compare look with forward rendering, does it look the same?
+        sort out lighting
+            Everything is either too dark or too slow
+                use stencil buffer to not render background
+                research deferred lighting and tile-based deferred shading
+                    https://software.intel.com/sites/default/files/m/d/4/1/d/8/lauritzen_deferred_shading_siggraph_2010.pdf
+                    these are even more efficient methods of adding large numbers of lights
             research HDR
             add headlamps
                 implement spot light support
