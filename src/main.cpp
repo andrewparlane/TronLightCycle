@@ -127,6 +127,34 @@ Shader *setupMainLightingPassShader()
     return shader;
 }
 
+Shader *setupFinalScreenPassShader()
+{
+    // first init main shader
+    Shader *shader = new Shader("shaders/final_screen_pass.vs", "shaders/final_screen_pass.fs");
+    if (!shader->compile())
+    {
+        printf("Failed to compile final screen pass shader\n");
+        delete shader;
+        return NULL;
+    }
+    else
+    {
+        // Get main shader parameters
+        if (// vertex params (variable)
+            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
+            // fragment params
+            !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
+            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
+        {
+            printf("Error adding shader IDs\n");
+            delete shader;
+            return NULL;
+        }
+    }
+
+    return shader;
+}
+
 Shader *setupLampShader()
 {
     // first init main shader
@@ -419,6 +447,40 @@ bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geome
     return true;
 }
 
+bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &lightingPassColourTexture)
+{
+    glGenFramebuffers(1, &lightingPassFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
+
+    // - Colours
+    glGenTextures(1, &lightingPassColourTexture);
+    glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingPassColourTexture, 0);
+
+    // - Depth
+    GLuint depth;
+    glGenRenderbuffers(1, &depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+
+    // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+    GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        printf("Lighting pass framebuffer not complete!\n");
+        return false;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
+}
+
 ObjData2D *setupScreenQuad()
 {
     ObjData2D *objData = new ObjData2D();
@@ -534,6 +596,14 @@ int main(void)
         return -1;
     }
 
+    std::shared_ptr<const Shader> finalScreenPassShader;
+    finalScreenPassShader.reset(setupFinalScreenPassShader());
+    if (!finalScreenPassShader)
+    {
+        system("pause");
+        return -1;
+    }
+
     // set up deferred shading frame buffer
     GLuint geometryPassFrameBuffer;
     GLuint geometryPassPositionTexture;
@@ -541,6 +611,23 @@ int main(void)
     GLuint geometryPassColourTexture;
     if (!setupGeometryPassFrameBuffer(geometryPassFrameBuffer, geometryPassPositionTexture, geometryPassNormalTexture, geometryPassColourTexture))
     {
+        system("pause");
+        return -1;
+    }
+
+    GLuint lightingPassFrameBuffer;
+    GLuint lightingPassColourTexture;
+    if (!setupLightingPassFrameBuffer(lightingPassFrameBuffer, lightingPassColourTexture))
+    {
+        system("pause");
+        return -1;
+    }
+
+    std::unique_ptr<ObjData2D> screenQuad;
+    screenQuad.reset(setupScreenQuad());
+    if (!screenQuad)
+    {
+        printf("failed to set up screen quad\n");
         system("pause");
         return -1;
     }
@@ -936,7 +1023,7 @@ int main(void)
         glDisable(GL_DEPTH_TEST);
 
         // Do deferred lighting stage ===========================================
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_BLEND);
@@ -965,12 +1052,12 @@ int main(void)
 
         // copy depth buffer from deferred frame buffer to default frame buffer =================
         glBindFramebuffer(GL_READ_FRAMEBUFFER, geometryPassFrameBuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lightingPassFrameBuffer);
         glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT,
                           0, 0, SCR_WIDTH, SCR_HEIGHT,
                           GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
 
         // draw lamps
         glEnable(GL_DEPTH_TEST);
@@ -1035,6 +1122,37 @@ int main(void)
         }
         activeSegmentText.drawAll();
 #endif
+
+        // finally draw it all to the screen
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDisable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+
+            finalScreenPassShader->useShader();
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
+
+            GLuint vertexPosition_ScreenID = finalScreenPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
+            glUniform1i(finalScreenPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
+            glUniform2fv(finalScreenPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
+
+            auto sqMeshes = screenQuad->getMeshes();
+            for (auto &it : sqMeshes)
+            {
+                glEnableVertexAttribArray(vertexPosition_ScreenID);
+
+                glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
+                glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
+                glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
+
+                glDisableVertexAttribArray(vertexPosition_ScreenID);
+            }
+        }
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);
