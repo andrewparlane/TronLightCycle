@@ -36,16 +36,15 @@ TODO:
     Effects / Prettiness
         sort out lighting
             Everything is either too dark or too slow
-                use stencil buffer to not render background
                 research deferred lighting and tile-based deferred shading
                     https://software.intel.com/sites/default/files/m/d/4/1/d/8/lauritzen_deferred_shading_siggraph_2010.pdf
                     these are even more efficient methods of adding large numbers of lights
-            research HDR
             add headlamps
                 implement spot light support
-            support strip lights (connected to body of bike)?
+            Make blue lines on bike and arena glow slightly
                 research bloom
-                ...
+            Strip lighting
+                all lights are strip lights, but maths is for a point light.
         sort out scales, maybe make bike smaller? or floor bigger?
         add boundary and buildings etc...
         make floor reflective
