@@ -11,5 +11,10 @@ void main()
 
     // convert from HDR to LDR
     colour = colour / (colour + vec3(1.0f));
+
+    // gama correction
+    const float gamma = 2.2f;
+    colour = pow(colour, vec3(1.0f / gamma));
+
     gl_FragColor = vec4(colour, 1.0f);
 }
