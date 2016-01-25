@@ -337,7 +337,7 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
         return false;
     }
 
-    const float lightRadius = 50.0f;
+    const float lightRadius = 15.0f;
     const float lightAmbient = 0.2f;
     const float lightDiffuse = 0.5f;
     const float lightSpecular = 1.0f;
@@ -392,6 +392,14 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
                        lightDiffuse,                            // diffuse
                        lightSpecular);                          // specular
     }
+
+    world->addLamp(lampObjData, deferredShadingObj, shader, lamp_model_without_position,
+        glm::vec3(0, lampHeight, zPosFurtherst/2.0f),    // position
+        lightRadius,                                     // radius
+        glm::vec3(0.6f, 0.6f, 1.0f),                     // colour
+        lightAmbient,                                    // ambient
+        lightDiffuse,                                    // diffuse
+        lightSpecular);                                  // specular
 
 
     return true;

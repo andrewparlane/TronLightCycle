@@ -50,7 +50,8 @@ void Lamp::draw(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) 
 
 void Lamp::sendLampData(std::shared_ptr<const Shader> toShader, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) const
 {
-    glm::mat4 mvp = projectionMatrix * viewMatrix * glm::translate(position) * glm::scale(glm::vec3(7*radius, 7*radius, 7*radius));
+    const float radiusMultiple = 8.0f;
+    glm::mat4 mvp = projectionMatrix * viewMatrix * glm::translate(position) * glm::scale(glm::vec3(radiusMultiple*radius, radiusMultiple*radius, radiusMultiple*radius));
     glm::vec3 position_Camera = glm::vec3(viewMatrix * glm::vec4(position, 1.0f));
 
     glUniformMatrix4fv(toShader->getUniformID(SHADER_UNIFORM_MVP), 1, GL_FALSE, &mvp[0][0]);
