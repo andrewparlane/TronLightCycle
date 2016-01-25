@@ -127,13 +127,13 @@ Shader *setupMainLightingPassShader()
     return shader;
 }
 
-Shader *setupFinalScreenPassShader()
+Shader *setupHDRShader()
 {
     // first init main shader
-    Shader *shader = new Shader("shaders/final_screen_pass.vs", "shaders/final_screen_pass.fs");
+    Shader *shader = new Shader("shaders/hdr.vs", "shaders/hdr.fs");
     if (!shader->compile())
     {
-        printf("Failed to compile final screen pass shader\n");
+        printf("Failed to compile HDR shader\n");
         delete shader;
         return NULL;
     }
@@ -454,7 +454,7 @@ bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &light
     // - Colours
     glGenTextures(1, &lightingPassColourTexture);
     glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingPassColourTexture, 0);
@@ -591,9 +591,9 @@ int main(void)
         return -1;
     }
 
-    std::shared_ptr<const Shader> finalScreenPassShader;
-    finalScreenPassShader.reset(setupFinalScreenPassShader());
-    if (!finalScreenPassShader)
+    std::shared_ptr<const Shader> hdrShader;
+    hdrShader.reset(setupHDRShader());
+    if (!hdrShader)
     {
         system("pause");
         return -1;
@@ -1058,13 +1058,43 @@ int main(void)
 
         world->sendLightingInfoToShader(mainLightingPassShader);
 
+        // finally bind the screen frame buffer =========================
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDepthMask(GL_TRUE); // need to enable so we can clear the depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDepthMask(GL_FALSE); // need to enable so we can clear the depth buffer
+
         glDisable(GL_BLEND);
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
+        // draw it all to the screen
+        {
+            hdrShader->useShader();
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
 
-        // draw lamps
+            GLuint vertexPosition_ScreenID = hdrShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
+            glUniform1i(hdrShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
+            glUniform2fv(hdrShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
+
+            auto sqMeshes = screenQuad->getMeshes();
+            for (auto &it : sqMeshes)
+            {
+                glEnableVertexAttribArray(vertexPosition_ScreenID);
+
+                glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
+                glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
+                glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
+
+                glDisableVertexAttribArray(vertexPosition_ScreenID);
+            }
+        }
+
+        // draw lamps ==============================================================
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
         world->drawLamps();
@@ -1129,37 +1159,6 @@ int main(void)
         }
         activeSegmentText.drawAll();
 #endif
-
-        // finally draw it all to the screen
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glDisable(GL_BLEND);
-            glDisable(GL_DEPTH_TEST);
-            glDisable(GL_CULL_FACE);
-
-            finalScreenPassShader->useShader();
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
-
-            GLuint vertexPosition_ScreenID = finalScreenPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
-            glUniform1i(finalScreenPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
-            glUniform2fv(finalScreenPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
-
-            auto sqMeshes = screenQuad->getMeshes();
-            for (auto &it : sqMeshes)
-            {
-                glEnableVertexAttribArray(vertexPosition_ScreenID);
-
-                glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
-                glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
-                glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
-
-                glDisableVertexAttribArray(vertexPosition_ScreenID);
-            }
-        }
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);
