@@ -19,7 +19,7 @@ public:
     RenderPipeline(std::shared_ptr<const Shader> _lightingPassShader,
                    std::shared_ptr<const Shader> _hdrPassShader,
                    std::shared_ptr<const World> _world,
-                   unsigned int scrWidth, unsigned int scrHeight);
+                   unsigned int _scrWidth, unsigned int _scrHeight);
     ~RenderPipeline();
 
     bool initialise();
@@ -42,7 +42,9 @@ protected:
     std::shared_ptr<const Shader> lightingPassShader;
     std::shared_ptr<const Shader> hdrPassShader;
     std::shared_ptr<const World> world;
-    glm::vec2 screenResolution;
+    unsigned int scrWidth;
+    unsigned int scrHeight;
+    glm::vec2 screenResolutionVec;
 
     std::vector<std::shared_ptr<Object>> objects3D;
     std::vector<std::shared_ptr<Object2D>> objects2D;

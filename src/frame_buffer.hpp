@@ -11,7 +11,7 @@
 class FrameBufferTexture
 {
 public:
-    FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, const glm::vec2 &screenResolution, bool _isDepthStencil = false);
+    FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, bool _isDepthStencil = false);
     ~FrameBufferTexture();
 
     GLuint get() const { return texture; }

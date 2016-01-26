@@ -11,9 +11,10 @@
 RenderPipeline::RenderPipeline(std::shared_ptr<const Shader> _lightingPassShader,
                                std::shared_ptr<const Shader> _hdrPassShader,
                                std::shared_ptr<const World> _world,
-                               unsigned int scrWidth, unsigned int scrHeight)
+                               unsigned int _scrWidth, unsigned int _scrHeight)
     : lightingPassShader(_lightingPassShader), hdrPassShader(_hdrPassShader),
-      world(_world), screenResolution(scrWidth, scrHeight),
+      world(_world), scrWidth(_scrWidth), scrHeight(_scrHeight),
+      screenResolutionVec(scrWidth, scrHeight),
       geometryPassFBO(std::make_unique<FrameBuffer>()),
       lightingPassFBO(std::make_unique<FrameBuffer>()),
       screenQuad(std::make_unique<ObjData2D>())
@@ -52,7 +53,7 @@ void RenderPipeline::render() const
 bool RenderPipeline::setupFBOs()
 {
     // both the lighting pass and geometry pass FBOs use the same depth stencil texture, create it now
-    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, screenResolution, true);
+    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, true);
 
     // and add it to both FBOs
     geometryPassFBO->addTexture(depthStencil);
@@ -60,11 +61,11 @@ bool RenderPipeline::setupFBOs()
 
     // geometry pass textures
     //  position
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, screenResolution));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
     //  normal
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, screenResolution));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
     //  colour (LDR)
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, screenResolution));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight));
 
     // bind it
     if (!geometryPassFBO->assignAllTexturesToFBO())
@@ -75,7 +76,7 @@ bool RenderPipeline::setupFBOs()
 
     // lighting pass textures
     //  colour (HDR)
-    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, screenResolution));
+    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
 
     // bind it
     if (!lightingPassFBO->assignAllTexturesToFBO())
@@ -174,7 +175,7 @@ void RenderPipeline::doLightingPass() const
     geometryPassFBO->bindTextures();
 
     // set screen resolution
-    glUniform2fv(lightingPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolution[0]);
+    glUniform2fv(lightingPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
 
     world->sendLightingInfoToShader(lightingPassShader);
 }
@@ -199,7 +200,7 @@ void RenderPipeline::doHDRPass() const
 
     GLuint vertexPosition_ScreenID = hdrPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
     glUniform1i(hdrPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
-    glUniform2fv(hdrPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolution[0]);
+    glUniform2fv(hdrPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
 
     auto sqMeshes = screenQuad->getMeshes();
     for (auto &it : sqMeshes)
