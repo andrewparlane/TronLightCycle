@@ -1,5 +1,9 @@
 #include "light_trail_segment.hpp"
 
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+#include "object.hpp"
+#endif
+
 #include <glm/gtc/constants.hpp>
 
 #define DEBUG_MESH_DATA_HEIGHT 5.0f

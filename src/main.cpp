@@ -10,6 +10,10 @@
 #include "light_trail_manager.hpp"
 #include "render_pipeline.hpp"
 
+#ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
+#include "light_trail_segment.hpp"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

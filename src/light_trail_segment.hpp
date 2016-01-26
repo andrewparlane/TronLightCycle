@@ -3,6 +3,10 @@
 
 #include "bike_movements.hpp"
 
+#ifdef DEBUG_SHOW_LIGHT_TRAIL_SEGMENTS
+#include "object_data.hpp"
+#endif
+
 #include <glm/glm.hpp>
 
 #include <map>
