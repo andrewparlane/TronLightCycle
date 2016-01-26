@@ -4,7 +4,19 @@
 #include <GL/glew.h>
 
 #include <string>
-#include <unordered_map>
+#include <memory>
+
+enum ShaderType
+{
+    SHADER_TYPE_MAIN_GEOMETRY_PASS = 0,
+    SHADER_TYPE_EXPLODE_GEOMETRY_PASS,
+    SHADER_TYPE_LIGHTING_PASS,
+    SHADER_TYPE_HDR_PASS,
+    SHADER_TYPE_LAMP,
+    SHADER_TYPE_2D,
+
+    NUM_SHADER_TYPES
+};
 
 enum ShaderUniformID
 {
@@ -61,8 +73,20 @@ public:
 
     void useShader() const;
 
+    static bool setupShaders();
+    static std::shared_ptr<const Shader> getShader(ShaderType type);
+
 protected:
     bool compileShader(const std::string &path, GLuint &shaderID) const;
+
+    static std::shared_ptr<Shader> setupMainGeometryPassShader(const std::string *geometryShader = NULL);
+    static std::shared_ptr<Shader> setupExplodeShader();
+    static std::shared_ptr<Shader> setupLightingPassShader();
+    static std::shared_ptr<Shader> setupHDRShader();
+    static std::shared_ptr<Shader> setupLampShader();
+    static std::shared_ptr<Shader> setup2DShader();
+
+    static std::shared_ptr<const Shader> shaders[NUM_SHADER_TYPES];
 
     const std::string vertexFilePath;
     const std::string fragmentFilePath;

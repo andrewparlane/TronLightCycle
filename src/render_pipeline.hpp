@@ -16,9 +16,7 @@ class World;
 class RenderPipeline
 {
 public:
-    RenderPipeline(std::shared_ptr<const Shader> _lightingPassShader,
-                   std::shared_ptr<const Shader> _hdrPassShader,
-                   std::shared_ptr<const World> _world,
+    RenderPipeline(std::shared_ptr<const World> _world,
                    unsigned int _scrWidth, unsigned int _scrHeight);
     ~RenderPipeline();
 

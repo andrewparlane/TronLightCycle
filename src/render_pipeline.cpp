@@ -8,11 +8,10 @@
 
 #include <GL/glew.h>
 
-RenderPipeline::RenderPipeline(std::shared_ptr<const Shader> _lightingPassShader,
-                               std::shared_ptr<const Shader> _hdrPassShader,
-                               std::shared_ptr<const World> _world,
+RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
                                unsigned int _scrWidth, unsigned int _scrHeight)
-    : lightingPassShader(_lightingPassShader), hdrPassShader(_hdrPassShader),
+    : lightingPassShader(Shader::getShader(SHADER_TYPE_LIGHTING_PASS)),
+      hdrPassShader(Shader::getShader(SHADER_TYPE_HDR_PASS)),
       world(_world), scrWidth(_scrWidth), scrHeight(_scrHeight),
       screenResolutionVec(scrWidth, scrHeight),
       geometryPassFBO(std::make_unique<FrameBuffer>()),

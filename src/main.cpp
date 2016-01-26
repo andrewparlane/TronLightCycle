@@ -40,181 +40,6 @@
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
-Shader *setupMainGeometryPassShader(const std::string *geometryShader = NULL)
-{
-    // first init main shader
-    Shader *shader = new Shader("shaders/main_geometry_pass.vs", "shaders/main_geometry_pass.fs", geometryShader);
-    if (!shader->compile())
-    {
-        printf("Failed to compile main geometry pass shader\n");
-        delete shader;
-        return NULL;
-    }
-    else
-    {
-        // Get main shader parameters
-        if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
-            !shader->addAttribID("vertexNormal_Model", SHADER_ATTRIB_VERTEX_NORMAL) ||
-            !shader->addAttribID("vertexTextureUV", SHADER_ATTRIB_VERTEX_UV) ||
-            // vertex params (static)
-            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
-            !shader->addUniformID("MV", SHADER_UNIFORM_MODEL_VIEW_MATRIX) ||
-            !shader->addUniformID("normalMV", SHADER_UNIFORM_NORMAL_MODEL_VIEW_MATRIX) ||
-            // fragment params
-            !shader->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE) ||
-            !shader->addUniformID("textureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
-            !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
-        {
-            printf("Error adding shader IDs\n");
-            delete shader;
-            return NULL;
-        }
-    }
-
-    return shader;
-}
-
-Shader *setupExplodeShader()
-{
-    // first init main shader
-    std::string gsPath = "shaders/explode_geometry_pass.gs";
-    Shader *explodeShader = setupMainGeometryPassShader(&gsPath);
-    if (explodeShader)
-    {
-        if (!explodeShader->addUniformID("explode", SHADER_UNIFORM_EXPLODE) ||
-            !explodeShader->addUniformID("inverseProjectionMatrix", SHADER_UNIFORM_INVERSE_PROJECTION_MATRIX))
-        {
-            printf("Error adding explode shader IDs\n");
-            delete explodeShader;
-            return NULL;
-        }
-    }
-
-    return explodeShader;
-}
-
-Shader *setupMainLightingPassShader()
-{
-    // first init main shader
-    Shader *shader = new Shader("shaders/main_lighting_pass.vs", "shaders/main_lighting_pass.fs");
-    if (!shader->compile())
-    {
-        printf("Failed to compile main lighting pass shader\n");
-        delete shader;
-        return NULL;
-    }
-    else
-    {
-        // Get main shader parameters
-        if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
-            // vertex params (static)
-            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
-            // fragment params
-            !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
-            !shader->addUniformID("lightPosition_Camera", SHADER_UNIFORM_LIGHT_POS_CAMERA) ||
-            !shader->addUniformID("lightRadius", SHADER_UNIFORM_LIGHT_RADIUS) ||
-            !shader->addUniformID("lightColour", SHADER_UNIFORM_LIGHT_COLOUR) ||
-            !shader->addUniformID("lightAmbient", SHADER_UNIFORM_LIGHT_AMBIENT_FACTOR) ||
-            !shader->addUniformID("lightDiffuse", SHADER_UNIFORM_LIGHT_DIFFUSE_FACTOR) ||
-            !shader->addUniformID("lightSpecular", SHADER_UNIFORM_LIGHT_SPECULAR_FACTOR) ||
-            !shader->addUniformID("geometryTextureSampler", SHADER_UNIFORM_GEOMETRY_TEXTURE_SAMPLER) ||
-            !shader->addUniformID("normalTextureSampler", SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER) ||
-            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
-        {
-            printf("Error adding shader IDs\n");
-            delete shader;
-            return NULL;
-        }
-    }
-
-    return shader;
-}
-
-Shader *setupHDRShader()
-{
-    // first init main shader
-    Shader *shader = new Shader("shaders/hdr.vs", "shaders/hdr.fs");
-    if (!shader->compile())
-    {
-        printf("Failed to compile HDR shader\n");
-        delete shader;
-        return NULL;
-    }
-    else
-    {
-        // Get main shader parameters
-        if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
-            // fragment params
-            !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
-            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
-        {
-            printf("Error adding shader IDs\n");
-            delete shader;
-            return NULL;
-        }
-    }
-
-    return shader;
-}
-
-Shader *setupLampShader()
-{
-    // first init main shader
-    Shader *shader = new Shader("shaders/lamp.vs", "shaders/lamp.fs");
-    if (!shader->compile())
-    {
-        printf("Failed to compile lamp shader\n");
-        delete shader;
-        return NULL;
-    }
-    else
-    {
-        // Get main shader parameters
-        if (// vertex params (variable)
-            !shader->addAttribID("vertexPosition_Model", SHADER_ATTRIB_VERTEX_POS) ||
-            // vertex params (static)
-            !shader->addUniformID("MVP", SHADER_UNIFORM_MVP) ||
-            // fragment params
-            !shader->addUniformID("fragmentColour", SHADER_UNIFORM_FRAGMENT_COLOUR))
-        {
-            printf("Error adding shader IDs\n");
-            delete shader;
-            return NULL;
-        }
-    }
-
-    return shader;
-}
-
-Shader *setup2DShader()
-{
-    // initialise text shader
-    Shader *shader2D = new Shader( "shaders/2D.vs", "shaders/2D.fs");
-    if (!shader2D->compile())
-    {
-        printf("Failed to compile 2D shader\n");
-        return NULL;
-    }
-    else
-    {
-        // Get a handle for our buffers
-        if (!shader2D->addAttribID("vertexPosition_screenspace", SHADER_ATTRIB_VERTEX_POS) ||
-            !shader2D->addAttribID("vertexUV", SHADER_ATTRIB_VERTEX_UV) ||
-            !shader2D->addAttribID("vertexColour", SHADER_ATTRIB_VERTEX_COLOUR) ||
-            !shader2D->addUniformID("myTextureSampler", SHADER_UNIFORM_TEXTURE_SAMPLER) ||
-            !shader2D->addUniformID("fragmentIsTexture", SHADER_UNIFORM_IS_TEXTURE))
-        {
-            printf("Failed to add 2D shader IDs\n");
-            return NULL;
-        }
-    }
-
-    return shader2D;
-}
-
 ObjData3D *createArena()
 {
     ObjData3D *arenaObjData = new ObjData3D();
@@ -450,9 +275,8 @@ int main(void)
     // background colour is set in the lighting_pass fragment shader
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    std::shared_ptr<const Shader> shader2D;
-    shader2D.reset(setup2DShader());
-    if (!shader2D)
+    // set up our shaders
+    if (!Shader::setupShaders())
     {
         system("pause");
         return -1;
@@ -468,48 +292,7 @@ int main(void)
     }
 
     // create progress bar
-    ProgressBar progressBar({{ProgressBar::PROGRESS_TYPE_LOAD_BIKE,100}}, window, shader2D, defaultFont);
-
-    // set up the rest of our shaders
-    std::shared_ptr<const Shader> mainGeometryPassShader;
-    mainGeometryPassShader.reset(setupMainGeometryPassShader());
-    if (!mainGeometryPassShader)
-    {
-        system("pause");
-        return -1;
-    }
-
-    std::shared_ptr<const Shader> mainLightingPassShader;
-    mainLightingPassShader.reset(setupMainLightingPassShader());
-    if (!mainLightingPassShader)
-    {
-        system("pause");
-        return -1;
-    }
-
-    std::shared_ptr<const Shader> explodeShader;
-    explodeShader.reset(setupExplodeShader());
-    if (!explodeShader)
-    {
-        system("pause");
-        return -1;
-    }
-
-    std::shared_ptr<const Shader> lampShader;
-    lampShader.reset(setupLampShader());
-    if (!lampShader)
-    {
-        system("pause");
-        return -1;
-    }
-
-    std::shared_ptr<const Shader> hdrShader;
-    hdrShader.reset(setupHDRShader());
-    if (!hdrShader)
-    {
-        system("pause");
-        return -1;
-    }
+    ProgressBar progressBar({{ProgressBar::PROGRESS_TYPE_LOAD_BIKE,100}}, window, Shader::getShader(SHADER_TYPE_2D), defaultFont);
 
     // projection matrix = camera -> homogenous (3d -> 2d)
     int width, height;
@@ -528,7 +311,7 @@ int main(void)
                                  glm::vec3(0, 1, 0)));  // which way is up
 
     // setup Render Pipeline
-    RenderPipeline renderPipeline(mainLightingPassShader, hdrShader, world, SCR_WIDTH, SCR_HEIGHT);
+    RenderPipeline renderPipeline(world, SCR_WIDTH, SCR_HEIGHT);
     if (!renderPipeline.initialise())
     {
         printf("Failed to initialise render pipeline\n");
@@ -567,7 +350,7 @@ int main(void)
                            glm::scale(glm::vec3(BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR));
 
     // Load bike
-    std::shared_ptr<Bike> bike = std::make_shared<Bike>(bikeLoader, world, mainGeometryPassShader, explodeShader, bike_model, tronBlue);
+    std::shared_ptr<Bike> bike = std::make_shared<Bike>(bikeLoader, world, Shader::getShader(SHADER_TYPE_MAIN_GEOMETRY_PASS), Shader::getShader(SHADER_TYPE_EXPLODE_GEOMETRY_PASS), bike_model, tronBlue);
     renderPipeline.add3DObject(bike);
 
     // create arena
@@ -578,10 +361,10 @@ int main(void)
         system("pause");
         return -1;
     }
-    std::shared_ptr<Object> arena = std::make_shared<Object>(arenaObjData, world, mainGeometryPassShader, glm::mat4(1.0f));
+    std::shared_ptr<Object> arena = std::make_shared<Object>(arenaObjData, world, Shader::getShader(SHADER_TYPE_MAIN_GEOMETRY_PASS), glm::mat4(1.0f));
     renderPipeline.add3DObject(arena);
 
-    if (!setupArenaLighting(world, lampShader))
+    if (!setupArenaLighting(world, Shader::getShader(SHADER_TYPE_LAMP)))
     {
         printf("Failed to set up arena lighting\n");
         system("pause");
@@ -589,22 +372,22 @@ int main(void)
     }
 
     // create debug text object
-    std::shared_ptr<Text> text = std::make_shared<Text>(shader2D);
+    std::shared_ptr<Text> text = std::make_shared<Text>(Shader::getShader(SHADER_TYPE_2D));
     renderPipeline.add2DObject(text);
 #ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
-    std::shared_ptr<Text> activeSegmentText = std::make_shared<Text>(shader2D);
+    std::shared_ptr<Text> activeSegmentText = std::make_shared<Text>(Shader::getShader(SHADER_TYPE_2D));
     renderPipeline.add2DObject(activeSegmentText);
 #endif
 
     // create speed bar
-    std::shared_ptr<Shape2D> speedBar = std::make_shared<Shape2D>(shader2D);
+    std::shared_ptr<Shape2D> speedBar = std::make_shared<Shape2D>(Shader::getShader(SHADER_TYPE_2D));
     speedBar->addRect(glm::vec2(SPEED_BAR_START_X-2.0f,580), glm::vec2(SPEED_BAR_END_X+2,580), glm::vec2(SPEED_BAR_END_X+2,560), glm::vec2(SPEED_BAR_START_X-2.0f,560),
                       glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     speedBar->addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(SPEED_BAR_END_X,578), glm::vec2(SPEED_BAR_END_X,562), glm::vec2(SPEED_BAR_START_X,562),
                       glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
     renderPipeline.add2DObject(speedBar);
 
-    std::shared_ptr<Text> speedBarText = std::make_shared<Text>(shader2D);
+    std::shared_ptr<Text> speedBarText = std::make_shared<Text>(Shader::getShader(SHADER_TYPE_2D));
     speedBarText->addText2D("speed", (unsigned int)(SPEED_BAR_START_X - 156), 560, 26, defaultFont);
     renderPipeline.add2DObject(speedBarText);
 
