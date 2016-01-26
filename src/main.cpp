@@ -8,6 +8,7 @@
 #include "progress_bar.hpp"
 #include "texture.hpp"
 #include "light_trail_manager.hpp"
+#include "render_pipeline.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -405,107 +406,6 @@ bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shad
     return true;
 }
 
-bool setupGeometryPassFrameBuffer(GLuint &geometryPassFrameBuffer, GLuint &geometryPassPositionTexture, GLuint &geometryPassNormalTexture, GLuint &geometryPassColourTexture, GLuint &depth)
-{
-    glGenFramebuffers(1, &geometryPassFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
-
-    // - Positions
-    glGenTextures(1, &geometryPassPositionTexture);
-    glBindTexture(GL_TEXTURE_2D, geometryPassPositionTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, geometryPassPositionTexture, 0);
-
-    // - Normals
-    glGenTextures(1, &geometryPassNormalTexture);
-    glBindTexture(GL_TEXTURE_2D, geometryPassNormalTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, geometryPassNormalTexture, 0);
-
-    // - Colours
-    glGenTextures(1, &geometryPassColourTexture);
-    glBindTexture(GL_TEXTURE_2D, geometryPassColourTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, geometryPassColourTexture, 0);
-
-    // - Depth
-    glGenTextures(1, &depth);
-    glBindTexture(GL_TEXTURE_2D, depth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, NULL);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
-
-    // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers(3, attachments);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        printf("Geometry pass framebuffer not complete!\n");
-        return false;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    return true;
-}
-
-bool setupLightingPassFrameBuffer(GLuint &lightingPassFrameBuffer, GLuint &lightingPassColourTexture, GLuint depth)
-{
-    glGenFramebuffers(1, &lightingPassFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
-
-    // - Colours
-    glGenTextures(1, &lightingPassColourTexture);
-    glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingPassColourTexture, 0);
-
-    // - Depth
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
-
-    // - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, attachments);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        printf("Lighting pass framebuffer not complete!\n");
-        return false;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    return true;
-}
-
-ObjData2D *setupScreenQuad()
-{
-    ObjData2D *objData = new ObjData2D();
-    MeshData<glm::vec2> md;
-    md.hasTexture = false;
-
-    md.vertices.push_back(glm::vec2(-1.0f, -1.0f));
-    md.vertices.push_back(glm::vec2(-1.0f,  1.0f));
-    md.vertices.push_back(glm::vec2( 1.0f,  1.0f));
-    md.vertices.push_back(glm::vec2( 1.0f, -1.0f));
-
-    md.indices.push_back(0); md.indices.push_back(1); md.indices.push_back(2);
-    md.indices.push_back(0); md.indices.push_back(2); md.indices.push_back(3);
-
-    if (!objData->addMesh(md))
-    {
-        delete objData;
-        objData = NULL;
-    }
-    return objData;
-}
-
 int main(void)
 {
     // Initialise GLFW
@@ -607,35 +507,6 @@ int main(void)
         return -1;
     }
 
-    // set up deferred shading frame buffer
-    GLuint geometryPassFrameBuffer;
-    GLuint geometryPassPositionTexture;
-    GLuint geometryPassNormalTexture;
-    GLuint geometryPassColourTexture;
-    GLuint sharedDepthBuffer;
-    if (!setupGeometryPassFrameBuffer(geometryPassFrameBuffer, geometryPassPositionTexture, geometryPassNormalTexture, geometryPassColourTexture, sharedDepthBuffer))
-    {
-        system("pause");
-        return -1;
-    }
-
-    GLuint lightingPassFrameBuffer;
-    GLuint lightingPassColourTexture;
-    if (!setupLightingPassFrameBuffer(lightingPassFrameBuffer, lightingPassColourTexture, sharedDepthBuffer))
-    {
-        system("pause");
-        return -1;
-    }
-
-    std::unique_ptr<ObjData2D> screenQuad;
-    screenQuad.reset(setupScreenQuad());
-    if (!screenQuad)
-    {
-        printf("failed to set up screen quad\n");
-        system("pause");
-        return -1;
-    }
-
     // projection matrix = camera -> homogenous (3d -> 2d)
     int width, height;
     glfwGetWindowSize(window, &width, &height);
@@ -651,6 +522,15 @@ int main(void)
     world->setCamera(glm::lookAt(glm::vec3(0, 0, distanceBetweenBikeAndCamera),    // where the camera is in world co-ordinates
                                  glm::vec3(0, CAMERA_Y_LOOKAT_POS, 0),    // target (direction = target - location)
                                  glm::vec3(0, 1, 0)));  // which way is up
+
+    // setup Render Pipeline
+    RenderPipeline renderPipeline(mainLightingPassShader, hdrShader, world, SCR_WIDTH, SCR_HEIGHT);
+    if (!renderPipeline.initialise())
+    {
+        printf("Failed to initialise render pipeline\n");
+        system("pause");
+        return false;
+    }
 
     std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
     if (!bikeLoader->loadTextureMap() ||
@@ -683,7 +563,8 @@ int main(void)
                            glm::scale(glm::vec3(BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR, BIKE_SCALE_FACTOR));
 
     // Load bike
-    Bike bike(bikeLoader, world, mainGeometryPassShader, explodeShader, bike_model, tronBlue);
+    std::shared_ptr<Bike> bike = std::make_shared<Bike>(bikeLoader, world, mainGeometryPassShader, explodeShader, bike_model, tronBlue);
+    renderPipeline.add3DObject(bike);
 
     // create arena
     std::shared_ptr<ObjData3D> arenaObjData(createArena());
@@ -693,7 +574,8 @@ int main(void)
         system("pause");
         return -1;
     }
-    Object arena(arenaObjData, world, mainGeometryPassShader, glm::mat4(1.0f));
+    std::shared_ptr<Object> arena = std::make_shared<Object>(arenaObjData, world, mainGeometryPassShader, glm::mat4(1.0f));
+    renderPipeline.add3DObject(arena);
 
     if (!setupArenaLighting(world, lampShader))
     {
@@ -703,20 +585,24 @@ int main(void)
     }
 
     // create debug text object
-    Text text(shader2D);
+    std::shared_ptr<Text> text = std::make_shared<Text>(shader2D);
+    renderPipeline.add2DObject(text);
 #ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
-    Text activeSegmentText(shader2D);
+    std::shared_ptr<Text> activeSegmentText = std::make_shared<Text>(shader2D);
+    renderPipeline.add2DObject(activeSegmentText);
 #endif
 
     // create speed bar
-    Shape2D speedBar(shader2D);
-    speedBar.addRect(glm::vec2(SPEED_BAR_START_X-2.0f,580), glm::vec2(SPEED_BAR_END_X+2,580), glm::vec2(SPEED_BAR_END_X+2,560), glm::vec2(SPEED_BAR_START_X-2.0f,560),
-                     glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    speedBar.addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(SPEED_BAR_END_X,578), glm::vec2(SPEED_BAR_END_X,562), glm::vec2(SPEED_BAR_START_X,562),
-        glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    std::shared_ptr<Shape2D> speedBar = std::make_shared<Shape2D>(shader2D);
+    speedBar->addRect(glm::vec2(SPEED_BAR_START_X-2.0f,580), glm::vec2(SPEED_BAR_END_X+2,580), glm::vec2(SPEED_BAR_END_X+2,560), glm::vec2(SPEED_BAR_START_X-2.0f,560),
+                      glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    speedBar->addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(SPEED_BAR_END_X,578), glm::vec2(SPEED_BAR_END_X,562), glm::vec2(SPEED_BAR_START_X,562),
+                      glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    renderPipeline.add2DObject(speedBar);
 
-    Text speedBarText(shader2D);
-    speedBarText.addText2D("speed", (unsigned int)(SPEED_BAR_START_X - 156), 560, 26, defaultFont);
+    std::shared_ptr<Text> speedBarText = std::make_shared<Text>(shader2D);
+    speedBarText->addText2D("speed", (unsigned int)(SPEED_BAR_START_X - 156), 560, 26, defaultFont);
+    renderPipeline.add2DObject(speedBarText);
 
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
@@ -815,7 +701,7 @@ int main(void)
         if (spaceKeyPressed && !glfwGetKey(window, GLFW_KEY_SPACE ))
         {
             spaceKeyPressed = 0;
-            bike.toggleLightTrail();
+            bike->toggleLightTrail();
         }
 
         // camera rotating?
@@ -898,7 +784,7 @@ int main(void)
         if (f5KeyPressed && !glfwGetKey(window, GLFW_KEY_F5 ))
         {
             f5KeyPressed = 0;
-            bike.saveBikeState();
+            bike->saveBikeState();
             stateIsSaved = true;
             savedCameraRotationDegrees = cameraRotationDegrees;
             savedCameraRotating = cameraRotating;
@@ -911,7 +797,7 @@ int main(void)
         if (f9KeyPressed && !glfwGetKey(window, GLFW_KEY_F9 ))
         {
             f9KeyPressed = 0;
-            bike.restoreBikeState();
+            bike->restoreBikeState();
             if (stateIsSaved)
             {
                 cameraRotationDegrees = savedCameraRotationDegrees;
@@ -960,38 +846,38 @@ int main(void)
 #endif
 
         // update the bike and light trails
-        bike.update(turnDirection, accelerating, stop);
+        bike->update(turnDirection, accelerating, stop);
 
         // check for collisions
         // only with it's own trail ATM, as there are no more
 
         // transform co-ords of front of bike to world co-ords.
-        glm::vec3 bikeFrontLocation = bike.applyModelMatrx(glm::vec3(0,0,bike_most_forward));
+        glm::vec3 bikeFrontLocation = bike->applyModelMatrx(glm::vec3(0,0,bike_most_forward));
 
-        std::shared_ptr<const LightTrailManager> tm = bike.getTrailManager();
+        std::shared_ptr<const LightTrailManager> tm = bike->getTrailManager();
         if (tm->collides(glm::vec2(bikeFrontLocation.x, bikeFrontLocation.z)) ||
-            bike.checkSelfCollision())
+            bike->checkSelfCollision())
         {
-            bike.setExploding();
+            bike->setExploding();
             //cameraRotating = true;
         }
 
         // update camera location =============================================
         // transform origin of bike to world co-ords.
-        glm::vec3 bikeLocation = bike.applyModelMatrx(glm::vec3(0,0,bike_most_forward));
+        glm::vec3 bikeLocation = bike->applyModelMatrx(glm::vec3(0,0,bike_most_forward));
 
-        // we want the camera to be distanceBetweenBikeAndCamera from the bike.
+        // we want the camera to be distanceBetweenBikeAndCamera from the bike->
         // by default it should be directly behind the bike so we can see where we are going
         // however I also want a mode where the camera rotates around so you can see the bike
         // so take a vector where the camera is directly behind the bike, in bike model space
-        // and rotate it, this rotates the point around the bike.
+        // and rotate it, this rotates the point around the bike->
         glm::vec3 cameraOffsetFromBike = glm::vec3(glm::vec4(0,0,distanceBetweenBikeAndCamera,1) *
                                                    glm::rotate(glm::radians(cameraRotationDegrees), glm::vec3(0,1,0)));
         // transform the camera position into world co-ordinates
         // note: this applies rotations, translations and scaling + any other transform
         //       so it won't work correctly if you scale your model in the Z direction
         //       your camera position will be scaled too
-        glm::vec3 cameraPosition = bike.applyModelMatrx(cameraOffsetFromBike);
+        glm::vec3 cameraPosition = bike->applyModelMatrx(cameraOffsetFromBike);
         // We want the y co-ord to be a bit above the bike
         cameraPosition.y = CAMERA_Y_POS;
         // point the camera at the bike, but adjust the y so we aren't looking too much down
@@ -1007,137 +893,30 @@ int main(void)
             cameraRotationDegrees += 0.4f;
         }
 
-        // do geometry pass for 3D objects =====================================
-        glBindFramebuffer(GL_FRAMEBUFFER, geometryPassFrameBuffer);
-
-        // enable both depth and stencil buffers for writting
-        // needed here so we can clear them in glClear below
-        glDepthMask(GL_TRUE);
-        glStencilMask(0xFF);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        glEnable(GL_DEPTH_TEST);
-
-        // enable the stencil test to always increment
-        // this means the stencil buffer will be non 0 for any rendered pixel
-        // leaving it 0 for only the background (non rendered pixels)
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 0, 0);
-        glStencilOp(GL_INCR, GL_INCR, GL_INCR);
-
-        glDisable(GL_BLEND);
-
-        // draw bike
-        bike.drawAll();
-
-        // draw arena
-        arena.drawAll();
-
-        glDepthMask(GL_FALSE);
-        glDisable(GL_DEPTH_TEST);
-
-        // Do deferred lighting stage ===========================================
-        glBindFramebuffer(GL_FRAMEBUFFER, lightingPassFrameBuffer);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glStencilMask(0x00);
-        glStencilFunc(GL_NOTEQUAL, 0, 0xff);
-
-        glEnable(GL_BLEND);
-        glBlendEquation(GL_FUNC_ADD);
-        glBlendFunc(GL_ONE, GL_ONE);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-
-        mainLightingPassShader->useShader();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, geometryPassPositionTexture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, geometryPassNormalTexture);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, geometryPassColourTexture);
-
-        // set screen resolution
-        glm::vec2 screenRes(SCR_WIDTH, SCR_HEIGHT);
-        glUniform2fv(mainLightingPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
-
-        world->sendLightingInfoToShader(mainLightingPassShader);
-
-        // finally bind the screen frame buffer =========================
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDepthMask(GL_TRUE); // need to enable so we can clear the depth buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDepthMask(GL_FALSE); // need to enable so we can clear the depth buffer
-
-        glDisable(GL_BLEND);
-        glDisable(GL_STENCIL_TEST);
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_TEST);
-
-        // draw it all to the screen
-        {
-            hdrShader->useShader();
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, lightingPassColourTexture);
-
-            GLuint vertexPosition_ScreenID = hdrShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
-            glUniform1i(hdrShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
-            glUniform2fv(hdrShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenRes[0]);
-
-            auto sqMeshes = screenQuad->getMeshes();
-            for (auto &it : sqMeshes)
-            {
-                glEnableVertexAttribArray(vertexPosition_ScreenID);
-
-                glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
-                glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
-                glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
-
-                glDisableVertexAttribArray(vertexPosition_ScreenID);
-            }
-        }
-
-        // draw lamps ==============================================================
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-        world->drawLamps();
-
-        // Draw 2D objects in order they are listed =================================
-        glDepthMask(GL_FALSE);
-        glDisable(GL_DEPTH_TEST);
-
-        // draw speed bar, only change the bar if the value has changed
-        float speedPercent = bike.getSpeedPercent();
+        // update speed bar output
+        float speedPercent = bike->getSpeedPercent();
         if (abs(lastSpeed - speedPercent) > 0.01f)
         {
             lastSpeed = speedPercent;
             float end_x = SPEED_BAR_START_X + (SPEED_BAR_END_X - SPEED_BAR_START_X) * speedPercent;
-            speedBar.deleteObjData("speed_bar");
-            speedBar.addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(end_x,578), glm::vec2(end_x,562), glm::vec2(SPEED_BAR_START_X,562),
-                             glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),
-                             "speed_bar");
+            speedBar->deleteObjData("speed_bar");
+            speedBar->addRect(glm::vec2(SPEED_BAR_START_X,578), glm::vec2(end_x,578), glm::vec2(end_x,562), glm::vec2(SPEED_BAR_START_X,562),
+                              glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(speedPercent, 1.0f - speedPercent, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),
+                              "speed_bar");
         }
-        speedBar.drawAll();
-        speedBarText.drawAll();
 
-        // output debug stats
+        // update debug stats
         if (frameCount == 0)
         {
             char textBuff[32];
-            text.deleteAllObjData();
+            text->deleteAllObjData();
 
             snprintf(textBuff, 32, "FR (Actual): %d", frameRate);
-            text.addText2D(textBuff, 10, 560, 26, defaultFont);
+            text->addText2D(textBuff, 10, 560, 26, defaultFont);
 
             snprintf(textBuff, 32, "      (MAX): %d", displayedMaxPossibleFrameRate);
-            text.addText2D(textBuff, 10, 530, 26, defaultFont);
+            text->addText2D(textBuff, 10, 530, 26, defaultFont);
         }
-        text.drawAll();
 
 #ifdef DEBUG_ALLOW_SELECTING_ACTIVE_LIGHT_TRAIL_SEGMENT
         if (activeSegmentId != lastActiveSegmentId ||
@@ -1150,7 +929,7 @@ int main(void)
                 lastActiveSegmentId = activeSegmentId;
             }
 
-            activeSegmentText.deleteAllObjData();
+            activeSegmentText->deleteAllObjData();
 
             char textBuff[32];
             char activeString[16];
@@ -1163,10 +942,12 @@ int main(void)
                 snprintf(activeString, 16, "ALL");
             }
             snprintf(textBuff, 32, "Segments: %u Active [%s]", LightTrailSegment::getNumSegments(), activeString);
-            activeSegmentText.addText2D(textBuff, 10, 500, 26, defaultFont);
+            activeSegmentText->addText2D(textBuff, 10, 500, 26, defaultFont);
         }
-        activeSegmentText.drawAll();
 #endif
+
+        // render ==============================================================
+        renderPipeline.render();
 
         // Swap buffers ========================================================
         glfwSwapBuffers(window);
