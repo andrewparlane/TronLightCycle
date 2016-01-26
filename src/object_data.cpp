@@ -66,7 +66,7 @@ template<typename T> void ObjData<T>::deleteAll()
 
 template<typename T> bool ObjData<T>::createBuffers(MeshData<T> &md)
 {
-    std::shared_ptr<Mesh<T>> newMesh(new Mesh<T>());
+    std::shared_ptr<Mesh<T>> newMesh = std::make_shared<Mesh<T>>();
 
     newMesh->name = md.name;
     newMesh->hasTexture = md.hasTexture;

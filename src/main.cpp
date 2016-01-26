@@ -40,9 +40,9 @@
 // colours
 const glm::vec3 tronBlue = glm::vec3(0.184f, 1.0f, 1.0f);
 
-ObjData3D *createArena()
+std::shared_ptr<ObjData3D> createArena()
 {
-    ObjData3D *arenaObjData = new ObjData3D();
+    std::shared_ptr<ObjData3D> arenaObjData = std::make_shared<ObjData3D>();
     MeshData<glm::vec3> md;
     md.name = "arena";
     md.hasTexture = true;
@@ -93,16 +93,15 @@ ObjData3D *createArena()
 
     if (!arenaObjData->addMesh(md))
     {
-        delete arenaObjData;
         arenaObjData = NULL;
     }
 
     return arenaObjData;
 }
 
-ObjData3D *createLamp()
+std::shared_ptr<ObjData3D> createLamp()
 {
-    ObjData3D *objData = new ObjData3D();
+    std::shared_ptr<ObjData3D> objData = std::make_shared<ObjData3D>();
     MeshData<glm::vec3> md;
     md.name = "lamp";
     md.hasTexture = false;
@@ -143,14 +142,15 @@ ObjData3D *createLamp()
 
     if (!objData->addMesh(md))
     {
-        delete objData;
         objData = NULL;
     }
     return objData;
 }
 
-bool setupArenaLighting(std::shared_ptr<World> world, std::shared_ptr<const Shader> shader)
+bool setupArenaLighting(std::shared_ptr<World> world)
 {
+    std::shared_ptr<const Shader> shader = Shader::getShader(SHADER_TYPE_LAMP);
+
     // lighting
     std::shared_ptr<ObjData3D> lampObjData(createLamp());
     if (!lampObjData)
@@ -298,8 +298,7 @@ int main(void)
     int width, height;
     glfwGetWindowSize(window, &width, &height);
 
-    std::shared_ptr<World> world;
-    world.reset(new World);
+    std::shared_ptr<World> world = std::make_shared<World>();
     world->setProjection(glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f));
 
     // view matrix = world -> camera
@@ -319,7 +318,7 @@ int main(void)
         return false;
     }
 
-    std::shared_ptr<ObjLoader> bikeLoader(new ObjLoader("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE));
+    std::shared_ptr<ObjLoader> bikeLoader = std::make_shared<ObjLoader>("models/obj/bike.obj", "models/obj/bike.tex", &progressBar, ProgressBar::PROGRESS_TYPE_LOAD_BIKE);
     if (!bikeLoader->loadTextureMap() ||
         !bikeLoader->loadObj())
     {
@@ -364,7 +363,7 @@ int main(void)
     std::shared_ptr<Object> arena = std::make_shared<Object>(arenaObjData, world, Shader::getShader(SHADER_TYPE_MAIN_GEOMETRY_PASS), glm::mat4(1.0f));
     renderPipeline.add3DObject(arena);
 
-    if (!setupArenaLighting(world, Shader::getShader(SHADER_TYPE_LAMP)))
+    if (!setupArenaLighting(world))
     {
         printf("Failed to set up arena lighting\n");
         system("pause");
