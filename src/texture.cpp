@@ -130,6 +130,11 @@ std::shared_ptr<Texture> Texture::getOrCreate(const std::string &imagePath)
     {
         textureCache.insert(std::make_pair(imagePath, tmp));
     }
+    else
+    {
+        // failed, delete it
+        tmp = NULL;
+    }
 
     return tmp;
 }
