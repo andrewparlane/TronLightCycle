@@ -80,13 +80,13 @@ void FrameBuffer::bind() const
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
-void FrameBuffer::bindTextures() const
+GLenum FrameBuffer::bindTextures(GLenum startTexture) const
 {
     // bind all except the depth / stencil textures
     // not this FBO doesn't need to be bound first
     // and most often will not be
 
-    GLenum textureID = GL_TEXTURE0;
+    GLenum textureID = startTexture;
     for (const auto &texture : textures)
     {
         if (!texture->getIsDepthStencil())
@@ -95,4 +95,7 @@ void FrameBuffer::bindTextures() const
             glBindTexture(GL_TEXTURE_2D, texture->get());
         }
     }
+
+    // return next texture ID to be used
+    return textureID;
 }

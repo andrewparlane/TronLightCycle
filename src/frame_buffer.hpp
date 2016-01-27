@@ -34,7 +34,7 @@ public:
 
     void bind() const;
 
-    void bindTextures() const;
+    GLenum bindTextures(GLenum startTexture = GL_TEXTURE0) const;
 
 protected:
     GLuint fbo;
