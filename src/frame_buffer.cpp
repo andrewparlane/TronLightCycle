@@ -2,17 +2,16 @@
 
 #include <stdlib.h>
 
-FrameBufferTexture::FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, bool _isDepthStencil)
+FrameBufferTexture::FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil)
     : isDepthStencil(_isDepthStencil)
 {
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scrWidth, scrHeight, 0, format, type, NULL);
 
-    if (!isDepthStencil)
+    for (auto &param : parameters)
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, param.first, param.second);
     }
 }
 

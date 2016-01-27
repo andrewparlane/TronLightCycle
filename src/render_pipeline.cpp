@@ -51,20 +51,27 @@ void RenderPipeline::render() const
 
 bool RenderPipeline::setupFBOs()
 {
+    FrameBufferTexture::TextureParameters params;
+
     // both the lighting pass and geometry pass FBOs use the same depth stencil texture, create it now
-    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, true);
+    // note no params
+    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, params, true);
 
     // and add it to both FBOs
     geometryPassFBO->addTexture(depthStencil);
     lightingPassFBO->addTexture(depthStencil);
 
+    // the rest of the textures want to use these texture parameters
+    params.push_back({ GL_TEXTURE_MIN_FILTER, GL_NEAREST });
+    params.push_back({ GL_TEXTURE_MAG_FILTER, GL_NEAREST });
+
     // geometry pass textures
     //  position
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
     //  normal
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
     //  colour (LDR)
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
 
     // bind it
     if (!geometryPassFBO->assignAllTexturesToFBO())
@@ -75,7 +82,7 @@ bool RenderPipeline::setupFBOs()
 
     // lighting pass textures
     //  colour (HDR)
-    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight));
+    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
 
     // bind it
     if (!lightingPassFBO->assignAllTexturesToFBO())

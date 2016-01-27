@@ -11,7 +11,9 @@
 class FrameBufferTexture
 {
 public:
-    FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, bool _isDepthStencil = false);
+    typedef std::vector<std::pair<GLenum, GLint>> TextureParameters;
+
+    FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil = false);
     ~FrameBufferTexture();
 
     GLuint get() const { return texture; }
