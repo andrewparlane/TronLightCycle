@@ -37,6 +37,8 @@ protected:
     void renderLamps() const;
     void render2D() const;
 
+    void renderScreenQuad(std::shared_ptr<const Shader> shader) const;
+
     std::shared_ptr<const Shader> lightingPassShader;
     std::shared_ptr<const Shader> hdrPassShader;
     std::shared_ptr<const World> world;

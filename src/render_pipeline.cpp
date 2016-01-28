@@ -204,23 +204,10 @@ void RenderPipeline::doHDRPass() const
     // bind textures from the lighting pass stage
     lightingPassFBO->bindTextures();
 
-    GLuint vertexPosition_ScreenID = hdrPassShader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
     glUniform1i(hdrPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
     glUniform2fv(hdrPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
 
-    auto sqMeshes = screenQuad->getMeshes();
-    for (auto &it : sqMeshes)
-    {
-        glEnableVertexAttribArray(vertexPosition_ScreenID);
-
-        glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
-        glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
-        glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
-
-        glDisableVertexAttribArray(vertexPosition_ScreenID);
-    }
+    renderScreenQuad(hdrPassShader);
 }
 
 void RenderPipeline::renderLamps() const
@@ -239,5 +226,24 @@ void RenderPipeline::render2D() const
     for (const auto &obj : objects2D)
     {
         obj->drawAll();
+    }
+}
+
+void RenderPipeline::renderScreenQuad(std::shared_ptr<const Shader> shader) const
+{
+    GLuint vertexPosition_ScreenID = shader->getAttribID(SHADER_ATTRIB_VERTEX_POS);
+
+    auto sqMeshes = screenQuad->getMeshes();
+    for (auto &it : sqMeshes)
+    {
+        glEnableVertexAttribArray(vertexPosition_ScreenID);
+
+        glBindBuffer(GL_ARRAY_BUFFER, it->vertexBuffer);
+        glVertexAttribPointer(vertexPosition_ScreenID, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it->indiceBuffer);
+        glDrawElements(GL_TRIANGLES, it->numIndices, GL_UNSIGNED_SHORT, (void *)0);
+
+        glDisableVertexAttribArray(vertexPosition_ScreenID);
     }
 }
