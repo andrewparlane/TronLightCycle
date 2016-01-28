@@ -12,12 +12,15 @@ RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
                                unsigned int _scrWidth, unsigned int _scrHeight)
     : lightingPassShader(Shader::getShader(SHADER_TYPE_LIGHTING_PASS)),
       hdrPassShader(Shader::getShader(SHADER_TYPE_HDR_PASS)),
+      blurPassShader(Shader::getShader(SHADER_TYPE_BLUR)),
       world(_world), scrWidth(_scrWidth), scrHeight(_scrHeight),
       screenResolutionVec(scrWidth, scrHeight),
       geometryPassFBO(std::make_unique<FrameBuffer>()),
       lightingPassFBO(std::make_unique<FrameBuffer>()),
       screenQuad(std::make_unique<ObjData2D>())
 {
+    blurFBOs[0] = std::make_unique<FrameBuffer>();
+    blurFBOs[1] = std::make_unique<FrameBuffer>();
 }
 
 RenderPipeline::~RenderPipeline()
@@ -44,8 +47,9 @@ void RenderPipeline::render() const
 {
     doGeometryPass();
     doLightingPass();
-    doHDRPass();
     renderLamps();
+    doBlurPass();
+    doHDRPass();
     render2D();
 }
 
@@ -89,6 +93,26 @@ bool RenderPipeline::setupFBOs()
     {
         printf("Failed to setup lighting psas FBO\n");
         return false;
+    }
+
+    // Blur FBOs
+    // we clamp the texture UV co-ords at the edge (ie, don't repeat the texture).
+    // this is needed as we want to manipulate all surrounding pixels to the current
+    // frag co-ord, and we don't want to have to test if it is an edge case or not
+    params.push_back({ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE });
+    params.push_back({ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE });
+
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        //  colour (HDR)
+        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
+
+        // bind it
+        if (!blurFBOs[i]->assignAllTexturesToFBO())
+        {
+            printf("Failed to setup blur FBO[%d]\n", i);
+            return false;
+        }
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -186,13 +210,57 @@ void RenderPipeline::doLightingPass() const
     world->sendLightingInfoToShader(lightingPassShader);
 }
 
+void RenderPipeline::renderLamps() const
+{
+    // render lamps into first blurFBO
+    blurFBOs[0]->bind();
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
+    glDisable(GL_BLEND);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_CULL_FACE);
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    world->drawLamps();
+}
+
+void RenderPipeline::doBlurPass() const
+{
+    glDisable(GL_BLEND);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+    blurPassShader->useShader();
+
+    // NUM_BLUR_PASSES each consisting of two stages:
+    //   horiz - reads from [0] writes to [1]
+    //   vert  - reads from [1] writes to 0
+    const unsigned int NUM_BLUR_PASSES = 1;
+    for (unsigned int pass = 0; pass < NUM_BLUR_PASSES*2; pass++)
+    {
+        blurFBOs[(pass + 1) % 2]->bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // bind the read input texture
+        blurFBOs[pass % 2]->bindTextures();
+
+        glUniform1i(blurPassShader->getUniformID(SHADER_UNIFORM_HORIZONTAL_FLAG), (pass + 1) % 2);
+        glUniform1i(blurPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
+        glUniform2fv(blurPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
+
+        renderScreenQuad(blurPassShader);
+    }
+}
+
 void RenderPipeline::doHDRPass() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glDepthMask(GL_TRUE); // need to enable so we can clear the depth buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDepthMask(GL_FALSE); // disable depth mask again
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
@@ -202,19 +270,18 @@ void RenderPipeline::doHDRPass() const
     // draw a full screen quad this allows the HDR fragment shader to do tone mapping
     hdrPassShader->useShader();
     // bind textures from the lighting pass stage
-    lightingPassFBO->bindTextures();
+    GLenum nextTextureToBind = lightingPassFBO->bindTextures();
+    // and the blur stage (in the next available texture)
+    // we always do an even number of blur passes, n * (horiz + vert)
+    // horiz reads [0] and writes to [1], vert reads [1] and writes to [0]
+    // therefore [0] always contains uor finished blur
+    blurFBOs[0]->bindTextures(nextTextureToBind);
 
     glUniform1i(hdrPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
+    glUniform1i(hdrPassShader->getUniformID(SHADER_UNIFORM_BLUR_TEXTURE_SAMPLER), 1);
     glUniform2fv(hdrPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
 
     renderScreenQuad(hdrPassShader);
-}
-
-void RenderPipeline::renderLamps() const
-{
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    world->drawLamps();
 }
 
 void RenderPipeline::render2D() const

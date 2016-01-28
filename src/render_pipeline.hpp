@@ -33,14 +33,16 @@ protected:
 
     void doGeometryPass() const;
     void doLightingPass() const;
-    void doHDRPass() const;
     void renderLamps() const;
+    void doBlurPass() const;
+    void doHDRPass() const;
     void render2D() const;
 
     void renderScreenQuad(std::shared_ptr<const Shader> shader) const;
 
     std::shared_ptr<const Shader> lightingPassShader;
     std::shared_ptr<const Shader> hdrPassShader;
+    std::shared_ptr<const Shader> blurPassShader;
     std::shared_ptr<const World> world;
     unsigned int scrWidth;
     unsigned int scrHeight;
@@ -54,6 +56,7 @@ protected:
     // Frame buffer objects (FBOs)
     std::unique_ptr<FrameBuffer> geometryPassFBO;
     std::unique_ptr<FrameBuffer> lightingPassFBO;
+    std::unique_ptr<FrameBuffer> blurFBOs[2];   // ping pong buffers
 };
 
 #endif

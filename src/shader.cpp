@@ -320,7 +320,8 @@ std::shared_ptr<Shader> Shader::setupHDRShader()
             !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
             // fragment params
             !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
-            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
+            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER) ||
+            !shader->addUniformID("blurTextureSampler", SHADER_UNIFORM_BLUR_TEXTURE_SAMPLER))
         {
             printf("Error adding shader IDs\n");
             shader = NULL;
