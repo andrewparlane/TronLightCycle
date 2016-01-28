@@ -13,6 +13,7 @@ enum ShaderType
     SHADER_TYPE_LIGHTING_PASS,
     SHADER_TYPE_HDR_PASS,
     SHADER_TYPE_LAMP,
+    SHADER_TYPE_BLUR,
     SHADER_TYPE_2D,
 
     NUM_SHADER_TYPES
@@ -42,6 +43,7 @@ enum ShaderUniformID
     SHADER_UNIFORM_NORMAL_TEXTURE_SAMPLER,
     SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER,
 
+    SHADER_UNIFORM_HORIZONTAL_FLAG,
     SHADER_UNIFORM_EXPLODE,
 
     SHADER_NUM_UNIFORM_IDS
@@ -84,6 +86,7 @@ protected:
     static std::shared_ptr<Shader> setupLightingPassShader();
     static std::shared_ptr<Shader> setupHDRShader();
     static std::shared_ptr<Shader> setupLampShader();
+    static std::shared_ptr<Shader> setupBlurShader();
     static std::shared_ptr<Shader> setup2DShader();
 
     static std::shared_ptr<const Shader> shaders[NUM_SHADER_TYPES];

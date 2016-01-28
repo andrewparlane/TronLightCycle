@@ -193,6 +193,7 @@ bool Shader::setupShaders()
     shaders[SHADER_TYPE_LIGHTING_PASS]          = setupLightingPassShader();
     shaders[SHADER_TYPE_HDR_PASS]               = setupHDRShader();
     shaders[SHADER_TYPE_LAMP]                   = setupLampShader();
+    shaders[SHADER_TYPE_BLUR]                   = setupBlurShader();
     shaders[SHADER_TYPE_2D]                     = setup2DShader();
 
     for (unsigned int i = 0; i < NUM_SHADER_TYPES; i++)
@@ -320,6 +321,33 @@ std::shared_ptr<Shader> Shader::setupHDRShader()
             // fragment params
             !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
             !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER))
+        {
+            printf("Error adding shader IDs\n");
+            shader = NULL;
+        }
+    }
+
+    return shader;
+}
+
+std::shared_ptr<Shader> Shader::setupBlurShader()
+{
+    // first init shader
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/blur.vs", "shaders/blur.fs");
+    if (!shader || !shader->compile())
+    {
+        printf("Failed to compile blur shader\n");
+        shader = NULL;
+    }
+    else
+    {
+        // Get shader parameters
+        if (// vertex params (variable)
+            !shader->addAttribID("vertexPosition_Screen", SHADER_ATTRIB_VERTEX_POS) ||
+            // fragment params
+            !shader->addUniformID("screenResolution", SHARDER_UNIFORM_SCREEN_RES) ||
+            !shader->addUniformID("colourTextureSampler", SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER) ||
+            !shader->addUniformID("horizontal", SHADER_UNIFORM_HORIZONTAL_FLAG))
         {
             printf("Error adding shader IDs\n");
             shader = NULL;
