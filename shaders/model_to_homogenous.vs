@@ -8,6 +8,6 @@ uniform mat4 MVP;                   // model -> homogenous
 void main()
 {
     // vertex position in homogenous co-ords
-    gl_Position = MVP * vec4(vertexPosition_Model, 1.0);
+    gl_Position = MVP * vec4(vertexPosition_Model, 1.0f);
 }
 

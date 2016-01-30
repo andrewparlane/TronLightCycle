@@ -271,7 +271,7 @@ std::shared_ptr<Shader> Shader::setupExplodeShader()
 std::shared_ptr<Shader> Shader::setupLightingPassShader()
 {
     // first init main shader
-    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/main_lighting_pass.vs", "shaders/main_lighting_pass.fs");
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/model_to_homogenous.vs", "shaders/main_lighting_pass.fs");
     if (!shader || !shader->compile())
     {
         printf("Failed to compile main lighting pass shader\n");
@@ -307,7 +307,7 @@ std::shared_ptr<Shader> Shader::setupLightingPassShader()
 std::shared_ptr<Shader> Shader::setupHDRShader()
 {
     // first init main shader
-    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/hdr.vs", "shaders/hdr.fs");
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/simple_pass_through_screen_space.vs", "shaders/hdr.fs");
     if (!shader || !shader->compile())
     {
         printf("Failed to compile HDR pass shader\n");
@@ -334,7 +334,7 @@ std::shared_ptr<Shader> Shader::setupHDRShader()
 std::shared_ptr<Shader> Shader::setupBlurShader()
 {
     // first init shader
-    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/blur.vs", "shaders/blur.fs");
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/simple_pass_through_screen_space.vs", "shaders/blur.fs");
     if (!shader || !shader->compile())
     {
         printf("Failed to compile blur shader\n");
@@ -361,7 +361,7 @@ std::shared_ptr<Shader> Shader::setupBlurShader()
 std::shared_ptr<Shader> Shader::setupLampShader()
 {
     // first init main shader
-    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/lamp.vs", "shaders/lamp.fs");
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>("shaders/model_to_homogenous.vs", "shaders/lamp.fs");
     if (!shader || !shader->compile())
     {
         printf("Failed to compile lamp shader\n");
