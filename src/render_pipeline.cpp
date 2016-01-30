@@ -215,9 +215,7 @@ void RenderPipeline::renderLamps() const
     // render lamps into first blurFBO
     blurFBOs[0]->bind();
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-
+    glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_CULL_FACE);
