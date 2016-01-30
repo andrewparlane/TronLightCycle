@@ -15,9 +15,9 @@ RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
       blurPassShader(Shader::getShader(SHADER_TYPE_BLUR)),
       world(_world), scrWidth(_scrWidth), scrHeight(_scrHeight),
       screenResolutionVec(scrWidth, scrHeight),
+      screenQuad(std::make_unique<ObjData2D>()),
       geometryPassFBO(std::make_unique<FrameBuffer>()),
-      lightingPassFBO(std::make_unique<FrameBuffer>()),
-      screenQuad(std::make_unique<ObjData2D>())
+      lightingPassFBO(std::make_unique<FrameBuffer>())
 {
     blurFBOs[0] = std::make_unique<FrameBuffer>();
     blurFBOs[1] = std::make_unique<FrameBuffer>();
