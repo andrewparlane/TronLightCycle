@@ -104,8 +104,8 @@ bool RenderPipeline::setupFBOs()
 
     for (unsigned int i = 0; i < 2; i++)
     {
-        //  colour (HDR)
-        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
+        //  colour (LDR) - only need LDR as the weights of the blur only add up to 1.0f
+        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
 
         // bind it
         if (!blurFBOs[i]->assignAllTexturesToFBO())
