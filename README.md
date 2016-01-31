@@ -36,13 +36,27 @@ TODO:
     Effects / Prettiness
         sort out lighting
             Everything is either too dark or too slow
+                got this better now, but could do with being faster
                 research deferred lighting and tile-based deferred shading
                     https://software.intel.com/sites/default/files/m/d/4/1/d/8/lauritzen_deferred_shading_siggraph_2010.pdf
                     these are even more efficient methods of adding large numbers of lights
+            Anti-aliasing
+                this is really obvious on the lights, and is why they flicker
+            improved HDR
+                maybe use exposure algorithm?
+                research other tone mapping algorithms
             add headlamps
                 implement spot light support
-            Make blue lines on bike and arena glow slightly
-                research bloom
+            Bloom
+                Make blue lines on bike and arena glow slightly
+                optimise blur shader.
+                    read: https://software.intel.com/en-us/blogs/2014/07/15/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms
+                    look at halfing texture reads
+                    I also blur to 1/2 resolution, so can we reduce kernel size?
+                    can we optimize by instead of rendering screen quads, render squares around light sources?
+                        means only bluring relevant pixels,
+                        but instead of 2 blur passes, we call the blur shader twice per light.
+                        and blend them together
             Strip lighting
                 all lights are strip lights, but maths is for a point light.
         sort out scales, maybe make bike smaller? or floor bigger?
@@ -51,6 +65,12 @@ TODO:
         make top floor semi transparent
         make bike lean on turns
     Tidy up
+        search for all sending of uniforms in a loop
+            if they don't change do we need to send every time?
+        shaders
+            split shaders that use ifs and just use seperate shaders
+        Add game engine class to tidy up main.cpp
+        What else can we remove from main.cpp?
         tweak keyboard input to use callbacks
             receive character press rather than key press, so different layouts work
             add mouse scroll wheel event for zooming in or out
