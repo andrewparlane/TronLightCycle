@@ -47,6 +47,7 @@ protected:
     unsigned int scrWidth;
     unsigned int scrHeight;
     glm::vec2 screenResolutionVec;
+    glm::vec2 blurOutputResolutionVec;
 
     std::vector<std::shared_ptr<Object>> objects3D;
     std::vector<std::shared_ptr<Object2D>> objects2D;
@@ -56,6 +57,7 @@ protected:
     // Frame buffer objects (FBOs)
     std::unique_ptr<FrameBuffer> geometryPassFBO;
     std::unique_ptr<FrameBuffer> lightingPassFBO;
+    std::unique_ptr<FrameBuffer> brightFBO;
     std::unique_ptr<FrameBuffer> blurFBOs[2];   // ping pong buffers
 };
 

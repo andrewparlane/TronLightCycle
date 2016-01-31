@@ -8,6 +8,8 @@
 
 #include <GL/glew.h>
 
+#define BLUR_TEXTURE_DOWNSCALE_FACTOR 2
+
 RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
                                unsigned int _scrWidth, unsigned int _scrHeight)
     : lightingPassShader(Shader::getShader(SHADER_TYPE_LIGHTING_PASS)),
@@ -15,9 +17,11 @@ RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
       blurPassShader(Shader::getShader(SHADER_TYPE_BLUR)),
       world(_world), scrWidth(_scrWidth), scrHeight(_scrHeight),
       screenResolutionVec(scrWidth, scrHeight),
+      blurOutputResolutionVec(screenResolutionVec / (float)BLUR_TEXTURE_DOWNSCALE_FACTOR),
       screenQuad(std::make_unique<ObjData2D>()),
       geometryPassFBO(std::make_unique<FrameBuffer>()),
-      lightingPassFBO(std::make_unique<FrameBuffer>())
+      lightingPassFBO(std::make_unique<FrameBuffer>()),
+      brightFBO(std::make_unique<FrameBuffer>())
 {
     blurFBOs[0] = std::make_unique<FrameBuffer>();
     blurFBOs[1] = std::make_unique<FrameBuffer>();
@@ -95,17 +99,28 @@ bool RenderPipeline::setupFBOs()
         return false;
     }
 
-    // Blur FBOs
+    // Bright FBO
     // we clamp the texture UV co-ords at the edge (ie, don't repeat the texture).
     // this is needed as we want to manipulate all surrounding pixels to the current
     // frag co-ord, and we don't want to have to test if it is an edge case or not
     params.push_back({ GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE });
     params.push_back({ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE });
 
+    //  colour (LDR)
+    brightFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
+
+    // bind it
+    if (!brightFBO->assignAllTexturesToFBO())
+    {
+        printf("Failed to setup bright FBO\n");
+        return false;
+    }
+
+    // Blur FBOs
     for (unsigned int i = 0; i < 2; i++)
     {
         //  colour (LDR) - only need LDR as the weights of the blur only add up to 1.0f
-        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
+        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth / BLUR_TEXTURE_DOWNSCALE_FACTOR, scrHeight / BLUR_TEXTURE_DOWNSCALE_FACTOR, params));
 
         // bind it
         if (!blurFBOs[i]->assignAllTexturesToFBO())
@@ -212,8 +227,8 @@ void RenderPipeline::doLightingPass() const
 
 void RenderPipeline::renderLamps() const
 {
-    // render lamps into first blurFBO
-    blurFBOs[0]->bind();
+    // render lamps into bright FBO
+    brightFBO->bind();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
@@ -235,20 +250,29 @@ void RenderPipeline::doBlurPass() const
     blurPassShader->useShader();
 
     // NUM_BLUR_PASSES each consisting of two stages:
-    //   horiz - reads from [0] writes to [1]
+    //   horiz - reads from [0] writes to [1] (except first pass which reads from brightFBO and writes to [1])
     //   vert  - reads from [1] writes to 0
     const unsigned int NUM_BLUR_PASSES = 1;
+    bool first = true;
     for (unsigned int pass = 0; pass < NUM_BLUR_PASSES*2; pass++)
     {
         blurFBOs[(pass + 1) % 2]->bind();
         glClear(GL_COLOR_BUFFER_BIT);
 
         // bind the read input texture
-        blurFBOs[pass % 2]->bindTextures();
+        if (!first)
+        {
+            blurFBOs[pass % 2]->bindTextures();
+        }
+        else
+        {
+            brightFBO->bindTextures();
+            first = false;
+        }
 
         glUniform1i(blurPassShader->getUniformID(SHADER_UNIFORM_HORIZONTAL_FLAG), (pass + 1) % 2);
         glUniform1i(blurPassShader->getUniformID(SHADER_UNIFORM_COLOUR_TEXTURE_SAMPLER), 0);
-        glUniform2fv(blurPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &screenResolutionVec[0]);
+        glUniform2fv(blurPassShader->getUniformID(SHARDER_UNIFORM_SCREEN_RES), 1, &blurOutputResolutionVec[0]);
 
         renderScreenQuad(blurPassShader);
     }
