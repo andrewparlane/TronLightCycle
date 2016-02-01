@@ -53,7 +53,7 @@ bool FrameBuffer::assignAllTexturesToFBO() const
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     // attach the textures
-    GLenum currentAttachementPoint = GL_COLOR_ATTACHMENT0;
+    GLenum currentAttachmentPoint = GL_COLOR_ATTACHMENT0;
     std::vector<GLenum> attachmentPoints;
     for (const auto &texture : textures)
     {
@@ -64,7 +64,7 @@ bool FrameBuffer::assignAllTexturesToFBO() const
         }
         else
         {
-            ap = currentAttachementPoint++;
+            ap = currentAttachmentPoint++;
             attachmentPoints.push_back(ap);
         }
 
