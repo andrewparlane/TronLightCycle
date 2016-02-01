@@ -84,9 +84,9 @@ bool FrameBuffer::assignAllTexturesToFBO() const
     return true;
 }
 
-void FrameBuffer::bind() const
+void FrameBuffer::bind(GLenum frameBufferType) const
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindFramebuffer(frameBufferType, fbo);
 }
 
 GLenum FrameBuffer::bindTextures(GLenum startTexture) const

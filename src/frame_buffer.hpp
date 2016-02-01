@@ -36,7 +36,7 @@ public:
 
     bool assignAllTexturesToFBO() const;
 
-    void bind() const;
+    void bind(GLenum frameBufferType = GL_FRAMEBUFFER) const;
 
     GLenum bindTextures(GLenum startTexture = GL_TEXTURE0) const;
 
