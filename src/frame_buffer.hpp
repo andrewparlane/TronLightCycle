@@ -16,7 +16,9 @@ public:
     FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil = false);
     ~FrameBufferTexture();
 
-    GLuint get() const { return texture; }
+    void bind() const;
+    void attachToFBO(GLenum attachmentPoint) const;
+
     bool getIsDepthStencil() const { return isDepthStencil; }
 
 protected:

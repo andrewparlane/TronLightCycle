@@ -20,6 +20,16 @@ FrameBufferTexture::~FrameBufferTexture()
     glDeleteTextures(1, &texture);
 }
 
+void FrameBufferTexture::bind() const
+{
+    glBindTexture(GL_TEXTURE_2D, texture);
+}
+
+void FrameBufferTexture::attachToFBO(GLenum attachmentPoint) const
+{
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, GL_TEXTURE_2D, texture, 0);
+}
+
 // -----------------------------------------------------------------------
 
 FrameBuffer::FrameBuffer()
@@ -58,7 +68,7 @@ bool FrameBuffer::assignAllTexturesToFBO() const
             attachmentPoints.push_back(ap);
         }
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, ap, GL_TEXTURE_2D, texture->get(), 0);
+        texture->attachToFBO(ap);
     }
 
     // tell openGL which attachment points we are using
@@ -91,7 +101,7 @@ GLenum FrameBuffer::bindTextures(GLenum startTexture) const
         if (!texture->getIsDepthStencil())
         {
             glActiveTexture(textureID++);
-            glBindTexture(GL_TEXTURE_2D, texture->get());
+            texture->bind();
         }
     }
 
