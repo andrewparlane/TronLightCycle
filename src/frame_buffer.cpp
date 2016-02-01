@@ -57,7 +57,7 @@ bool FrameBuffer::assignAllTexturesToFBO() const
     std::vector<GLenum> attachmentPoints;
     for (const auto &texture : textures)
     {
-        unsigned int ap;
+        GLenum ap;
         if (texture->getIsDepthStencil())
         {
             ap = GL_DEPTH_STENCIL_ATTACHMENT;
