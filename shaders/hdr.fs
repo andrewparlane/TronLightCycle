@@ -11,7 +11,7 @@ void main()
     vec3 colour = texture(colourTextureSampler, fragmentTextureUV).rgb;
     vec3 blurColour = texture(blurTextureSampler, fragmentTextureUV).rgb;
 
-    vec3 result = colour + (blurColour * 5);
+    vec3 result = colour + blurColour;
 
     // convert from HDR to LDR
     result = result / (result + vec3(1.0f));
