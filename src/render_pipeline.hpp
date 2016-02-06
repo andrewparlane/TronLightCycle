@@ -57,6 +57,7 @@ protected:
     // Frame buffer objects (FBOs)
     std::unique_ptr<FrameBuffer> geometryPassFBO;
     std::unique_ptr<FrameBuffer> lightingPassFBO;
+    std::unique_ptr<FrameBuffer> brightMultiSampleFBO;
     std::unique_ptr<FrameBuffer> brightFBO;
     std::unique_ptr<FrameBuffer> blurFBOs[2];   // ping pong buffers
 };

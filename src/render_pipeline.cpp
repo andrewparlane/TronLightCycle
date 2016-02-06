@@ -21,6 +21,7 @@ RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
       screenQuad(std::make_unique<ObjData2D>()),
       geometryPassFBO(std::make_unique<FrameBuffer>()),
       lightingPassFBO(std::make_unique<FrameBuffer>()),
+      brightMultiSampleFBO(std::make_unique<FrameBuffer>()),
       brightFBO(std::make_unique<FrameBuffer>())
 {
     blurFBOs[0] = std::make_unique<FrameBuffer>();
@@ -99,7 +100,20 @@ bool RenderPipeline::setupFBOs()
         return false;
     }
 
-    // Bright FBO
+    // Bright FBO - multi sample
+    //  colour (LDR, multi sample)
+    brightMultiSampleFBO->addTexture(std::make_shared<FrameBufferTexture>(true, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
+    //  depth (multi sample)
+    brightMultiSampleFBO->addTexture(std::make_shared<FrameBufferTexture>(true, GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, params, true));
+
+    // bind it
+    if (!brightMultiSampleFBO->assignAllTexturesToFBO())
+    {
+        printf("Failed to setup bright FBO\n");
+        return false;
+    }
+
+    // bright FBO - single sample
     // we clamp the texture UV co-ords at the edge (ie, don't repeat the texture).
     // this is needed as we want to manipulate all surrounding pixels to the current
     // frag co-ord, and we don't want to have to test if it is an edge case or not
@@ -227,17 +241,29 @@ void RenderPipeline::doLightingPass() const
 
 void RenderPipeline::renderLamps() const
 {
-    // render lamps into bright FBO
-    brightFBO->bind();
+    // render lamps into bright FBO - multi sample
+    brightMultiSampleFBO->bind();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_CULL_FACE);
 
+    glEnable(GL_MULTISAMPLE);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     world->drawLamps();
+
+    glDisable(GL_MULTISAMPLE);
+
+    brightFBO->bind();
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // blit it into the single sampled FBO
+    brightMultiSampleFBO->bind(GL_READ_FRAMEBUFFER);
+    brightFBO->bind(GL_DRAW_FRAMEBUFFER);
+    glBlitFramebuffer(0, 0, scrWidth, scrHeight, 0, 0, scrWidth, scrHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 void RenderPipeline::doBlurPass() const
