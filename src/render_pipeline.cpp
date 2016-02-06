@@ -8,7 +8,7 @@
 
 #include <GL/glew.h>
 
-#define BLUR_TEXTURE_DOWNSCALE_FACTOR 2
+#define BLUR_TEXTURE_DOWNSCALE_FACTOR 1
 
 RenderPipeline::RenderPipeline(std::shared_ptr<const World> _world,
                                unsigned int _scrWidth, unsigned int _scrHeight)
