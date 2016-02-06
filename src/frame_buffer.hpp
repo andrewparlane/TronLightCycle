@@ -13,7 +13,7 @@ class FrameBufferTexture
 public:
     typedef std::vector<std::pair<GLenum, GLint>> TextureParameters;
 
-    FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil = false);
+    FrameBufferTexture(bool multiSample, GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil = false);
     ~FrameBufferTexture();
 
     void bind() const;
@@ -24,6 +24,7 @@ public:
 protected:
     bool isDepthStencil;
     GLuint texture;
+    GLenum target;
 };
 
 class FrameBuffer

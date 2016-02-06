@@ -63,7 +63,7 @@ bool RenderPipeline::setupFBOs()
 
     // both the lighting pass and geometry pass FBOs use the same depth stencil texture, create it now
     // note no params
-    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, params, true);
+    std::shared_ptr<FrameBufferTexture> depthStencil = std::make_shared<FrameBufferTexture>(false, GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, scrWidth, scrHeight, params, true);
 
     // and add it to both FBOs
     geometryPassFBO->addTexture(depthStencil);
@@ -75,11 +75,11 @@ bool RenderPipeline::setupFBOs()
 
     // geometry pass textures
     //  position
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
     //  normal
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
     //  colour (LDR)
-    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
+    geometryPassFBO->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
 
     // bind it
     if (!geometryPassFBO->assignAllTexturesToFBO())
@@ -90,7 +90,7 @@ bool RenderPipeline::setupFBOs()
 
     // lighting pass textures
     //  colour (HDR)
-    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
+    lightingPassFBO->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB16F, GL_RGB, GL_FLOAT, scrWidth, scrHeight, params));
 
     // bind it
     if (!lightingPassFBO->assignAllTexturesToFBO())
@@ -107,7 +107,7 @@ bool RenderPipeline::setupFBOs()
     params.push_back({ GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE });
 
     //  colour (LDR)
-    brightFBO->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
+    brightFBO->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth, scrHeight, params));
 
     // bind it
     if (!brightFBO->assignAllTexturesToFBO())
@@ -120,7 +120,7 @@ bool RenderPipeline::setupFBOs()
     for (unsigned int i = 0; i < 2; i++)
     {
         //  colour (LDR) - only need LDR as the weights of the blur only add up to 1.0f
-        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth / BLUR_TEXTURE_DOWNSCALE_FACTOR, scrHeight / BLUR_TEXTURE_DOWNSCALE_FACTOR, params));
+        blurFBOs[i]->addTexture(std::make_shared<FrameBufferTexture>(false, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, scrWidth / BLUR_TEXTURE_DOWNSCALE_FACTOR, scrHeight / BLUR_TEXTURE_DOWNSCALE_FACTOR, params));
 
         // bind it
         if (!blurFBOs[i]->assignAllTexturesToFBO())

@@ -2,16 +2,24 @@
 
 #include <stdlib.h>
 
-FrameBufferTexture::FrameBufferTexture(GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil)
-    : isDepthStencil(_isDepthStencil)
+FrameBufferTexture::FrameBufferTexture(bool multiSample, GLint internalFormat, GLenum format, GLenum type, unsigned int scrWidth, unsigned int scrHeight, const TextureParameters &parameters, bool _isDepthStencil)
+    : isDepthStencil(_isDepthStencil), target(multiSample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D)
 {
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scrWidth, scrHeight, 0, format, type, NULL);
+    glBindTexture(target, texture);
+
+    if (multiSample)
+    {
+        glTexImage2DMultisample(target, 4, internalFormat, scrWidth, scrHeight, GL_TRUE);
+    }
+    else
+    {
+        glTexImage2D(target, 0, internalFormat, scrWidth, scrHeight, 0, format, type, NULL);
+    }
 
     for (auto &param : parameters)
     {
-        glTexParameteri(GL_TEXTURE_2D, param.first, param.second);
+        glTexParameteri(target, param.first, param.second);
     }
 }
 
@@ -22,12 +30,12 @@ FrameBufferTexture::~FrameBufferTexture()
 
 void FrameBufferTexture::bind() const
 {
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(target, texture);
 }
 
 void FrameBufferTexture::attachToFBO(GLenum attachmentPoint) const
 {
-    glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, GL_TEXTURE_2D, texture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, target, texture, 0);
 }
 
 // -----------------------------------------------------------------------
